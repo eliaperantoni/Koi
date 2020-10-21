@@ -1,0 +1,342 @@
+# ---Comments-------------------------------------
+
+# Comment
+
+##
+Multiline
+comment
+##
+
+# ---Literals-------------------------------------
+
+true
+false
+nil
+12
+35.3
+"my name is peter"
+[2, 4, 6, 8]
+{just: "like", java: "script"}
+
+# Only strings are valid keys for maps. Also double
+# quotes are not required if the string is a valid
+# identifier
+
+# ---Variables------------------------------------
+
+var name = "peter"
+var age
+age = 27
+
+# ---Operators------------------------------------
+
+12 + 5
+74 - 10
+5 * 10
+16 / 3
+10 % 3
+2 ^ 4
+
+var num = 10
+
+num++
+++num
+num--
+--num
+
+num += 2
+num -= 2
+
+var car = {make: "Aston Martin", model: "DB11"}
+
+print(car.make)
+car.plate = "AB123WE"
+
+var primes = [2, 3, 5, 7, 9, 11, nil]
+print(primes[0])
+primes[-1] = 13
+
+# A range. Its only purpose is to be used in for
+# loops. This ones generates all numbers from 1
+# to 5 excluded. Equivalent to [1, 2, 3, 4]
+1:5
+
+# You can also specify a step. This one generates
+# all odd numbers from 1 to 100 excluded
+1:100:2
+
+"amp" + "ere"
+"5 squared is {5 ^ 2}"
+
+# Only 'false', 'nil' and command expressions that
+# terminated with a non-zero exit code (see below)
+# are the only falsey values. All of the below 
+# evalute to 'true'
+
+true && true
+false || true
+
+# Note that these do short-circuit. If the value of
+# the whole expression can be determined, no further
+# operands are evaluted
+
+# ---Control flow and loops-----------------------
+
+if true {
+
+} else if true {
+
+} else {
+
+}
+
+while true {
+    break
+}
+
+for i in 1:10 {
+    # 'print' is a built-in function
+    print(i)
+
+    continue
+}
+
+for _, fruit in ["apple", "pear", "strawberry"] {
+    print(fruit)
+}
+
+for key, value in {a: 1, b: 2, c: 3} {
+    print("${key} -> ${value}")
+}
+
+# ---Functions------------------------------------
+
+fn greet(name) {
+    print("Hello ${name}! Nice to meet you.")
+}
+
+# We have recursion
+fn fib(n) {
+    if n == 0 or n == 1 {return 1}
+    return fib(n - 1) + fib(n - 2)
+}
+
+# We have closures
+fn counter() {
+    var counter = 0
+    fn bump_n_print() {
+        counter++
+        print(counter)
+    }
+    return bump_n_print
+}
+
+# We have lambdas
+var say_my_name = fn() {
+    println("Heisenberg")
+}
+
+# ---Commands-------------------------------------
+
+cmd -a -b -c --arg1 par1 --arg2 par2
+
+# Can use $(...) to spread command on multiple lines
+
+$(
+    cmd
+    -a 
+    -b 
+    -c 
+    --arg1 par1 
+    --arg2 par2
+)
+
+# Can use string literals. Useful for escaping or
+# avoid argument splitting
+
+cmd "i will be passed to cmd as a single argument"
+
+# Can use string interpolation
+
+var par1 = "a"
+var par2 = "b"
+var par3 = "c"
+
+cmd --arg1 {par1} --arg2 foo {par2} --arg3 "foo {par3}"
+
+
+# ---Pipes----------------------------------------
+
+# Pipe cmd1's STDOUT to cmd2's STDIN
+cmd1 | cmd2
+
+# Pipe cmd1's STDERR to cmd2's STDIN
+cmd1 *| cmd2
+
+# Pipe cmd1's STDOUT and STDERR to cmd2's STDIN
+cmd1 &| cmd2
+
+# Can be chained
+cmd1 | cmd2 | cmd3 | cmd4
+
+# ---Redirection----------------------------------
+
+# Read file and pass contents to cmd's STDIN
+cmd < input.txt
+
+# Write cmd's STDOUT to file
+cmd > output.txt
+
+# Write cmd's STDERR to file
+cmd *> errors.txt
+
+# Write STDOUT and STDERR to file
+cmd &> output_and_errors.txt
+
+# You can specify multiple redirections
+cmd < input.txt > output.txt *> errors.txt
+
+# STDOUT or STDERR can be redirected more than once
+# and the content will be written to all files
+
+cmd > output1.txt > output2.txt > output3.txt
+
+# STDIN can also be redirected more than once. The
+# files will be read from left to right
+
+cmd < first.txt < second.txt
+
+# Redirection does not prevent piping. The output 
+# streams are written to all files and piped to the 
+# next command. The input stream is fed with all
+# files and the previous command. In the case of 
+# input, all files will be read and the contents
+# redirected first. Until then cmd1's output streams
+# conent are kept on hold.
+
+cmd1 | cmd2 < input.txt > output.txt | cmd3
+
+# ---Grammar--------------------------------------
+
+# Syntax is:
+#
+#     nonterminal > sigma
+#
+# Where sigma is a sequence of terminals and nonterminals.
+#
+# x indicates a nonterminal symbol
+# "x" indicates a terminal symbol
+# (...) is used to group a sequence of symbols
+# * repeats a symbol (or group of symbols) 0 to N times
+# + repeats a symbol (or group of symbols) 1 to N times
+# ? marks a symbol (or group of symbols) as optional
+# | indicates that one of different symbols (or groups of symbols) can appear in 
+#   that location)
+
+program > decl* EOF
+
+decl > fnDecl | varDecl | stmt
+
+fnDecl  > "fn" identifier "(" params? ")" block
+varDecl > "exp"? "var" identifier ("=" expr)? ";"
+
+stmt > block | ifStmt | whileStmt | forStmt | breakStmt | continueStmt | 
+       returnStmt | assignmentStmt | callStmt | multilineCmdStmt | cmdStmt
+
+block > "{" stmt* "}"
+
+ifStmt            > "if" expr block ("else" "if" block)* ("else" block)?
+whileStmt         > "while" expr block
+forStmt           > "for" expr ("," expr)? "in" expr block
+breaStmtk         > "break" ";"
+continueStmt      > "continue" ";"
+returnStmt        > "return" expr? ";"
+assignmentStmt    > (callExpr ".")? identifier "=" expr ";"
+callStmt          > primary ("(" args? ")" | "." identifier)* "(" args? ")"
+multilineCmdStmt  > "$" "(" cmd ")" ";"
+cmdStmt           > cmd ";"
+
+expr           > assignmentExpr
+assignmentExpr > (callExpr ".")? identifier "=" expr | orExpr
+orExpr         > andExpr ("||" andExpr)*
+andExpr        > equalityExpr ("&&" equalityExpr)*
+equalityExpr   > comparisonExpr (("==" | "!=") comparisonExpr)?
+comparisonExpr > termExpr (("<" | ">" | "<=" | ">=") termExpr)*
+termExpr       > factorExpr (("-" | "+") factorExpr)*
+factorExpr     > unaryExpr (("/" | "*") unaryExpr)*
+unaryExpr      > ("+" | "-")? powerExpr
+powerExpr      > callExpr ("^" callExpr)*
+callExpr       > primaryExpr ("(" args? ")" | "." identifier)*
+primaryExpr    > literal | identifier | "$" "(" cmd ")" | lambda | "(" expr ")"
+
+cmd > ("{" expr "}" | <any char \ {';', '(', ')', '"', '{', '}'> | stringLiteral)*
+
+lambda > "fn" "(" params? ")" block
+
+params > identifier ("," identifier)*
+args   > expr       ("," expr      )*
+
+identifier > [a-z] | [A-Z] | "_" | "$" ([a-z] | [A-Z] | [0-9] | "_" | "$")*
+
+literal > "true" | "false" | "nil" | intLiteral | floatLiteral | stringLiteal |
+          arrayLiteral | objectLiteral | rangeLiteral
+
+intLiteral    > [0-9]+
+floatLiteral  > [0-9]* (([0-9] ".") | ("." [0-9])) [0-9]* ("e" "-"? [0-9]+)?
+stringLiteral > """ ("{" expr "}" | <any char \ {'"', '{', '}'}>)* """
+arrayLiteral  > "[" (expr ("," expr)* )? "]"
+objectLiteral > "{" (identifier | stringLiteral ":" expr ("," identifier |
+                stringLiteral ":" expr)* )? "}"
+rangeLiteral  > intLiteral ":" intLiteral (":" intLiteral)? |
+                floatLiteral ":" floatLiteral (":" floatLiteral)?
+
+# ---Tokens---------------------------------------
+
+Identifier
+IntLiteral
+FloatLiteral
+StringLiteral
+
+For
+While
+If
+ElseIf
+Else
+Fn
+Return
+Break
+Continue
+
+DollarLeftParen
+LeftParen
+RightParen
+LeftBracket
+RightBracket
+LeftBrace
+RightBrace
+
+Bang
+Equal
+EqualEqual
+BangEqual
+Greater
+GreaterEqual
+Less
+LessEqual
+
+Plus
+Minus
+Star
+Slash
+
+True
+False
+Nil
+
+AmperAmper
+PipePipe
+
+Comma
+Semicolon
+Colon
+Dot
