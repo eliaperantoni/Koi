@@ -80,6 +80,8 @@ false || true
 # the whole expression can be determined, no further
 # operands are evaluted
 
+true ? "if true" : "if false"
+
 # ---Control flow and loops-----------------------
 
 if true {
@@ -257,7 +259,8 @@ multilineCmdStmt  > "$" "(" cmd ")" ";"
 cmdStmt           > cmd ";"
 
 expr           > assignmentExpr
-assignmentExpr > (callExpr ".")? identifier "=" expr | orExpr
+assignmentExpr > (callExpr ".")? identifier "=" expr | ternaryExpr
+ternaryExpr    > TODO
 orExpr         > andExpr ("||" andExpr)*
 andExpr        > equalityExpr ("&&" equalityExpr)*
 equalityExpr   > comparisonExpr (("==" | "!=") comparisonExpr)?
@@ -340,3 +343,10 @@ Comma
 Semicolon
 Colon
 Dot
+
+# TODO
+# [ ] Grammar of ternary operator
+# [ ] Grammar of ++ and -- operators
+# [ ] Grammar of {+,-,*,/,%,^}= operators
+# [ ] Grammar of % operator
+# [ ] Tokens for the above
