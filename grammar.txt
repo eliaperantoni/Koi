@@ -1,0 +1,56 @@
+program = decl*
+
+decl = fnDecl | varDecl | stmt
+
+fnDecl  = "fn" identifier "(" params ")" block
+varDecl = "exp"? "var" identifier ("=" expr)? ";"
+
+stmt = block | ifStmt | whileStmt | forStmt | breakStmt | continueStmt | returnStmt | assignmentStmt | callStmt | multilineCmdStmt | cmdStmt
+
+block = "{" stmt* "}"
+
+ifStmt           = "if" expr block ("else" "if" expr block)* ("else" block)?
+whileStmt        = "while" expr block
+forStmt          = "for" <identifier> ("," <identifier>)? "in" <expr> <block>
+breaStmtk        = "break" ";"
+continueStmt     = "continue" ";"
+returnStmt       = "return" expr? ";"
+assignmentStmt   = (callExpr ".")? identifier "=" expr ";"
+callStmt         = primary ("(" args ")" | "." identifier | [expr])* "(" args ")"
+multilineCmdStmt = "$" "(" cmd ")" ";"
+cmdStmt          = cmd ";"
+
+expr           = assignmentExpr
+assignmentExpr = (callGetExpr ".")? identifier ("=" | "+=" | "-=" | "*=" | "/=" | "%=" | "^=") expr | orExpr
+ternaryExpr    = orExpr "?" expr ":" expr
+orExpr         = andExpr ("||" andExpr)*
+andExpr        = equalityExpr ("&&" equalityExpr)*
+equalityExpr   = comparisonExpr (("==" | "!=") comparisonExpr)*
+comparisonExpr = termExpr (("<" | ">" | "<=" | ">=") termExpr)*
+termExpr       = factorExpr (("+" | "-") factorExpr)*
+factorExpr     = unaryExpr (("*" | "/" | "%") unaryExpr)*
+unaryExpr      = ("+" | "-")? powerExpr | ("++" | "--") powerExpr| powerExpr ("++" | "--")
+powerExpr      = callGetExpr ("^" callGetExpr)*
+callGetExpr    = primaryExpr ("(" args ")" | "." identifier | [expr])*
+primaryExpr    = literal | identifier | "$" "(" cmd ")" | lambda | "(" expr ")"
+
+cmd = ("{" <expr> "}" | <letter> | <digit> | <symbol \ {"&", ">", "<", "|", "*", "{", "}", """, "$", "(", ")"} > | <stringLiteral>)*
+
+lambda = "fn" "(" params ")" block
+
+params = (identifier ("," identifier)*)?
+args   = (expr       ("," expr      )*)?
+
+literal = "true" | "false" | "nil" | intLiteral | floatLiteral | stringLiteral | arrayLiteral | objectLiteral | rangeLiteral
+
+intLiteral    = digit+
+floatLiteral  = (intLiteral "." | "." intLiteral | intLiteral "." intLiteral) ("e" "-"? intLiteral)?
+stringLiteral = """ ("{" expr "}" | letter | digit | <symbol \ {"{", "}", """}>)* """
+arrayLiteral  = "[" (expr ("," expr)*)? "]"
+objectLiteral = "{" ((identifier | stringLiteral) ":" expr ("," (identifier | stringLiteral) ":" expr)*)? "}"
+rangeLiteral  = intLiteral ":" intLiteral (":" intLiteral)? | floatLiteral ":" floatLiteral (":" floatLiteral)?
+
+identifier = letter (letter | digit | "_" | "$")*
+
+letter = [a-z] | [A-Z]
+digit  = [0-9]
