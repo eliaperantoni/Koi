@@ -50,7 +50,7 @@ arrayLiteral  = "[" (expr ("," expr)*)? "]"
 objectLiteral = "{" ((identifier | stringLiteral) ":" expr ("," (identifier | stringLiteral) ":" expr)*)? "}"
 rangeLiteral  = intLiteral ":" intLiteral (":" intLiteral)? | floatLiteral ":" floatLiteral (":" floatLiteral)?
 
-identifier = letter (letter | digit | "_" | "$")*
+identifier = letter (letter | digit | "_")*
 
 letter = [a-z] | [A-Z]
 digit  = [0-9]
