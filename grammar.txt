@@ -12,7 +12,7 @@ block = "{" stmt* "}"
 ifStmt           = "if" expr block ("else" "if" expr block)* ("else" block)?
 whileStmt        = "while" expr block
 forStmt          = "for" <identifier> ("," <identifier>)? "in" <expr> <block>
-breaStmtk        = "break" ";"
+breakStmt        = "break" ";"
 continueStmt     = "continue" ";"
 returnStmt       = "return" expr? ";"
 assignmentStmt   = (callExpr ".")? identifier "=" expr ";"
@@ -29,7 +29,7 @@ equalityExpr   = comparisonExpr (("==" | "!=") comparisonExpr)*
 comparisonExpr = termExpr (("<" | ">" | "<=" | ">=") termExpr)*
 termExpr       = factorExpr (("+" | "-") factorExpr)*
 factorExpr     = unaryExpr (("*" | "/" | "%") unaryExpr)*
-unaryExpr      = ("+" | "-")? powerExpr | ("++" | "--") powerExpr| powerExpr ("++" | "--")
+unaryExpr      = ("+" | "-" | "!")? powerExpr | ("++" | "--") powerExpr| powerExpr ("++" | "--")
 powerExpr      = callGetExpr ("^" callGetExpr)*
 callGetExpr    = primaryExpr ("(" args ")" | "." identifier | [expr])*
 primaryExpr    = literal | identifier | "$" "(" cmd ")" | lambda | "(" expr ")"
