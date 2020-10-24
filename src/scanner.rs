@@ -23,6 +23,23 @@ impl Scanner {
         self.chars[self.current]
     }
 
+    fn matches(&mut self, target: &str) -> bool {
+        let target_chars = target.chars();
+
+        let mut i = self.current;
+
+        for target_char in target_chars {
+            if target_char == self.chars[i] {
+                i += 1;
+            } else {
+                return false;
+            }
+        };
+
+        self.current = i;
+        return true;
+    }
+
     fn is_at_end(&self) -> bool {
         self.current > self.chars.len() - 1
     }
@@ -45,6 +62,60 @@ impl Iterator for Scanner {
             '?' => return Some(Token::Question),
             '.' => return Some(Token::Dot),
             _ => unreachable!()
+
+            '$' if self.matches("(") => return Some(Token::DollarLeftParen),
+
+            '(' => return Some(Token::LeftParen),
+            ')' => return Some(Token::RightParen),
+            '[' => return Some(Token::LeftBracket),
+            ']' => return Some(Token::RightBracket),
+            '{' => return Some(Token::LeftBrace),
+            '}' => return Some(Token::RightBrace),
+
+            '&' if self.matches("&") => return Some(Token::AmperAmper),
+            '|' if self.matches("|") => return Some(Token::PipePipe),
+
+            '+' => {
+                return Some(
+                    if self.matches("=") { Token::PlusEqual }
+                    else if self.matches("+") { Token::PlusPlus }
+                    else { Token::Plus }
+                );
+            },
+            '-' => {
+                return Some(
+                    if self.matches("=") { Token::MinusEqual }
+                    else if self.matches("+") { Token::MinusMinus }
+                    else { Token::Minus }
+                );
+            },
+
+            '*' => {
+                return Some(if self.matches("=") { Token::StarEqual } else { Token::Star });
+            },
+            '/' => {
+                return Some(if self.matches("=") { Token::SlashEqual } else { Token::Slash });
+            },
+            '^' => {
+                return Some(if self.matches("=") { Token::CaretEqual } else { Token::Caret });
+            },
+            '%' => {
+                return Some(if self.matches("=") { Token::PercEqual } else { Token::Perc });
+            },
+
+            '>' => {
+                return Some(if self.matches("=") { Token::GreaterEqual } else { Token::Greater });
+            },
+            '<' => {
+                return Some(if self.matches("=") { Token::MinusEqual } else { Token::Minus });
+            },
+
+            '!' => {
+                return Some(if self.matches("=") { Token::BangEqual } else { Token::Bang });
+            },
+            '=' => {
+                return Some(if self.matches("=") { Token::EqualEqual } else { Token::Equal });
+            },
         };
 
         unreachable!();
@@ -76,9 +147,9 @@ pub enum Token {
     RightBrace,
 
     Bang,
+    BangEqual,
     Equal,
     EqualEqual,
-    BangEqual,
 
     PlusEqual,
     MinusEqual,
