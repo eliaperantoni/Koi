@@ -13,6 +13,8 @@ pub enum Token {
     Return,
     Break,
     Continue,
+    Var,
+    Exp,
 
     DollarLeftParen,
     LeftParen,

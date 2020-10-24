@@ -132,14 +132,19 @@ impl Iterator for Scanner {
                 else if self.matches("alse") { return Some(Token::False) }
             },
 
+            'e' => {
+                if self.matches("lse") { return Some(Token::Else) }
+                else if self.matches("xp") { return Some(Token::Exp) }
+            },
+
             'w' if self.matches("hile") => { return Some(Token::While) },
             'i' if self.matches("f") => { return Some(Token::If) },
-            'e' if self.matches("lse") => { return Some(Token::Else) },
             'r' if self.matches("eturn") => { return Some(Token::Return) },
             'b' if self.matches("reak") => { return Some(Token::Break) },
             'c' if self.matches("ontinue") => { return Some(Token::Continue) },
             't' if self.matches("rue") => { return Some(Token::True) },
             'n' if self.matches("il") => { return Some(Token::Nil) },
+            'v' if self.matches("ar") => { return Some(Token::Var) },
 
             _ => {}
         };
