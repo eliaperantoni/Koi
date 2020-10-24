@@ -52,17 +52,15 @@ impl Scanner {
     }
 
     fn consume_whitespace(&mut self) {
-        const WHITESPACE_CHARS: [char; 4] = [' ', '\t', '\n', '\r'];
-
-        while !self.is_at_end() && WHITESPACE_CHARS.contains(&self.peek()) {
+        while !self.is_at_end() && self.peek().is_ascii_whitespace() {
             self.advance();
         }
     }
 
     fn scan_token(&mut self) -> Option<Token> {
-        self.start = self.current;
-
         self.consume_whitespace();
+
+        self.start = self.current;
 
         if self.is_at_end() {
             return None;
@@ -88,8 +86,8 @@ impl Scanner {
             'w' if check_keyword(&word_chars[1..], "hile") => Token::While,
             'v' if check_keyword(&word_chars[1..], "ar") => Token::Var,
             'r' if check_keyword(&word_chars[1..], "eturn") => Token::Return,
-            'b' if check_keyword(&word_chars[1..], "eturn") => Token::Break,
-            'c' if check_keyword(&word_chars[1..], "eturn") => Token::Continue,
+            'b' if check_keyword(&word_chars[1..], "reak") => Token::Break,
+            'c' if check_keyword(&word_chars[1..], "ontinue") => Token::Continue,
             't' if check_keyword(&word_chars[1..], "rue") => Token::True,
             'n' if check_keyword(&word_chars[1..], "il") => Token::Nil,
 
@@ -97,7 +95,7 @@ impl Scanner {
                 match word_chars[1] {
                     'n' => Token::Fn,
                     'o' if word_chars[2] == 'r' => Token::For,
-                    'a' if check_keyword(&word_chars[2..], "lse") => Token::While,
+                    'a' if check_keyword(&word_chars[2..], "lse") => Token::False,
                     _ => { Token::Identifier }
                 }
             },
@@ -141,7 +139,7 @@ impl Scanner {
             }
             '-' => {
                 if self.matches('=') { Token::MinusEqual }
-                else if self.matches('+') { Token::MinusMinus }
+                else if self.matches('-') { Token::MinusMinus }
                 else { Token::Minus }
             }
 

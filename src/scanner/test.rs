@@ -37,3 +37,18 @@ fn scans_identifier() {
     assert_eq!(scanner.collect::<Vec<_>>(), vec![Token::Identifier]);
 }
 
+#[test]
+fn scans_complex_string() {
+    use Token::*;
+
+    let scanner = Scanner::new("for.while:return cc whine&&!==++--break,continue\
+    ;(){}[]$()exp+=-=*=/=%=^=^%*/-+true:h;false!nil?var/if else;fn::== =for");
+    assert_eq!(scanner.collect::<Vec<_>>(), vec![
+        For, Dot, While, Colon, Return, Identifier, Identifier, AmperAmper, BangEqual, Equal, PlusPlus,
+        MinusMinus, Break, Comma, Continue, Semicolon, LeftParen, RightParen, LeftBrace, RightBrace,
+        LeftBracket, RightBracket, DollarLeftParen, RightParen, Exp, PlusEqual, MinusEqual, StarEqual,
+        SlashEqual, PercEqual, CaretEqual, Caret, Perc, Star, Slash, Minus, Plus, True, Colon, Identifier,
+        Semicolon, False, Bang, Nil, Question, Var, Slash, If, Else, Semicolon, Fn, Colon, Colon,
+        EqualEqual, Equal, For
+    ]);
+}
