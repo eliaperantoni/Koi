@@ -1,3 +1,7 @@
+mod token;
+
+pub use token::Token;
+
 pub struct Scanner {
     chars: Vec<char>,
     current: usize,
@@ -142,69 +146,4 @@ impl Iterator for Scanner {
 
         panic!("unexpected character");
     }
-}
-
-#[derive(Debug)]
-pub enum Token {
-    Identifier,
-    IntLiteral,
-    FloatLiteral,
-    StringLiteral,
-
-    For,
-    While,
-    If,
-    Else,
-    Fn,
-    Return,
-    Break,
-    Continue,
-
-    DollarLeftParen,
-    LeftParen,
-    RightParen,
-    LeftBracket,
-    RightBracket,
-    LeftBrace,
-    RightBrace,
-
-    Bang,
-    BangEqual,
-    Equal,
-    EqualEqual,
-
-    PlusEqual,
-    MinusEqual,
-    StarEqual,
-    SlashEqual,
-    CaretEqual,
-    PercEqual,
-
-    Greater,
-    GreaterEqual,
-    Less,
-    LessEqual,
-
-    Plus,
-    Minus,
-    Star,
-    Slash,
-    Caret,
-    Perc,
-
-    PlusPlus,
-    MinusMinus,
-
-    True,
-    False,
-    Nil,
-
-    AmperAmper,
-    PipePipe,
-
-    Comma,
-    Semicolon,
-    Dot,
-    Question,
-    Colon,
 }
