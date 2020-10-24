@@ -45,11 +45,17 @@ impl Scanner {
     }
 }
 
+const WHITESPACE_CHARS: [char;4] = [' ', '\t', '\n', '\r'];
+
 impl Iterator for Scanner {
     type Item = Token;
 
     fn next(&mut self) -> Option<Self::Item> {
         self.start = self.current;
+
+        while !self.is_at_end() && WHITESPACE_CHARS.contains(&self.peek()) {
+            self.advance();
+        }
 
         if self.is_at_end() {
             return None;
