@@ -1,11 +1,18 @@
 mod token;
 
+#[cfg(test)]
+mod test;
+
 pub use token::Token;
 
 pub struct Scanner {
     chars: Vec<char>,
     current: usize,
     start: usize,
+}
+
+fn is_identifier_char(c: char) -> bool {
+    c.is_ascii_alphabetic() || c.is_ascii_digit() || c == '_'
 }
 
 impl Scanner {
@@ -27,128 +34,165 @@ impl Scanner {
         self.chars[self.current]
     }
 
-    fn matches(&mut self, target: &str) -> bool {
-        let target_chars = target.chars();
+    fn peek_n(&self, n: usize) -> char {
+        self.chars[self.current + n]
+    }
 
-        let mut i = self.current;
-
-        for target_char in target_chars {
-            if target_char == self.chars[i] {
-                i += 1;
-            } else {
-                return false;
-            }
-        };
-
-        self.current = i;
-        return true;
+    fn matches(&mut self, c: char) -> bool {
+        if self.peek() == c {
+            self.advance();
+            true
+        } else {
+            false
+        }
     }
 
     fn is_at_end(&self) -> bool {
-        self.current > self.chars.len() - 1
+        self.current >= self.chars.len()
     }
-}
 
-const WHITESPACE_CHARS: [char;4] = [' ', '\t', '\n', '\r'];
-
-impl Iterator for Scanner {
-    type Item = Token;
-
-    fn next(&mut self) -> Option<Self::Item> {
-        self.start = self.current;
+    fn consume_whitespace(&mut self) {
+        const WHITESPACE_CHARS: [char; 4] = [' ', '\t', '\n', '\r'];
 
         while !self.is_at_end() && WHITESPACE_CHARS.contains(&self.peek()) {
             self.advance();
         }
+    }
+
+    fn scan_token(&mut self) -> Option<Token> {
+        self.start = self.current;
+
+        self.consume_whitespace();
 
         if self.is_at_end() {
             return None;
         }
 
-        match self.advance() {
-            ',' => return Some(Token::Comma),
-            ':' => return Some(Token::Colon),
-            ';' => return Some(Token::Semicolon),
-            '?' => return Some(Token::Question),
-            '.' => return Some(Token::Dot),
+        Some(if is_identifier_char(self.peek()) {
+            self.scan_word()
+        } else {
+            self.scan_symbol()
+        })
+    }
 
-            '$' if self.matches("(") => return Some(Token::DollarLeftParen),
+    fn scan_word(&mut self) -> Token {
+        while !self.is_at_end() && is_identifier_char(self.peek()) {
+            self.advance();
+        }
 
-            '(' => return Some(Token::LeftParen),
-            ')' => return Some(Token::RightParen),
-            '[' => return Some(Token::LeftBracket),
-            ']' => return Some(Token::RightBracket),
-            '{' => return Some(Token::LeftBrace),
-            '}' => return Some(Token::RightBrace),
+        let word_chars = &self.chars[self.start..self.current];
 
-            '&' if self.matches("&") => return Some(Token::AmperAmper),
-            '|' if self.matches("|") => return Some(Token::PipePipe),
+        match word_chars[0] {
+            'i' if word_chars[1] == 'f' => Token::If,
 
-            '+' => {
-                return Some(
-                    if self.matches("=") { Token::PlusEqual }
-                    else if self.matches("+") { Token::PlusPlus }
-                    else { Token::Plus }
-                );
-            },
-            '-' => {
-                return Some(
-                    if self.matches("=") { Token::MinusEqual }
-                    else if self.matches("+") { Token::MinusMinus }
-                    else { Token::Minus }
-                );
-            },
-
-            '*' => {
-                return Some(if self.matches("=") { Token::StarEqual } else { Token::Star });
-            },
-            '/' => {
-                return Some(if self.matches("=") { Token::SlashEqual } else { Token::Slash });
-            },
-            '^' => {
-                return Some(if self.matches("=") { Token::CaretEqual } else { Token::Caret });
-            },
-            '%' => {
-                return Some(if self.matches("=") { Token::PercEqual } else { Token::Perc });
-            },
-
-            '>' => {
-                return Some(if self.matches("=") { Token::GreaterEqual } else { Token::Greater });
-            },
-            '<' => {
-                return Some(if self.matches("=") { Token::MinusEqual } else { Token::Minus });
-            },
-
-            '!' => {
-                return Some(if self.matches("=") { Token::BangEqual } else { Token::Bang });
-            },
-            '=' => {
-                return Some(if self.matches("=") { Token::EqualEqual } else { Token::Equal });
-            },
+            'w' if check_keyword(&word_chars[1..], "hile") => Token::While,
+            'v' if check_keyword(&word_chars[1..], "ar") => Token::Var,
+            'r' if check_keyword(&word_chars[1..], "eturn") => Token::Return,
+            'b' if check_keyword(&word_chars[1..], "eturn") => Token::Break,
+            'c' if check_keyword(&word_chars[1..], "eturn") => Token::Continue,
+            't' if check_keyword(&word_chars[1..], "rue") => Token::True,
+            'n' if check_keyword(&word_chars[1..], "il") => Token::Nil,
 
             'f' => {
-                if self.matches("or") { return Some(Token::For) }
-                else if self.matches("n") { return Some(Token::Fn) }
-                else if self.matches("alse") { return Some(Token::False) }
+                match word_chars[1] {
+                    'n' => Token::Fn,
+                    'o' if word_chars[2] == 'r' => Token::For,
+                    'a' if check_keyword(&word_chars[2..], "lse") => Token::While,
+                    _ => { Token::Identifier }
+                }
             },
 
             'e' => {
-                if self.matches("lse") { return Some(Token::Else) }
-                else if self.matches("xp") { return Some(Token::Exp) }
-            },
+                match word_chars[1] {
+                    'x' if word_chars[2] == 'p' => Token::Exp,
+                    'l' if check_keyword(&word_chars[2..], "se") => Token::Else,
+                    _ => { Token::Identifier }
+                }
+            }
 
-            'w' if self.matches("hile") => { return Some(Token::While) },
-            'i' if self.matches("f") => { return Some(Token::If) },
-            'r' if self.matches("eturn") => { return Some(Token::Return) },
-            'b' if self.matches("reak") => { return Some(Token::Break) },
-            'c' if self.matches("ontinue") => { return Some(Token::Continue) },
-            't' if self.matches("rue") => { return Some(Token::True) },
-            'n' if self.matches("il") => { return Some(Token::Nil) },
-            'v' if self.matches("ar") => { return Some(Token::Var) },
+            _ => { Token::Identifier }
+        }
+    }
 
-            _ => {}
-        };
+    fn scan_symbol(&mut self) -> Token {
+        match self.advance() {
+            ',' => Token::Comma,
+            ':' => Token::Colon,
+            ';' => Token::Semicolon,
+            '?' => Token::Question,
+            '.' => Token::Dot,
 
-        panic!("unexpected character");
+            '$' if self.matches('(') => Token::DollarLeftParen,
+
+            '(' => Token::LeftParen,
+            ')' => Token::RightParen,
+            '[' => Token::LeftBracket,
+            ']' => Token::RightBracket,
+            '{' => Token::LeftBrace,
+            '}' => Token::RightBrace,
+
+            '&' if self.matches('&') => Token::AmperAmper,
+            '|' if self.matches('|') => Token::PipePipe,
+
+            '+' => {
+                if self.matches('=') { Token::PlusEqual }
+                else if self.matches('+') { Token::PlusPlus }
+                else { Token::Plus }
+            }
+            '-' => {
+                if self.matches('=') { Token::MinusEqual }
+                else if self.matches('+') { Token::MinusMinus }
+                else { Token::Minus }
+            }
+
+            '*' => {
+                if self.matches('=') { Token::StarEqual }
+                else { Token::Star }
+            }
+            '/' => {
+                if self.matches('=') { Token::SlashEqual }
+                else { Token::Slash }
+            }
+            '^' => {
+                if self.matches('=') { Token::CaretEqual }
+                else { Token::Caret }
+            }
+            '%' => {
+                if self.matches('=') { Token::PercEqual }
+                else { Token::Perc }
+            }
+
+            '>' => {
+                if self.matches('=') { Token::GreaterEqual }
+                else { Token::Greater }
+            }
+            '<' => {
+                if self.matches('=') { Token::LessEqual }
+                else { Token::Less }
+            }
+
+            '!' => {
+                if self.matches('=') { Token::BangEqual }
+                else { Token::Bang }
+            }
+            '=' => {
+                if self.matches('=') { Token::EqualEqual }
+                else { Token::Equal }
+            }
+
+            _ => { panic!("could not scan symbol") }
+        }
+    }
+}
+
+fn check_keyword(source: &[char], target: &str) -> bool {
+    source == &target.chars().collect::<Vec<_>>()[..]
+}
+
+impl Iterator for Scanner {
+    type Item = Token;
+
+    fn next(&mut self) -> Option<Self::Item> {
+        self.scan_token()
     }
 }
