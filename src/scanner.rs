@@ -61,7 +61,6 @@ impl Iterator for Scanner {
             ';' => return Some(Token::Semicolon),
             '?' => return Some(Token::Question),
             '.' => return Some(Token::Dot),
-            _ => unreachable!()
 
             '$' if self.matches("(") => return Some(Token::DollarLeftParen),
 
@@ -116,9 +115,26 @@ impl Iterator for Scanner {
             '=' => {
                 return Some(if self.matches("=") { Token::EqualEqual } else { Token::Equal });
             },
+
+            'f' => {
+                if self.matches("or") { return Some(Token::For) }
+                else if self.matches("n") { return Some(Token::Fn) }
+                else if self.matches("alse") { return Some(Token::False) }
+            },
+
+            'w' if self.matches("hile") => { return Some(Token::While) },
+            'i' if self.matches("f") => { return Some(Token::If) },
+            'e' if self.matches("lse") => { return Some(Token::Else) },
+            'r' if self.matches("eturn") => { return Some(Token::Return) },
+            'b' if self.matches("reak") => { return Some(Token::Break) },
+            'c' if self.matches("ontinue") => { return Some(Token::Continue) },
+            't' if self.matches("rue") => { return Some(Token::True) },
+            'n' if self.matches("il") => { return Some(Token::Nil) },
+
+            _ => {}
         };
 
-        unreachable!();
+        panic!("unexpected character");
     }
 }
 
