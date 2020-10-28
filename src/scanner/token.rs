@@ -1,8 +1,12 @@
-#[derive(Eq, PartialEq, Debug)]
+#[derive(PartialEq, Debug)]
 pub enum Token {
     Identifier,
-    IntLiteral,
-    FloatLiteral,
+    IntLiteral {
+        value: i64,
+    },
+    FloatLiteral {
+        value: f64,
+    },
     StringLiteral {
         value: String,
     },

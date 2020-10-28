@@ -211,8 +211,35 @@ impl Scanner {
 
         Token::StringLiteral { value: string }
     }
+
     fn scan_number_literal(&mut self) -> Token {
-        Token::IntLiteral
+        let mut is_float = false;
+
+        while !self.is_at_end() && self.peek().is_ascii_digit() {
+            self.advance();
+        }
+
+        if !self.is_at_end() && self.peek() == '.' {
+            self.advance();
+
+            while !self.is_at_end() && self.peek().is_ascii_digit() {
+                self.advance();
+            }
+
+            is_float = true;
+        }
+
+        let lexeme: String = (&self.chars[self.start..self.current]).into_iter().collect();
+
+        if is_float {
+            Token::FloatLiteral {
+                value: lexeme.parse().expect("could not parse float literal")
+            }
+        } else {
+            Token::IntLiteral {
+                value: lexeme.parse().expect("could not parse int literal")
+            }
+        }
     }
 }
 

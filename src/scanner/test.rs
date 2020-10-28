@@ -68,3 +68,35 @@ fn scans_escaped_characters() {
         value: "\"{".to_owned(),
     }]);
 }
+
+#[test]
+fn scans_int_literals() {
+    let scanner = Scanner::new("12 3634 3333");
+    assert_eq!(scanner.collect::<Vec<_>>(), vec![
+        Token::IntLiteral {
+            value: 12,
+        },
+        Token::IntLiteral {
+            value: 3634,
+        },
+        Token::IntLiteral {
+            value: 3333,
+        },
+    ]);
+}
+
+#[test]
+fn scans_float_literal() {
+    let scanner = Scanner::new("3.14 10. .5");
+    assert_eq!(scanner.collect::<Vec<_>>(), vec![
+        Token::FloatLiteral {
+            value: 3.14,
+        },
+        Token::FloatLiteral {
+            value: 10.0,
+        },
+        Token::FloatLiteral {
+            value: 0.5,
+        },
+    ]);
+}
