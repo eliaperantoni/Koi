@@ -52,3 +52,19 @@ fn scans_complex_string() {
         EqualEqual, Equal, For
     ]);
 }
+
+#[test]
+fn scans_simple_string_literal() {
+    let scanner = Scanner::new("\"hello world\"");
+    assert_eq!(scanner.collect::<Vec<_>>(), vec![Token::StringLiteral {
+        value: "hello world".to_owned(),
+    }]);
+}
+
+#[test]
+fn scans_escaped_characters() {
+    let scanner = Scanner::new("\"\\\"\\{\"");
+    assert_eq!(scanner.collect::<Vec<_>>(), vec![Token::StringLiteral {
+        value: "\"{".to_owned(),
+    }]);
+}

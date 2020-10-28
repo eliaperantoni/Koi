@@ -3,7 +3,9 @@ pub enum Token {
     Identifier,
     IntLiteral,
     FloatLiteral,
-    StringLiteral,
+    StringLiteral {
+        value: String,
+    },
 
     For,
     While,

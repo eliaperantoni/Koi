@@ -31,7 +31,7 @@ impl Scanner {
     }
 
     fn peek(&self) -> char {
-        self.chars[self.current]
+        self.peek_n(0)
     }
 
     fn peek_n(&self, n: usize) -> char {
@@ -51,6 +51,12 @@ impl Scanner {
         self.current >= self.chars.len()
     }
 
+    fn remaining(&self) -> usize {
+        self.chars.len() - self.current
+    }
+
+    // Skips over any whitespace character leaving the scanner over a non-whitespace character or
+    // just over the characters array.
     fn consume_whitespace(&mut self) {
         while !self.is_at_end() && self.peek().is_ascii_whitespace() {
             self.advance();
@@ -66,11 +72,20 @@ impl Scanner {
             return None;
         }
 
-        Some(if is_identifier_char(self.peek()) {
-            self.scan_word()
-        } else {
-            self.scan_symbol()
-        })
+        let char = self.peek();
+
+        let token =
+            if char == '"' {
+                self.scan_string_literal()
+            } else if char.is_ascii_digit() || char == '.' && self.remaining() >= 2 && self.peek_n(1).is_ascii_digit() {
+                self.scan_number_literal()
+            } else if is_identifier_char(char) {
+                self.scan_word()
+            } else {
+                self.scan_symbol()
+            };
+
+        Some(token)
     }
 
     fn scan_word(&mut self) -> Token {
@@ -98,7 +113,7 @@ impl Scanner {
                     'a' if check_keyword(&word_chars[2..], "lse") => Token::False,
                     _ => { Token::Identifier }
                 }
-            },
+            }
 
             'e' => {
                 match word_chars[1] {
@@ -133,56 +148,75 @@ impl Scanner {
             '|' if self.matches('|') => Token::PipePipe,
 
             '+' => {
-                if self.matches('=') { Token::PlusEqual }
-                else if self.matches('+') { Token::PlusPlus }
-                else { Token::Plus }
+                if self.matches('=') { Token::PlusEqual } else if self.matches('+') { Token::PlusPlus } else { Token::Plus }
             }
             '-' => {
-                if self.matches('=') { Token::MinusEqual }
-                else if self.matches('-') { Token::MinusMinus }
-                else { Token::Minus }
+                if self.matches('=') { Token::MinusEqual } else if self.matches('-') { Token::MinusMinus } else { Token::Minus }
             }
 
             '*' => {
-                if self.matches('=') { Token::StarEqual }
-                else { Token::Star }
+                if self.matches('=') { Token::StarEqual } else { Token::Star }
             }
             '/' => {
-                if self.matches('=') { Token::SlashEqual }
-                else { Token::Slash }
+                if self.matches('=') { Token::SlashEqual } else { Token::Slash }
             }
             '^' => {
-                if self.matches('=') { Token::CaretEqual }
-                else { Token::Caret }
+                if self.matches('=') { Token::CaretEqual } else { Token::Caret }
             }
             '%' => {
-                if self.matches('=') { Token::PercEqual }
-                else { Token::Perc }
+                if self.matches('=') { Token::PercEqual } else { Token::Perc }
             }
 
             '>' => {
-                if self.matches('=') { Token::GreaterEqual }
-                else { Token::Greater }
+                if self.matches('=') { Token::GreaterEqual } else { Token::Greater }
             }
             '<' => {
-                if self.matches('=') { Token::LessEqual }
-                else { Token::Less }
+                if self.matches('=') { Token::LessEqual } else { Token::Less }
             }
 
             '!' => {
-                if self.matches('=') { Token::BangEqual }
-                else { Token::Bang }
+                if self.matches('=') { Token::BangEqual } else { Token::Bang }
             }
             '=' => {
-                if self.matches('=') { Token::EqualEqual }
-                else { Token::Equal }
+                if self.matches('=') { Token::EqualEqual } else { Token::Equal }
             }
 
             _ => { panic!("could not scan symbol") }
         }
     }
+
+    fn scan_string_literal(&mut self) -> Token {
+        // Consume the starting "
+        self.advance();
+
+        loop {
+            if self.peek() == '"' {
+                break;
+            }
+
+            if self.peek() == '\\' {
+                self.advance();
+                self.advance();
+                continue;
+            }
+
+            self.advance();
+        }
+
+        // Consume the closing "
+        self.advance();
+
+        let mut string: String = (&self.chars[self.start+1..self.current-1]).into_iter().collect();
+        string = string.chars().filter(|c| c != &'\\').collect();
+
+        Token::StringLiteral { value: string }
+    }
+    fn scan_number_literal(&mut self) -> Token {
+        Token::IntLiteral
+    }
 }
 
+// Checks that the char slice source matches the remaining part keyword
 fn check_keyword(source: &[char], target: &str) -> bool {
     source == &target.chars().collect::<Vec<_>>()[..]
 }
