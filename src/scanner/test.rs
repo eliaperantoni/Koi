@@ -62,6 +62,14 @@ fn scans_simple_string_literal() {
 }
 
 #[test]
+fn scans_string_literal_with_escape_chars() {
+    let scanner = Scanner::new("\"\\n\\t\\r\\\\\"");
+    assert_eq!(scanner.collect::<Vec<_>>(), vec![Token::StringLiteral {
+        value: "\n\t\r\\".to_owned(),
+    }]);
+}
+
+#[test]
 fn scans_escaped_characters() {
     let scanner = Scanner::new("\"\\\"\\{\"");
     assert_eq!(scanner.collect::<Vec<_>>(), vec![Token::StringLiteral {
@@ -99,4 +107,9 @@ fn scans_float_literal() {
             value: 0.5,
         },
     ]);
+}
+
+#[test]
+fn escapes_string() {
+    assert_eq!(escape_string("\\n\\t\\r\\\\".to_owned()), "\n\t\r\\");
 }

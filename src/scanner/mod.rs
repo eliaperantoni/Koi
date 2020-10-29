@@ -194,6 +194,7 @@ impl Scanner {
                 break;
             }
 
+            // Consume the backslash (will be filtered later) and the escaped character
             if self.peek() == '\\' {
                 self.advance();
                 self.advance();
@@ -207,7 +208,7 @@ impl Scanner {
         self.advance();
 
         let mut string: String = (&self.chars[self.start+1..self.current-1]).into_iter().collect();
-        string = string.chars().filter(|c| c != &'\\').collect();
+        let string = escape_string(string);
 
         Token::StringLiteral { value: string }
     }
@@ -254,4 +255,26 @@ impl Iterator for Scanner {
     fn next(&mut self) -> Option<Self::Item> {
         self.scan_token()
     }
+}
+
+fn escape_string(s: String) -> String {
+    let mut chars: Vec<char> = s.chars().collect();
+
+    let mut i = 0;
+    while i < chars.len() {
+        if chars[i] == '\\' {
+            chars.remove(i);
+
+            chars[i] = match chars[i] {
+                't' => '\t',
+                'n' => '\n',
+                'r' => '\r',
+                _ => chars[i],
+            }
+        }
+
+        i += 1;
+    }
+
+    chars.iter().collect()
 }
