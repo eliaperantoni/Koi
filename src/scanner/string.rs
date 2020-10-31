@@ -30,7 +30,7 @@ impl Scanner {
     }
 }
 
-fn escape_string(s: String) -> String {
+pub fn escape_string(s: String) -> String {
     let mut chars: Vec<char> = s.chars().collect();
 
     let mut i = 0;
@@ -51,8 +51,3 @@ fn escape_string(s: String) -> String {
 
     chars.iter().collect()
 }
-
-/*
-    "ciao {num} ciao"
-    "ciao " + num + " ciao"
- */

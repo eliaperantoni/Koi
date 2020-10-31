@@ -111,5 +111,5 @@ fn scans_float_literal() {
 
 #[test]
 fn escapes_string() {
-    assert_eq!(escape_string("\\n\\t\\r\\\\".to_owned()), "\n\t\r\\");
+    assert_eq!(string::escape_string("\\n\\t\\r\\\\".to_owned()), "\n\t\r\\");
 }
