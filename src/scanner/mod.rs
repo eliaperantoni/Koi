@@ -9,6 +9,8 @@ pub use token::Token;
 pub struct Scanner {
     chars: Vec<char>,
     current: usize,
+
+    interp_count: i8,
 }
 
 fn is_identifier_char(c: char) -> bool {
@@ -20,6 +22,7 @@ impl Scanner {
         Scanner {
             chars: source.chars().collect(),
             current: 0,
+            interp_count: 0,
         }
     }
 
@@ -73,6 +76,11 @@ impl Scanner {
 
         let token =
             if char == '"' {
+                self.advance();
+                self.scan_string_literal()
+            } else if char == '}' && self.interp_count > 0 {
+                self.advance();
+                self.interp_count -= 1;
                 self.scan_string_literal()
             } else if char.is_ascii_digit() || char == '.' && self.remaining() >= 2 && self.peek_n(1).is_ascii_digit() {
                 self.scan_number_literal()

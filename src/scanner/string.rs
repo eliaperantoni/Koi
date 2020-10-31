@@ -2,13 +2,14 @@ use super::*;
 
 impl Scanner {
     pub fn scan_string_literal(&mut self) -> Token {
-        // Consume the starting "
-        self.advance();
+        let mut does_interp = false;
 
         let mut chars: Vec<char> = Vec::new();
 
         loop {
             if self.peek() == '"' {
+                // Consume the closing "
+                self.advance();
                 break;
             }
 
@@ -29,17 +30,17 @@ impl Scanner {
             }
 
             if self.matches('{') {
+                does_interp = true;
+                self.interp_count += 1;
+                break;
             }
 
             chars.push(self.peek());
             self.advance();
         }
 
-        // Consume the closing "
-        self.advance();
-
         let string: String = chars.iter().collect();
 
-        Token::String { value: string, does_interp: false }
+        Token::String { value: string, does_interp }
     }
 }
