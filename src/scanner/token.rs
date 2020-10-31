@@ -1,14 +1,15 @@
 #[derive(PartialEq, Debug)]
 pub enum Token {
     Identifier,
-    IntLiteral {
+    Int {
         value: i64,
     },
-    FloatLiteral {
+    Float {
         value: f64,
     },
-    StringLiteral {
+    String {
         value: String,
+        does_interp: bool,
     },
 
     For,

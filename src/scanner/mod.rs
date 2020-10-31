@@ -9,7 +9,6 @@ pub use token::Token;
 pub struct Scanner {
     chars: Vec<char>,
     current: usize,
-    start: usize,
 }
 
 fn is_identifier_char(c: char) -> bool {
@@ -21,7 +20,6 @@ impl Scanner {
         Scanner {
             chars: source.chars().collect(),
             current: 0,
-            start: 0,
         }
     }
 
@@ -67,8 +65,6 @@ impl Scanner {
     fn scan_token(&mut self) -> Option<Token> {
         self.consume_whitespace();
 
-        self.start = self.current;
-
         if self.is_at_end() {
             return None;
         }
@@ -90,11 +86,13 @@ impl Scanner {
     }
 
     fn scan_word(&mut self) -> Token {
+        let start = self.current;
+
         while !self.is_at_end() && is_identifier_char(self.peek()) {
             self.advance();
         }
 
-        let word_chars = &self.chars[self.start..self.current];
+        let word_chars = &self.chars[start..self.current];
 
         match word_chars[0] {
             'i' if word_chars[1] == 'f' => Token::If,
@@ -189,6 +187,8 @@ impl Scanner {
     fn scan_number_literal(&mut self) -> Token {
         let mut is_float = false;
 
+        let start = self.current;
+
         while !self.is_at_end() && self.peek().is_ascii_digit() {
             self.advance();
         }
@@ -203,14 +203,14 @@ impl Scanner {
             is_float = true;
         }
 
-        let lexeme: String = (&self.chars[self.start..self.current]).into_iter().collect();
+        let lexeme: String = (&self.chars[start..self.current]).into_iter().collect();
 
         if is_float {
-            Token::FloatLiteral {
+            Token::Float {
                 value: lexeme.parse().expect("could not parse float literal")
             }
         } else {
-            Token::IntLiteral {
+            Token::Int {
                 value: lexeme.parse().expect("could not parse int literal")
             }
         }

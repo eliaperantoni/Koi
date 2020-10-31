@@ -56,24 +56,18 @@ fn scans_complex_string() {
 #[test]
 fn scans_simple_string_literal() {
     let scanner = Scanner::new("\"hello world\"");
-    assert_eq!(scanner.collect::<Vec<_>>(), vec![Token::StringLiteral {
+    assert_eq!(scanner.collect::<Vec<_>>(), vec![Token::String {
         value: "hello world".to_owned(),
+        does_interp: false,
     }]);
 }
 
 #[test]
 fn scans_string_literal_with_escape_chars() {
     let scanner = Scanner::new("\"\\n\\t\\r\\\\\"");
-    assert_eq!(scanner.collect::<Vec<_>>(), vec![Token::StringLiteral {
+    assert_eq!(scanner.collect::<Vec<_>>(), vec![Token::String {
         value: "\n\t\r\\".to_owned(),
-    }]);
-}
-
-#[test]
-fn scans_escaped_characters() {
-    let scanner = Scanner::new("\"\\\"\\{\"");
-    assert_eq!(scanner.collect::<Vec<_>>(), vec![Token::StringLiteral {
-        value: "\"{".to_owned(),
+        does_interp: false,
     }]);
 }
 
@@ -81,13 +75,13 @@ fn scans_escaped_characters() {
 fn scans_int_literals() {
     let scanner = Scanner::new("12 3634 3333");
     assert_eq!(scanner.collect::<Vec<_>>(), vec![
-        Token::IntLiteral {
+        Token::Int {
             value: 12,
         },
-        Token::IntLiteral {
+        Token::Int {
             value: 3634,
         },
-        Token::IntLiteral {
+        Token::Int {
             value: 3333,
         },
     ]);
@@ -97,19 +91,14 @@ fn scans_int_literals() {
 fn scans_float_literal() {
     let scanner = Scanner::new("3.14 10. .5");
     assert_eq!(scanner.collect::<Vec<_>>(), vec![
-        Token::FloatLiteral {
+        Token::Float {
             value: 3.14,
         },
-        Token::FloatLiteral {
+        Token::Float {
             value: 10.0,
         },
-        Token::FloatLiteral {
+        Token::Float {
             value: 0.5,
         },
     ]);
-}
-
-#[test]
-fn escapes_string() {
-    assert_eq!(string::escape_string("\\n\\t\\r\\\\".to_owned()), "\n\t\r\\");
 }

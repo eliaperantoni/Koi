@@ -5,49 +5,41 @@ impl Scanner {
         // Consume the starting "
         self.advance();
 
+        let mut chars: Vec<char> = Vec::new();
+
         loop {
             if self.peek() == '"' {
                 break;
             }
 
-            // Consume the backslash (will be filtered later) and the escaped character
-            if self.peek() == '\\' {
+            if self.matches('\\') {
+                let char = self.peek();
+
+                chars.push(match char {
+                    't' => '\t',
+                    'n' => '\n',
+                    'r' => '\r',
+                    _ => char,
+                });
+
+                // Consume escaped character
                 self.advance();
-                self.advance();
+
                 continue;
             }
 
+            if self.matches('{') {
+            }
+
+            chars.push(self.peek());
             self.advance();
         }
 
         // Consume the closing "
         self.advance();
 
-        let mut string: String = (&self.chars[self.start+1..self.current-1]).into_iter().collect();
-        let string = escape_string(string);
+        let string: String = chars.iter().collect();
 
-        Token::StringLiteral { value: string }
+        Token::String { value: string, does_interp: false }
     }
-}
-
-pub fn escape_string(s: String) -> String {
-    let mut chars: Vec<char> = s.chars().collect();
-
-    let mut i = 0;
-    while i < chars.len() {
-        if chars[i] == '\\' {
-            chars.remove(i);
-
-            chars[i] = match chars[i] {
-                't' => '\t',
-                'n' => '\n',
-                'r' => '\r',
-                _ => chars[i],
-            }
-        }
-
-        i += 1;
-    }
-
-    chars.iter().collect()
 }
