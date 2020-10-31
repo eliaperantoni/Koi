@@ -102,3 +102,147 @@ fn scans_float_literal() {
         },
     ]);
 }
+
+#[test]
+fn scans_simple_interpolated_string() {
+    let scanner = Scanner::new("\"a{1}b\"");
+    assert_eq!(scanner.collect::<Vec<_>>(), vec![
+        Token::String {
+            value: "a".to_owned(),
+            does_interp: true,
+        },
+        Token::Int {
+            value: 1,
+        },
+        Token::String {
+            value: "b".to_owned(),
+            does_interp: false,
+        },
+    ]);
+}
+
+#[test]
+fn scans_complex_interpolated_string() {
+    let scanner = Scanner::new("\"{1}a{2+2}b{3}\"");
+
+    let interp_count = scanner.interp_count;
+    let tokens = scanner.collect::<Vec<_>>();
+
+    assert_eq!(tokens, vec![
+        Token::String {
+            value: "".to_owned(),
+            does_interp: true,
+        },
+        Token::Int {
+            value: 1,
+        },
+        Token::String {
+            value: "a".to_owned(),
+            does_interp: true,
+        },
+        Token::Int {
+            value: 2,
+        },
+        Token::Plus,
+        Token::Int {
+            value: 2,
+        },
+        Token::String {
+            value: "b".to_owned(),
+            does_interp: true,
+        },
+        Token::Int {
+            value: 3,
+        },
+        Token::String {
+            value: "".to_owned(),
+            does_interp: false,
+        },
+    ]);
+
+    assert_eq!(interp_count, 0);
+}
+
+#[test]
+fn scans_completely_interpolated_string() {
+    let scanner = Scanner::new("\"{1}\"");
+    assert_eq!(scanner.collect::<Vec<_>>(), vec![
+        Token::String {
+            value: "".to_owned(),
+            does_interp: true,
+        },
+        Token::Int {
+            value: 1,
+        },
+        Token::String {
+            value: "".to_owned(),
+            does_interp: false,
+        },
+    ]);
+}
+
+
+// This is wrong and the issue will be picked up by the parser but it's nice that the scanner keeps
+// working as intended even in these edge cases
+#[test]
+fn scans_empty_interpolation() {
+    let scanner = Scanner::new("\"a{}b{}\"");
+
+    let interp_count = scanner.interp_count;
+    let tokens = scanner.collect::<Vec<_>>();
+
+    assert_eq!(tokens, vec![
+        Token::String {
+            value: "a".to_owned(),
+            does_interp: true,
+        },
+        Token::String {
+            value: "b".to_owned(),
+            does_interp: true,
+        },
+        Token::String {
+            value: "".to_owned(),
+            does_interp: false,
+        },
+    ]);
+
+    assert_eq!(interp_count, 0);
+}
+
+#[test]
+fn scans_nested_interpolated_string() {
+    let scanner = Scanner::new("\"l1{\"l2{\"l3\"+\"innermost\"}\"}l1end\"");
+
+    let interp_count = scanner.interp_count;
+    let tokens = scanner.collect::<Vec<_>>();
+
+    assert_eq!(tokens, vec![
+        Token::String {
+            value: "l1".to_owned(),
+            does_interp: true,
+        },
+        Token::String {
+            value: "l2".to_owned(),
+            does_interp: true,
+        },
+        Token::String {
+            value: "l3".to_owned(),
+            does_interp: false,
+        },
+        Token::Plus,
+        Token::String {
+            value: "innermost".to_owned(),
+            does_interp: false,
+        },
+        Token::String {
+            value: "".to_owned(),
+            does_interp: false,
+        },
+        Token::String {
+            value: "l1end".to_owned(),
+            does_interp: false,
+        },
+    ]);
+
+    assert_eq!(interp_count, 0);
+}
