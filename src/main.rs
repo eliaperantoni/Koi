@@ -4,7 +4,6 @@ use std::fs;
 use std::env::args;
 
 use scanner::Scanner;
-use scanner::Token;
 
 fn main() {
     let path = args().nth(1).unwrap_or(String::from("usage: ampere PATH"));

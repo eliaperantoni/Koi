@@ -27,7 +27,7 @@ fn stops_scanning() {
 #[test]
 #[should_panic]
 fn panics_unexpected_symbol() {
-    let mut scanner = Scanner::new("§");
+    let scanner = Scanner::new("§");
     scanner.get_tokens();
 }
 
