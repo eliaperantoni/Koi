@@ -14,5 +14,5 @@ fn main() {
 
     let scanner= Scanner::new(&source);
 
-    let tokens: Vec<Token> = scanner.collect();
+    let tokens = scanner.get_tokens();
 }

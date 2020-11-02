@@ -10,7 +10,7 @@ pub struct Scanner {
     chars: Vec<char>,
     current: usize,
 
-    interp_count: i8,
+    tokens: Vec<Token>,
 }
 
 fn is_identifier_char(c: char) -> bool {
@@ -22,11 +22,43 @@ impl Scanner {
         Scanner {
             chars: source.chars().collect(),
             current: 0,
-            interp_count: 0,
+            tokens: Vec::new(),
+        }
+    }
+
+    pub fn get_tokens(mut self) -> Vec<Token> {
+        self.scan_tokens(false);
+        self.tokens
+    }
+
+    pub fn scan_tokens(&mut self, in_interpolation: bool) {
+        loop {
+            self.consume_whitespace();
+
+            if self.is_at_end() {
+                return;
+            }
+
+            if in_interpolation && self.peek() == '}' {
+                return;
+            } else if self.peek() == '"' {
+                self.scan_string_literal();
+            } else if self.peek().is_ascii_digit() || self.peek() == '.' && self.remaining() >= 2 && self.peek_n(1).is_ascii_digit() {
+                self.scan_number_literal();
+            } else if is_identifier_char(self.peek()) {
+                self.scan_word();
+            } else {
+                self.scan_symbol();
+            };
         }
     }
 
     fn advance(&mut self) -> char {
+        self.advance_n(1)
+    }
+
+    fn advance_n(&mut self, n: usize) -> char {
+        self.current += n - 1;
         let result = self.peek();
         self.current += 1;
         result
@@ -65,35 +97,7 @@ impl Scanner {
         }
     }
 
-    fn scan_token(&mut self) -> Option<Token> {
-        self.consume_whitespace();
-
-        if self.is_at_end() {
-            return None;
-        }
-
-        let char = self.peek();
-
-        let token =
-            if char == '"' {
-                self.advance();
-                self.scan_string_literal()
-            } else if char == '}' && self.interp_count > 0 {
-                self.advance();
-                self.interp_count -= 1;
-                self.scan_string_literal()
-            } else if char.is_ascii_digit() || char == '.' && self.remaining() >= 2 && self.peek_n(1).is_ascii_digit() {
-                self.scan_number_literal()
-            } else if is_identifier_char(char) {
-                self.scan_word()
-            } else {
-                self.scan_symbol()
-            };
-
-        Some(token)
-    }
-
-    fn scan_word(&mut self) -> Token {
+    fn scan_word(&mut self)  {
         let start = self.current;
 
         while !self.is_at_end() && is_identifier_char(self.peek()) {
@@ -102,7 +106,7 @@ impl Scanner {
 
         let word_chars = &self.chars[start..self.current];
 
-        match word_chars[0] {
+        let token = match word_chars[0] {
             'i' if word_chars[1] == 'f' => Token::If,
 
             'w' if check_keyword(&word_chars[1..], "hile") => Token::While,
@@ -131,11 +135,13 @@ impl Scanner {
             }
 
             _ => { Token::Identifier }
-        }
+        };
+
+        self.tokens.push(token);
     }
 
-    fn scan_symbol(&mut self) -> Token {
-        match self.advance() {
+    fn scan_symbol(&mut self) {
+        let token = match self.advance() {
             ',' => Token::Comma,
             ':' => Token::Colon,
             ';' => Token::Semicolon,
@@ -189,10 +195,12 @@ impl Scanner {
             }
 
             _ => { panic!("could not scan symbol") }
-        }
+        };
+
+        self.tokens.push(token);
     }
 
-    fn scan_number_literal(&mut self) -> Token {
+    fn scan_number_literal(&mut self) {
         let mut is_float = false;
 
         let start = self.current;
@@ -213,7 +221,7 @@ impl Scanner {
 
         let lexeme: String = (&self.chars[start..self.current]).into_iter().collect();
 
-        if is_float {
+        let token = if is_float {
             Token::Float {
                 value: lexeme.parse().expect("could not parse float literal")
             }
@@ -221,19 +229,13 @@ impl Scanner {
             Token::Int {
                 value: lexeme.parse().expect("could not parse int literal")
             }
-        }
+        };
+
+        self.tokens.push(token);
     }
 }
 
 // Checks that the char slice source matches the remaining part keyword
 fn check_keyword(source: &[char], target: &str) -> bool {
     source == &target.chars().collect::<Vec<_>>()[..]
-}
-
-impl Iterator for Scanner {
-    type Item = Token;
-
-    fn next(&mut self) -> Option<Self::Item> {
-        self.scan_token()
-    }
 }

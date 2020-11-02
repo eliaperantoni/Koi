@@ -3,38 +3,38 @@ use super::*;
 #[test]
 fn ignores_whitespace() {
     let scanner = Scanner::new("    \r\n.");
-    assert_eq!(scanner.collect::<Vec<_>>(), vec![Token::Dot]);
+    assert_eq!(scanner.get_tokens(), vec![Token::Dot]);
 }
 
 #[test]
 fn scans_empty_string() {
     let scanner = Scanner::new("");
-    assert_eq!(scanner.collect::<Vec<_>>(), vec![]);
+    assert_eq!(scanner.get_tokens(), vec![]);
 }
 
 #[test]
 fn scans_keyword() {
     let scanner = Scanner::new("while");
-    assert_eq!(scanner.collect::<Vec<_>>(), vec![Token::While]);
+    assert_eq!(scanner.get_tokens(), vec![Token::While]);
 }
 
 #[test]
 fn stops_scanning() {
     let scanner = Scanner::new(".");
-    assert_eq!(scanner.collect::<Vec<_>>(), vec![Token::Dot]);
+    assert_eq!(scanner.get_tokens(), vec![Token::Dot]);
 }
 
 #[test]
 #[should_panic]
 fn panics_unexpected_symbol() {
     let mut scanner = Scanner::new("§");
-    scanner.next();
+    scanner.get_tokens();
 }
 
 #[test]
 fn scans_identifier() {
     let scanner = Scanner::new("columbia");
-    assert_eq!(scanner.collect::<Vec<_>>(), vec![Token::Identifier]);
+    assert_eq!(scanner.get_tokens(), vec![Token::Identifier]);
 }
 
 #[test]
@@ -43,7 +43,7 @@ fn scans_complex_string() {
 
     let scanner = Scanner::new("for.while:return cc whine&&!==++--break,continue\
     ;(){}[]$()exp+=-=*=/=%=^=^%*/-+true:h;false!nil?var/if else;fn::== =for");
-    assert_eq!(scanner.collect::<Vec<_>>(), vec![
+    assert_eq!(scanner.get_tokens(), vec![
         For, Dot, While, Colon, Return, Identifier, Identifier, AmperAmper, BangEqual, Equal, PlusPlus,
         MinusMinus, Break, Comma, Continue, Semicolon, LeftParen, RightParen, LeftBrace, RightBrace,
         LeftBracket, RightBracket, DollarLeftParen, RightParen, Exp, PlusEqual, MinusEqual, StarEqual,
@@ -56,7 +56,7 @@ fn scans_complex_string() {
 #[test]
 fn scans_simple_string_literal() {
     let scanner = Scanner::new("\"hello world\"");
-    assert_eq!(scanner.collect::<Vec<_>>(), vec![Token::String {
+    assert_eq!(scanner.get_tokens(), vec![Token::String {
         value: "hello world".to_owned(),
         does_interp: false,
     }]);
@@ -65,7 +65,7 @@ fn scans_simple_string_literal() {
 #[test]
 fn scans_string_literal_with_escape_chars() {
     let scanner = Scanner::new("\"\\n\\t\\r\\\\\"");
-    assert_eq!(scanner.collect::<Vec<_>>(), vec![Token::String {
+    assert_eq!(scanner.get_tokens(), vec![Token::String {
         value: "\n\t\r\\".to_owned(),
         does_interp: false,
     }]);
@@ -74,7 +74,7 @@ fn scans_string_literal_with_escape_chars() {
 #[test]
 fn scans_int_literals() {
     let scanner = Scanner::new("12 3634 3333");
-    assert_eq!(scanner.collect::<Vec<_>>(), vec![
+    assert_eq!(scanner.get_tokens(), vec![
         Token::Int {
             value: 12,
         },
@@ -90,7 +90,7 @@ fn scans_int_literals() {
 #[test]
 fn scans_float_literal() {
     let scanner = Scanner::new("3.14 10. .5");
-    assert_eq!(scanner.collect::<Vec<_>>(), vec![
+    assert_eq!(scanner.get_tokens(), vec![
         Token::Float {
             value: 3.14,
         },
@@ -106,7 +106,7 @@ fn scans_float_literal() {
 #[test]
 fn scans_simple_interpolated_string() {
     let scanner = Scanner::new("\"a{1}b\"");
-    assert_eq!(scanner.collect::<Vec<_>>(), vec![
+    assert_eq!(scanner.get_tokens(), vec![
         Token::String {
             value: "a".to_owned(),
             does_interp: true,
@@ -124,11 +124,7 @@ fn scans_simple_interpolated_string() {
 #[test]
 fn scans_complex_interpolated_string() {
     let scanner = Scanner::new("\"{1}a{2+2}b{3}\"");
-
-    let interp_count = scanner.interp_count;
-    let tokens = scanner.collect::<Vec<_>>();
-
-    assert_eq!(tokens, vec![
+    assert_eq!(scanner.get_tokens(), vec![
         Token::String {
             value: "".to_owned(),
             does_interp: true,
@@ -159,14 +155,12 @@ fn scans_complex_interpolated_string() {
             does_interp: false,
         },
     ]);
-
-    assert_eq!(interp_count, 0);
 }
 
 #[test]
 fn scans_completely_interpolated_string() {
     let scanner = Scanner::new("\"{1}\"");
-    assert_eq!(scanner.collect::<Vec<_>>(), vec![
+    assert_eq!(scanner.get_tokens(), vec![
         Token::String {
             value: "".to_owned(),
             does_interp: true,
@@ -187,11 +181,7 @@ fn scans_completely_interpolated_string() {
 #[test]
 fn scans_empty_interpolation() {
     let scanner = Scanner::new("\"a{}b{}\"");
-
-    let interp_count = scanner.interp_count;
-    let tokens = scanner.collect::<Vec<_>>();
-
-    assert_eq!(tokens, vec![
+    assert_eq!(scanner.get_tokens(), vec![
         Token::String {
             value: "a".to_owned(),
             does_interp: true,
@@ -205,18 +195,12 @@ fn scans_empty_interpolation() {
             does_interp: false,
         },
     ]);
-
-    assert_eq!(interp_count, 0);
 }
 
 #[test]
 fn scans_nested_interpolated_string() {
     let scanner = Scanner::new("\"l1{\"l2{\"l3\"+\"innermost\"}\"}l1end\"");
-
-    let interp_count = scanner.interp_count;
-    let tokens = scanner.collect::<Vec<_>>();
-
-    assert_eq!(tokens, vec![
+    assert_eq!(scanner.get_tokens(), vec![
         Token::String {
             value: "l1".to_owned(),
             does_interp: true,
@@ -243,6 +227,4 @@ fn scans_nested_interpolated_string() {
             does_interp: false,
         },
     ]);
-
-    assert_eq!(interp_count, 0);
 }
