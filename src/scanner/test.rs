@@ -42,14 +42,13 @@ fn scans_complex_string() {
     use Token::*;
 
     let scanner = Scanner::new("for.while:return cc whine&&!==++--break,continue\
-    ;(){}[]$()exp+=-=*=/=%=^=^%*/-+true:h;false!nil?var/if else;fn::== =for");
+    ;(){}[]exp+=-=*=/=%=^=^%*/-+true:h;false!nil?var/if else;fn::== =for");
     assert_eq!(scanner.get_tokens(), vec![
         For, Dot, While, Colon, Return, Identifier, Identifier, AmperAmper, BangEqual, Equal, PlusPlus,
         MinusMinus, Break, Comma, Continue, Semicolon, LeftParen, RightParen, LeftBrace, RightBrace,
-        LeftBracket, RightBracket, DollarLeftParen, RightParen, Exp, PlusEqual, MinusEqual, StarEqual,
-        SlashEqual, PercEqual, CaretEqual, Caret, Perc, Star, Slash, Minus, Plus, True, Colon, Identifier,
-        Semicolon, False, Bang, Nil, Question, Var, Slash, If, Else, Semicolon, Fn, Colon, Colon,
-        EqualEqual, Equal, For
+        LeftBracket, RightBracket, Exp, PlusEqual, MinusEqual, StarEqual, SlashEqual, PercEqual,
+        CaretEqual, Caret, Perc, Star, Slash, Minus, Plus, True, Colon, Identifier, Semicolon, False,
+        Bang, Nil, Question, Var, Slash, If, Else, Semicolon, Fn, Colon, Colon, EqualEqual, Equal, For
     ]);
 }
 
@@ -59,6 +58,8 @@ fn scans_simple_string_literal() {
     assert_eq!(scanner.get_tokens(), vec![Token::String {
         value: "hello world".to_owned(),
         does_interp: false,
+        begins_cmd: false,
+        ends_cmd: false,
     }]);
 }
 
@@ -68,6 +69,8 @@ fn scans_string_literal_with_escape_chars() {
     assert_eq!(scanner.get_tokens(), vec![Token::String {
         value: "\n\t\r\\".to_owned(),
         does_interp: false,
+        begins_cmd: false,
+        ends_cmd: false,
     }]);
 }
 
@@ -110,6 +113,8 @@ fn scans_simple_interpolated_string() {
         Token::String {
             value: "a".to_owned(),
             does_interp: true,
+            begins_cmd: false,
+            ends_cmd: false,
         },
         Token::Int {
             value: 1,
@@ -117,6 +122,8 @@ fn scans_simple_interpolated_string() {
         Token::String {
             value: "b".to_owned(),
             does_interp: false,
+            begins_cmd: false,
+            ends_cmd: false,
         },
     ]);
 }
@@ -128,6 +135,8 @@ fn scans_complex_interpolated_string() {
         Token::String {
             value: "".to_owned(),
             does_interp: true,
+            begins_cmd: false,
+            ends_cmd: false,
         },
         Token::Int {
             value: 1,
@@ -135,6 +144,8 @@ fn scans_complex_interpolated_string() {
         Token::String {
             value: "a".to_owned(),
             does_interp: true,
+            begins_cmd: false,
+            ends_cmd: false,
         },
         Token::Int {
             value: 2,
@@ -146,6 +157,8 @@ fn scans_complex_interpolated_string() {
         Token::String {
             value: "b".to_owned(),
             does_interp: true,
+            begins_cmd: false,
+            ends_cmd: false,
         },
         Token::Int {
             value: 3,
@@ -153,6 +166,8 @@ fn scans_complex_interpolated_string() {
         Token::String {
             value: "".to_owned(),
             does_interp: false,
+            begins_cmd: false,
+            ends_cmd: false,
         },
     ]);
 }
@@ -164,6 +179,8 @@ fn scans_completely_interpolated_string() {
         Token::String {
             value: "".to_owned(),
             does_interp: true,
+            begins_cmd: false,
+            ends_cmd: false,
         },
         Token::Int {
             value: 1,
@@ -171,6 +188,8 @@ fn scans_completely_interpolated_string() {
         Token::String {
             value: "".to_owned(),
             does_interp: false,
+            begins_cmd: false,
+            ends_cmd: false,
         },
     ]);
 }
@@ -185,14 +204,20 @@ fn scans_empty_interpolation() {
         Token::String {
             value: "a".to_owned(),
             does_interp: true,
+            begins_cmd: false,
+            ends_cmd: false,
         },
         Token::String {
             value: "b".to_owned(),
             does_interp: true,
+            begins_cmd: false,
+            ends_cmd: false,
         },
         Token::String {
             value: "".to_owned(),
             does_interp: false,
+            begins_cmd: false,
+            ends_cmd: false,
         },
     ]);
 }
@@ -204,27 +229,39 @@ fn scans_nested_interpolated_string() {
         Token::String {
             value: "l1".to_owned(),
             does_interp: true,
+            begins_cmd: false,
+            ends_cmd: false,
         },
         Token::String {
             value: "l2".to_owned(),
             does_interp: true,
+            begins_cmd: false,
+            ends_cmd: false,
         },
         Token::String {
             value: "l3".to_owned(),
             does_interp: false,
+            begins_cmd: false,
+            ends_cmd: false,
         },
         Token::Plus,
         Token::String {
             value: "innermost".to_owned(),
             does_interp: false,
+            begins_cmd: false,
+            ends_cmd: false,
         },
         Token::String {
             value: "".to_owned(),
             does_interp: false,
+            begins_cmd: false,
+            ends_cmd: false,
         },
         Token::String {
             value: "l1end".to_owned(),
             does_interp: false,
+            begins_cmd: false,
+            ends_cmd: false,
         },
     ]);
 }

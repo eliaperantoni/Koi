@@ -43,6 +43,8 @@ impl Scanner {
                 return;
             } else if self.peek() == '"' {
                 self.scan_string_literal();
+            } else if self.peek() == '$' && self.remaining() >= 2 && self.peek_n(1) == '(' {
+                self.scan_command();
             } else if self.peek().is_ascii_digit() || self.peek() == '.' && self.remaining() >= 2 && self.peek_n(1).is_ascii_digit() {
                 self.scan_number_literal();
             } else if is_identifier_char(self.peek()) {
@@ -97,6 +99,26 @@ impl Scanner {
         }
     }
 
+    fn scan_command(&mut self) {
+        // Consume initial $(
+        self.advance_n(2);
+
+        while self.peek() != ')' {
+            self.consume_whitespace();
+
+            if self.peek() == '"' {
+                self.scan_string_literal();
+            } else {
+                self.scan_string(true);
+            }
+
+            self.consume_whitespace();
+        }
+
+        // Consume final )
+        self.advance();
+    }
+
     fn scan_word(&mut self)  {
         let start = self.current;
 
@@ -147,8 +169,6 @@ impl Scanner {
             ';' => Token::Semicolon,
             '?' => Token::Question,
             '.' => Token::Dot,
-
-            '$' if self.matches('(') => Token::DollarLeftParen,
 
             '(' => Token::LeftParen,
             ')' => Token::RightParen,

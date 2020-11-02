@@ -15,4 +15,5 @@ fn main() {
     let scanner= Scanner::new(&source);
 
     let tokens = scanner.get_tokens();
+    println!("{:?}", tokens);
 }

@@ -10,6 +10,8 @@ pub enum Token {
     String {
         value: String,
         does_interp: bool,
+        begins_cmd: bool,
+        ends_cmd: bool,
     },
 
     For,
@@ -23,7 +25,6 @@ pub enum Token {
     Var,
     Exp,
 
-    DollarLeftParen,
     LeftParen,
     RightParen,
     LeftBracket,

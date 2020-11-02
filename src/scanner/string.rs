@@ -5,13 +5,28 @@ impl Scanner {
         // Consume initial "
         self.advance();
 
+        self.scan_string(false);
+
+        // Consume final "
+        self.advance();
+    }
+
+    pub fn scan_string(&mut self, in_command: bool) {
         loop {
             let mut chars: Vec<char> = Vec::new();
 
-            while self.peek() != '"' && self.peek() != '{' {
+            loop {
+                if self.peek() == '"' || self.peek() == '{' {
+                    break;
+                }
+
+                if in_command && (self.peek() == ' ' || self.peek() == ')') {
+                    break;
+                }
+
                 if self.peek() == '\\' {
                     self.advance();
-                    
+
                     let char = self.peek();
 
                     chars.push(match char {
@@ -32,7 +47,12 @@ impl Scanner {
             }
 
             let string: String = chars.iter().collect();
-            self.tokens.push(Token::String { value: string, does_interp: self.peek() == '{' });
+            self.tokens.push(Token::String {
+                value: string,
+                does_interp: self.peek() == '{',
+                begins_cmd: false,
+                ends_cmd: false,
+            });
 
             if self.peek() == '{' {
                 self.advance();
@@ -42,8 +62,5 @@ impl Scanner {
                 break;
             }
         }
-
-        // Consume final "
-        self.advance();
     }
 }
