@@ -9,8 +9,6 @@ pub use token::Token;
 pub struct Scanner {
     chars: Vec<char>,
     current: usize,
-
-    tokens: Vec<Token>,
 }
 
 fn is_identifier_char(c: char) -> bool {
@@ -22,35 +20,37 @@ impl Scanner {
         Scanner {
             chars: source.chars().collect(),
             current: 0,
-            tokens: Vec::new(),
         }
     }
 
     pub fn get_tokens(mut self) -> Vec<Token> {
-        self.scan_tokens(false);
-        self.tokens
+        self.scan_tokens(false)
     }
 
-    pub fn scan_tokens(&mut self, in_interpolation: bool) {
+    pub fn scan_tokens(&mut self, in_interpolation: bool) -> Vec<Token> {
+        let mut tokens = Vec::new();
+
         loop {
             self.consume_whitespace();
 
             if self.is_at_end() {
-                return;
+                return tokens;
             }
 
             if in_interpolation && self.peek() == '}' {
-                return;
+                return tokens;
             } else if self.peek() == '"' {
-                self.scan_string_literal();
+                let mut new_tokens = self.scan_string_literal();
+                tokens.append(&mut new_tokens);
             } else if self.peek() == '$' && self.remaining() >= 2 && self.peek_n(1) == '(' {
-                self.scan_command();
+                let mut new_tokens = self.scan_command();
+                tokens.append(&mut new_tokens);
             } else if self.peek().is_ascii_digit() || self.peek() == '.' && self.remaining() >= 2 && self.peek_n(1).is_ascii_digit() {
-                self.scan_number_literal();
+                tokens.push(self.scan_number_literal());
             } else if is_identifier_char(self.peek()) {
-                self.scan_word();
+                tokens.push(self.scan_word());
             } else {
-                self.scan_symbol();
+                tokens.push(self.scan_symbol());
             };
         }
     }
@@ -99,27 +99,49 @@ impl Scanner {
         }
     }
 
-    fn scan_command(&mut self) {
+    fn scan_command(&mut self) -> Vec<Token> {
+        let mut tokens = Vec::new();
+
         // Consume initial $(
         self.advance_n(2);
 
         while self.peek() != ')' {
             self.consume_whitespace();
 
-            if self.peek() == '"' {
-                self.scan_string_literal();
+            let mut new_tokens = if self.peek() == '"' {
+                self.scan_string_literal()
             } else {
-                self.scan_string(true);
-            }
+                self.scan_string(true)
+            };
+
+            tokens.append(&mut new_tokens);
 
             self.consume_whitespace();
         }
 
         // Consume final )
         self.advance();
+
+        if tokens.len() > 0 {
+            match tokens.first_mut().unwrap() {
+                Token::String { ref mut begins_cmd, .. } => {
+                    *begins_cmd = true;
+                }
+                _ => {unreachable!();}
+            };
+
+            match tokens.last_mut().unwrap() {
+                Token::String { ref mut ends_cmd, .. } => {
+                    *ends_cmd = true;
+                }
+                _ => {unreachable!();}
+            };
+        }
+
+        tokens
     }
 
-    fn scan_word(&mut self)  {
+    fn scan_word(&mut self) -> Token {
         let start = self.current;
 
         while !self.is_at_end() && is_identifier_char(self.peek()) {
@@ -128,7 +150,7 @@ impl Scanner {
 
         let word_chars = &self.chars[start..self.current];
 
-        let token = match word_chars[0] {
+        match word_chars[0] {
             'i' if word_chars[1] == 'f' => Token::If,
 
             'w' if check_keyword(&word_chars[1..], "hile") => Token::While,
@@ -157,13 +179,11 @@ impl Scanner {
             }
 
             _ => { Token::Identifier }
-        };
-
-        self.tokens.push(token);
+        }
     }
 
-    fn scan_symbol(&mut self) {
-        let token = match self.advance() {
+    fn scan_symbol(&mut self) -> Token {
+        match self.advance() {
             ',' => Token::Comma,
             ':' => Token::Colon,
             ';' => Token::Semicolon,
@@ -215,12 +235,10 @@ impl Scanner {
             }
 
             _ => { panic!("could not scan symbol") }
-        };
-
-        self.tokens.push(token);
+        }
     }
 
-    fn scan_number_literal(&mut self) {
+    fn scan_number_literal(&mut self) -> Token {
         let mut is_float = false;
 
         let start = self.current;
@@ -241,7 +259,7 @@ impl Scanner {
 
         let lexeme: String = (&self.chars[start..self.current]).into_iter().collect();
 
-        let token = if is_float {
+        if is_float {
             Token::Float {
                 value: lexeme.parse().expect("could not parse float literal")
             }
@@ -249,9 +267,7 @@ impl Scanner {
             Token::Int {
                 value: lexeme.parse().expect("could not parse int literal")
             }
-        };
-
-        self.tokens.push(token);
+        }
     }
 }
 

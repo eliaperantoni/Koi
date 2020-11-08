@@ -265,3 +265,22 @@ fn scans_nested_interpolated_string() {
         },
     ]);
 }
+
+#[test]
+fn scans_simple_command() {
+    let scanner = Scanner::new("$(docker ps)");
+    assert_eq!(scanner.get_tokens(), vec![
+        Token::String {
+            value: "docker".to_owned(),
+            does_interp: false,
+            begins_cmd: true,
+            ends_cmd: false,
+        },
+        Token::String {
+            value: "ps".to_owned(),
+            does_interp: false,
+            begins_cmd: false,
+            ends_cmd: true,
+        },
+    ]);
+}

@@ -1,17 +1,23 @@
 use super::*;
 
 impl Scanner {
-    pub fn scan_string_literal(&mut self) {
+    pub fn scan_string_literal(&mut self) -> Vec<Token> {
         // Consume initial "
         self.advance();
 
-        self.scan_string(false);
+        let tokens = self.scan_string(false);
 
         // Consume final "
         self.advance();
+
+        tokens
     }
 
-    pub fn scan_string(&mut self, in_command: bool) {
+    // Scans a string literal without the quotes. If in_cmd is true then the scanning will stop when
+    // encountering a whitespace char or a right parenthesis
+    pub fn scan_string(&mut self, in_cmd: bool) -> Vec<Token> {
+        let mut tokens = Vec::new();
+
         loop {
             let mut chars: Vec<char> = Vec::new();
 
@@ -20,7 +26,7 @@ impl Scanner {
                     break;
                 }
 
-                if in_command && (self.peek() == ' ' || self.peek() == ')') {
+                if in_cmd && (self.peek().is_ascii_whitespace() || self.peek() == ')') {
                     break;
                 }
 
@@ -47,7 +53,7 @@ impl Scanner {
             }
 
             let string: String = chars.iter().collect();
-            self.tokens.push(Token::String {
+            tokens.push(Token::String {
                 value: string,
                 does_interp: self.peek() == '{',
                 begins_cmd: false,
@@ -56,11 +62,17 @@ impl Scanner {
 
             if self.peek() == '{' {
                 self.advance();
-                self.scan_tokens(true);
+
+                tokens.append(&mut self.scan_tokens(true));
+
                 self.advance();
             } else if self.peek() == '"' {
                 break;
+            } else if in_cmd && (self.peek().is_ascii_whitespace() || self.peek() == ')') {
+                break;
             }
         }
+
+        tokens
     }
 }
