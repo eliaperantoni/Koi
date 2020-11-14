@@ -27,7 +27,7 @@ impl Scanner {
         self.scan_tokens(false)
     }
 
-    pub fn scan_tokens(&mut self, in_interpolation: bool) -> Vec<Token> {
+    fn scan_tokens(&mut self, in_interpolation: bool) -> Vec<Token> {
         let mut tokens = Vec::new();
 
         loop {
