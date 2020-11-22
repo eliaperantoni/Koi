@@ -32,8 +32,18 @@ impl Parser {
     }
 
     fn parse_expr(&mut self, min_bp: u8) -> Expr {
-        let mut lhs = match self.advance() {
+        let lhs = self.advance();
+        let mut lhs = match lhs {
             Token::Int { value } => Expr::Value(Value::Int(value)),
+            Token::Plus | Token::Minus => {
+                let ((), r_bp) = prefix_binding_power(&lhs);
+                let rhs = self.parse_expr(r_bp);
+
+                Expr::Un {
+                    rhs: Box::from(rhs),
+                    op: lhs,
+                }
+            }
             t @ _ => panic!("bad token {:?}", t),
         };
 
@@ -46,7 +56,7 @@ impl Parser {
 
             let (l_bp, r_bp) = infix_binding_power(&op);
             if l_bp < min_bp {
-                break
+                break;
             }
 
             self.advance();
@@ -60,6 +70,13 @@ impl Parser {
         }
 
         lhs
+    }
+}
+
+fn prefix_binding_power(op: &Token) -> ((), u8) {
+    match op {
+        Token::Plus | Token::Minus => ((), 5),
+        _ => panic!("bad op {:?}", op),
     }
 }
 

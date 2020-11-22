@@ -49,3 +49,38 @@ fn parses_correct_associativity() {
         rhs: Box::from(Expr::Value(Value::Int(3))),
     });
 }
+
+
+#[test]
+fn parses_unary() {
+    assert_eq!(parse("+1"), Expr::Un {
+        rhs: Box::from(Expr::Value(Value::Int(1))),
+        op: Token::Plus,
+    });
+}
+
+#[test]
+fn parses_nested_unary() {
+    assert_eq!(parse("+-1"), Expr::Un {
+        rhs: Box::from(Expr::Un {
+            rhs: Box::from(Expr::Value(Value::Int(1))),
+            op: Token::Minus,
+        }),
+        op: Token::Plus,
+    });
+}
+
+#[test]
+fn parses_nested_among_binary() {
+    assert_eq!(parse("-1 + -2"), Expr::Bin {
+        lhs: Expr::Un {
+            rhs: Box::from(Expr::Value(Value::Int(1))),
+            op: Token::Minus,
+        }.into(),
+        op: Token::Plus,
+        rhs: Expr::Un {
+            rhs: Box::from(Expr::Value(Value::Int(2))),
+            op: Token::Minus,
+        }.into(),
+    });
+}
