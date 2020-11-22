@@ -1,4 +1,4 @@
-#[derive(PartialEq, Debug)]
+#[derive(PartialEq, Debug, Clone)]
 pub enum Token {
     Identifier,
     Int {
@@ -71,4 +71,6 @@ pub enum Token {
     Dot,
     Question,
     Colon,
+
+    Eof,
 }

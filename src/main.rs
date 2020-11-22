@@ -1,5 +1,6 @@
 mod scanner;
 mod parser;
+mod ast;
 
 use std::fs;
 use std::env::args;
@@ -14,7 +15,7 @@ fn main() {
     let source = source.unwrap_or(String::from("could not read source"));
 
     let scanner = Scanner::new(&source);
-    let tokens = scanner.get_tokens();
+    let tokens = scanner.scan();
 
     let parser = Parser::new(tokens);
 }

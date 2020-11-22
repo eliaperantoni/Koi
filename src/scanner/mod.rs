@@ -23,8 +23,10 @@ impl Scanner {
         }
     }
 
-    pub fn get_tokens(mut self) -> Vec<Token> {
-        self.scan_tokens(false)
+    pub fn scan(mut self) -> Vec<Token> {
+        let mut tokens = self.scan_tokens(false);
+        tokens.push(Token::Eof);
+        tokens
     }
 
     fn scan_tokens(&mut self, in_interpolation: bool) -> Vec<Token> {
