@@ -39,7 +39,7 @@ impl Parser {
                 let ((), r_bp) = prefix_binding_power(&lhs);
                 let rhs = self.parse_expr(r_bp);
 
-                Expr::Un {
+                Expr::Unary {
                     rhs: Box::from(rhs),
                     op: lhs,
                 }
@@ -62,7 +62,7 @@ impl Parser {
             self.advance();
             let rhs = self.parse_expr(r_bp);
 
-            lhs = Expr::Bin {
+            lhs = Expr::Binary {
                 lhs: Box::from(lhs),
                 rhs: Box::from(rhs),
                 op,

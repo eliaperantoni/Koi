@@ -8,8 +8,9 @@ pub enum Value {
 #[derive(PartialEq, Debug)]
 pub enum Expr {
     Value(Value),
-    Un { op: Token, rhs: Box<Expr> },
-    Bin { lhs: Box<Expr>, rhs: Box<Expr>, op: Token },
+    Unary { op: Token, rhs: Box<Expr> },
+    Binary { lhs: Box<Expr>, rhs: Box<Expr>, op: Token },
+    Paren { expr: Box<Expr> },
 }
 
 impl From<Value> for Expr {

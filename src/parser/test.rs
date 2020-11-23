@@ -17,7 +17,7 @@ fn parses_literal() {
 
 #[test]
 fn parses_sum() {
-    assert_eq!(parse("1 + 2"), Expr::Bin {
+    assert_eq!(parse("1 + 2"), Expr::Binary {
         lhs: Box::from(Expr::Value(Value::Int(1))),
         op: Token::Plus,
         rhs: Box::from(Expr::Value(Value::Int(2))),
@@ -26,10 +26,10 @@ fn parses_sum() {
 
 #[test]
 fn parses_correct_precedence() {
-    assert_eq!(parse("1 + 2 * 3"), Expr::Bin {
+    assert_eq!(parse("1 + 2 * 3"), Expr::Binary {
         lhs: Box::from(Expr::Value(Value::Int(1))),
         op: Token::Plus,
-        rhs: Box::from(Expr::Bin {
+        rhs: Box::from(Expr::Binary {
             lhs: Box::from(Expr::Value(Value::Int(2))),
             op: Token::Star,
             rhs: Box::from(Expr::Value(Value::Int(3))),
@@ -39,8 +39,8 @@ fn parses_correct_precedence() {
 
 #[test]
 fn parses_correct_associativity() {
-    assert_eq!(parse("1 + 2 + 3"), Expr::Bin {
-        lhs: Box::from(Expr::Bin {
+    assert_eq!(parse("1 + 2 + 3"), Expr::Binary {
+        lhs: Box::from(Expr::Binary {
             lhs: Box::from(Expr::Value(Value::Int(1))),
             op: Token::Plus,
             rhs: Box::from(Expr::Value(Value::Int(2))),
@@ -53,7 +53,7 @@ fn parses_correct_associativity() {
 
 #[test]
 fn parses_unary() {
-    assert_eq!(parse("+1"), Expr::Un {
+    assert_eq!(parse("+1"), Expr::Unary {
         rhs: Box::from(Expr::Value(Value::Int(1))),
         op: Token::Plus,
     });
@@ -61,8 +61,8 @@ fn parses_unary() {
 
 #[test]
 fn parses_nested_unary() {
-    assert_eq!(parse("+-1"), Expr::Un {
-        rhs: Box::from(Expr::Un {
+    assert_eq!(parse("+-1"), Expr::Unary {
+        rhs: Box::from(Expr::Unary {
             rhs: Box::from(Expr::Value(Value::Int(1))),
             op: Token::Minus,
         }),
@@ -72,13 +72,13 @@ fn parses_nested_unary() {
 
 #[test]
 fn parses_nested_among_binary() {
-    assert_eq!(parse("-1 + -2"), Expr::Bin {
-        lhs: Expr::Un {
+    assert_eq!(parse("-1 + -2"), Expr::Binary {
+        lhs: Expr::Unary {
             rhs: Box::from(Expr::Value(Value::Int(1))),
             op: Token::Minus,
         }.into(),
         op: Token::Plus,
-        rhs: Expr::Un {
+        rhs: Expr::Unary {
             rhs: Box::from(Expr::Value(Value::Int(2))),
             op: Token::Minus,
         }.into(),
