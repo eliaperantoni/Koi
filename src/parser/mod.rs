@@ -32,10 +32,12 @@ impl Parser {
     }
 
     fn parse_expr(&mut self, min_bp: u8) -> Expr {
+        use Token::*;
+
         let lhs = self.advance();
         let mut lhs = match lhs {
-            Token::Int { value } => Expr::Value(Value::Int(value)),
-            Token::Plus | Token::Minus => {
+            Int { value } => Expr::Value(Value::Int(value)),
+            Plus | Minus | PlusPlus | MinusMinus | Bang => {
                 let ((), r_bp) = prefix_binding_power(&lhs);
                 let rhs = self.parse_expr(r_bp);
 
@@ -49,8 +51,10 @@ impl Parser {
 
         loop {
             let op = match self.peek() {
-                Token::Eof => break,
-                Token::Plus | Token::Minus | Token::Star | Token::Slash => self.peek(),
+                Eof => break,
+                Caret | Star | Slash | Perc | Plus | Minus | Less | LessEqual | Greater |
+                GreaterEqual | EqualEqual | BangEqual | AmperAmper | PipePipe | Equal | PlusEqual |
+                MinusEqual | StarEqual | SlashEqual | PercEqual | CaretEqual => self.peek(),
                 t @ _ => panic!("bad token {:?}", t),
             };
 
@@ -74,16 +78,24 @@ impl Parser {
 }
 
 fn prefix_binding_power(op: &Token) -> ((), u8) {
+    use Token::*;
     match op {
-        Token::Plus | Token::Minus => ((), 5),
+        Plus | Minus | PlusPlus | MinusMinus | Bang => ((), 15),
         _ => panic!("bad op {:?}", op),
     }
 }
 
 fn infix_binding_power(op: &Token) -> (u8, u8) {
+    use Token::*;
     match op {
-        Token::Plus | Token::Minus => (1, 2),
-        Token::Star | Token::Slash => (3, 4),
+        Caret => (18, 17),
+        Star | Slash | Perc => (13, 14),
+        Plus | Minus => (11, 12),
+        Less | LessEqual | Greater | GreaterEqual => (9, 10),
+        EqualEqual | BangEqual => (7, 8),
+        AmperAmper => (5, 6),
+        PipePipe => (3, 4),
+        Equal | PlusEqual | MinusEqual | StarEqual | SlashEqual | PercEqual | CaretEqual => (2, 1),
         _ => panic!("bad op {:?}", op),
     }
 }
