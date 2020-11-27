@@ -133,7 +133,6 @@ fn parses_nested_among_binary() {
 
 #[test]
 fn parses_complex_expr() {
-    //                             -->|             |<--
     assert_eq!(parse("1 = 5 *= 2 + 4 % 3 ^ -5 || !1"), Expr::Binary {
         lhs: Expr::Value(Value::Int(1)).into(),
         op: Token::Equal,
