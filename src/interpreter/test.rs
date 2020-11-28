@@ -25,3 +25,8 @@ fn interprets_arithmetic_expressions() {
 fn interprets_boolean_expression() {
     assert_eq!(eval("true || false && true && (false || true)"), Value::Bool(true));
 }
+
+#[test]
+fn interprets_interpolated_string() {
+    assert_eq!(eval("\"a{\"b\"}c{12.2}d{true}e\""), Value::String("abc12.2dtruee".to_owned()));
+}

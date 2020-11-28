@@ -1,6 +1,6 @@
 use crate::ast::{Expr, Value};
 use crate::scanner::Token;
-use std::hint::unreachable_unchecked;
+use itertools::{interleave, Itertools};
 
 #[cfg(test)]
 mod test;
@@ -13,17 +13,26 @@ impl Interpreter {
     }
 
     pub fn eval(&self, expr: &Expr) -> Value {
-        use Token::*;
-
         match expr {
-            Expr::Value(value) => value.clone(),
+            Expr::Literal(value) => value.clone(),
+
+            Expr::Interp { segments, exprs } => {
+                let segments = interleave(
+                    segments.iter().map(String::clone),
+                    exprs.iter()
+                        .map(|expr| self.eval(expr))
+                        .map(|value| value.stringify()),
+                ).collect::<Vec<_>>();
+
+                Value::String(segments.iter().join(""))
+            }
 
             Expr::Unary { op, rhs } => {
                 let rhs = self.eval(rhs);
 
                 match op {
-                    Plus => rhs,
-                    Minus => {
+                    Token::Plus => rhs,
+                    Token::Minus => {
                         if let Value::Num(number) = rhs {
                             Value::Num(-number)
                         } else {
@@ -39,35 +48,41 @@ impl Interpreter {
                 let rhs = self.eval(rhs);
 
                 match op {
-                    Plus | Minus | Star | Slash | Perc | Caret => {
+                    Token::Plus |
+                    Token::Minus |
+                    Token::Star |
+                    Token::Slash |
+                    Token::Perc |
+                    Token::Caret => {
                         if let (Value::Num(lhs), Value::Num(rhs)) = (lhs, rhs) {
                             Value::Num(match op {
-                                Plus => lhs + rhs,
-                                Minus => lhs - rhs,
-                                Star => lhs * rhs,
-                                Slash => lhs / rhs,
-                                Perc => lhs % rhs,
-                                Caret => lhs.powf(rhs),
+                                Token::Plus => lhs + rhs,
+                                Token::Minus => lhs - rhs,
+                                Token::Star => lhs * rhs,
+                                Token::Slash => lhs / rhs,
+                                Token::Perc => lhs % rhs,
+                                Token::Caret => lhs.powf(rhs),
                                 _ => unreachable!(),
                             })
                         } else {
                             panic!("bad operands, expected numbers");
                         }
-                    },
+                    }
 
                     // TODO Make boolean expressions short circuit
-                    PipePipe | AmperAmper => {
+                    Token::PipePipe |
+                    Token::AmperAmper => {
                         if let (Value::Bool(lhs), Value::Bool(rhs)) = (lhs, rhs) {
                             Value::Bool(match op {
-                                PipePipe => lhs || rhs,
-                                AmperAmper => lhs && rhs,
+                                Token::PipePipe => lhs || rhs,
+                                Token::AmperAmper => lhs && rhs,
                                 _ => unreachable!(),
                             })
                         } else {
                             panic!("bad operands, expected bools");
                         }
-                    },
-                    
+                    }
+
                     _ => panic!("bad op {:?}", op),
                 }
             }

@@ -36,8 +36,12 @@ impl Parser {
 
         let lhs = self.advance();
         let mut lhs = match lhs {
-            Num { value } => Expr::Value(Value::Num(value)),
+            Num { value } => Expr::Literal(Value::Num(value)),
             String { mut value, mut does_interp, .. } => {
+                if !does_interp {
+                    return Expr::Literal(Value::String(value.clone()));
+                }
+
                 let mut segments = Vec::new();
                 let mut exprs = Vec::new();
 
@@ -60,10 +64,10 @@ impl Parser {
 
                 segments.push(value.clone());
 
-                Expr::Value(Value::String(segments, exprs))
+                Expr::Interp { segments, exprs }
             }
-            True => Expr::Value(Value::Bool(true)),
-            False => Expr::Value(Value::Bool(false)),
+            True => Expr::Literal(Value::Bool(true)),
+            False => Expr::Literal(Value::Bool(false)),
             LeftParen => {
                 let lhs = self.parse_expr(0);
                 assert_eq!(self.advance(), RightParen);
