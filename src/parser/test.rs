@@ -165,3 +165,16 @@ fn parses_complex_expr() {
         }.into(),
     });
 }
+
+#[test]
+fn parses_parenthesized() {
+    assert_eq!(parse("1 + (5 * 2)"), Expr::Binary {
+        lhs: Expr::Value(Value::Number(1.0)).into(),
+        op: Token::Plus,
+        rhs: Expr::Binary {
+            lhs: Expr::Value(Value::Number(5.0)).into(),
+            op: Token::Star,
+            rhs: Expr::Value(Value::Number(2.0)).into(),
+        }.into(),
+    });
+}

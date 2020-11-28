@@ -60,7 +60,7 @@ impl Parser {
                 Eof => break,
                 Caret | Star | Slash | Perc | Plus | Minus | Less | LessEqual | Greater |
                 GreaterEqual | EqualEqual | BangEqual | AmperAmper | PipePipe | Equal | PlusEqual |
-                MinusEqual | StarEqual | SlashEqual | PercEqual | CaretEqual => self.peek(),
+                MinusEqual | StarEqual | SlashEqual | PercEqual | CaretEqual | RightParen => self.peek(),
                 t @ _ => panic!("bad token {:?}", t),
             };
 
