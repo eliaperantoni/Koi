@@ -71,3 +71,39 @@ pub enum Token {
 
     Eof,
 }
+
+impl Token {
+    pub fn is_infix_op(&self) -> bool {
+        use Token::*;
+
+        match self {
+            BangEqual |
+            Equal |
+            EqualEqual |
+
+            PlusEqual |
+            MinusEqual |
+            StarEqual |
+            SlashEqual |
+            CaretEqual |
+            PercEqual |
+
+            Greater |
+            GreaterEqual |
+            Less |
+            LessEqual |
+
+            Plus |
+            Minus |
+            Star |
+            Slash |
+            Caret |
+            Perc |
+
+            AmperAmper |
+            PipePipe => true,
+
+            _ => false,
+        }
+    }
+}

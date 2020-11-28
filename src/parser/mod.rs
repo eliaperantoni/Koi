@@ -55,12 +55,11 @@ impl Parser {
         };
 
         loop {
+            let op = self.peek();
             let op = match self.peek() {
                 Eof => break,
-                Caret | Star | Slash | Perc | Plus | Minus | Less | LessEqual | Greater |
-                GreaterEqual | EqualEqual | BangEqual | AmperAmper | PipePipe | Equal | PlusEqual |
-                MinusEqual | StarEqual | SlashEqual | PercEqual | CaretEqual | RightParen => self.peek(),
-                t @ _ => panic!("bad token {:?}", t),
+                _ if op.is_infix_op() || op == RightParen => op,
+                _ => panic!("bad token {:?}", op),
             };
 
             if let Some((l_bp, r_bp)) = infix_binding_power(&op) {
