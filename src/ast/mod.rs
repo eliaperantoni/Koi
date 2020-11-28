@@ -16,6 +16,13 @@ impl Value {
             Bool(bool) => bool.to_string(),
         }
     }
+
+    pub fn is_truthy(&self) -> bool {
+        match self {
+            Value::Bool(true) => true,
+            _ => false,
+        }
+    }
 }
 
 #[derive(PartialEq, Debug, Clone)]

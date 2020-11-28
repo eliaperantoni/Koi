@@ -45,6 +45,17 @@ impl Interpreter {
 
             Expr::Binary { lhs, op, rhs } => {
                 let lhs = self.eval(lhs);
+
+                match op {
+                    Token::PipePipe => {
+                        return Value::Bool(lhs.is_truthy() || self.eval(rhs).is_truthy());
+                    },
+                    Token::AmperAmper => {
+                        return Value::Bool(lhs.is_truthy() && self.eval(rhs).is_truthy());
+                    },
+                    _ => (),
+                }
+
                 let rhs = self.eval(rhs);
 
                 match op {
@@ -66,20 +77,6 @@ impl Interpreter {
                             })
                         } else {
                             panic!("bad operands, expected numbers");
-                        }
-                    }
-
-                    // TODO Make boolean expressions short circuit
-                    Token::PipePipe |
-                    Token::AmperAmper => {
-                        if let (Value::Bool(lhs), Value::Bool(rhs)) = (lhs, rhs) {
-                            Value::Bool(match op {
-                                Token::PipePipe => lhs || rhs,
-                                Token::AmperAmper => lhs && rhs,
-                                _ => unreachable!(),
-                            })
-                        } else {
-                            panic!("bad operands, expected bools");
                         }
                     }
 
