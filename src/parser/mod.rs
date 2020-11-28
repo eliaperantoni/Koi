@@ -37,6 +37,31 @@ impl Parser {
         let lhs = self.advance();
         let mut lhs = match lhs {
             Num { value } => Expr::Value(Value::Num(value)),
+            String { mut value, mut does_interp, .. } => {
+                let mut segments = Vec::new();
+                let mut exprs = Vec::new();
+
+                while does_interp {
+                    segments.push(value.clone());
+
+                    exprs.push(self.parse_expr(0));
+
+                    if let String {
+                        value: next_value,
+                        does_interp: next_does_interp,
+                        ..
+                    } = self.advance() {
+                        value = next_value;
+                        does_interp = next_does_interp;
+                    } else {
+                        panic!("bad token, expected interpolation closing string");
+                    }
+                }
+
+                segments.push(value.clone());
+
+                Expr::Value(Value::String(segments, exprs))
+            }
             True => Expr::Value(Value::Bool(true)),
             False => Expr::Value(Value::Bool(false)),
             LeftParen => {
@@ -58,11 +83,10 @@ impl Parser {
 
         loop {
             let op = self.peek();
-            let op = match self.peek() {
-                Eof => break,
-                _ if op.is_infix_op() || op == RightParen => op,
-                _ => panic!("bad token {:?}", op),
-            };
+
+            if !(op.is_infix_op() || op == RightParen) {
+                break;
+            }
 
             if let Some((l_bp, r_bp)) = infix_binding_power(&op) {
                 if l_bp < min_bp {

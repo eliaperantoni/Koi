@@ -4,9 +4,10 @@ use crate::scanner::Token;
 pub enum Value {
     Num(f64),
     Bool(bool),
+    String(Vec<String>, Vec<Expr>),
 }
 
-#[derive(PartialEq, Debug)]
+#[derive(PartialEq, Debug, Clone)]
 pub enum Expr {
     Value(Value),
     Unary { op: Token, rhs: Box<Expr> },

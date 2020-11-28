@@ -199,3 +199,43 @@ fn parses_bool_expr() {
         }.into(),
     });
 }
+
+#[test]
+fn parses_string_literal() {
+    assert_eq!(parse("\"abc\""), Expr::Value(
+        Value::String(
+            vec!["abc".to_owned()],
+            vec![],
+        )).into(),
+    );
+}
+
+#[test]
+fn parses_interpolated_string() {
+    assert_eq!(parse("\"abc{1}def{2}ghi\""), Expr::Value(
+        Value::String(
+            vec!["abc".to_owned(), "def".to_owned(), "ghi".to_owned()],
+            vec![Expr::Value(Value::Num(1.0)).into(), Expr::Value(Value::Num(2.0)).into()],
+        )).into(),
+    );
+}
+
+#[test]
+fn parses_interpolated_prefix_string() {
+    assert_eq!(parse("\"{1}abc\""), Expr::Value(
+        Value::String(
+            vec!["".to_owned(), "abc".to_owned()],
+            vec![Expr::Value(Value::Num(1.0)).into()],
+        )).into(),
+    );
+}
+
+#[test]
+fn parses_interpolated_suffix_string() {
+    assert_eq!(parse("\"abc{1}\""), Expr::Value(
+        Value::String(
+            vec!["abc".to_owned(), "".to_owned()],
+            vec![Expr::Value(Value::Num(1.0)).into()],
+        )).into(),
+    );
+}
