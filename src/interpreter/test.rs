@@ -15,8 +15,8 @@ fn eval(source: &str) -> Value {
 
 #[test]
 fn interprets_arithmetic_expression() {
-    assert_eq!(eval("2"), Value::Number(2.0));
-    assert_eq!(eval("2 + 2"), Value::Number(4.0));
-    assert_eq!(eval("10 * 5 - 20"), Value::Number(30.0));
-    assert_eq!(eval("((100 % 99) ^ 2 * 10 - 5 + (12 * 2)) / 2"), Value::Number(14.5));
+    assert_eq!(eval("2"), Value::Num(2.0));
+    assert_eq!(eval("2 + 2"), Value::Num(4.0));
+    assert_eq!(eval("10 * 5 - 20"), Value::Num(30.0));
+    assert_eq!(eval("((100 % 99) ^ 2 * 10 - 5 + (12 * 2)) / 2"), Value::Num(14.5));
 }

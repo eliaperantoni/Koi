@@ -1,7 +1,7 @@
 #[derive(PartialEq, Debug, Clone)]
 pub enum Token {
     Identifier,
-    Number {
+    Num {
         value: f64,
     },
     String {

@@ -22,8 +22,8 @@ impl Interpreter {
                 match op {
                     Token::Plus => rhs,
                     Token::Minus => {
-                        if let Value::Number(number) = rhs {
-                            Value::Number(-number)
+                        if let Value::Num(number) = rhs {
+                            Value::Num(-number)
                         } else {
                             panic!("bad operand, expected number");
                         }
@@ -38,8 +38,8 @@ impl Interpreter {
 
                 match op {
                     Token::Plus | Token::Minus | Token::Star | Token::Slash | Token::Perc | Token::Caret => {
-                        if let (Value::Number(lhs), Value::Number(rhs)) = (lhs, rhs) {
-                            Value::Number(match op {
+                        if let (Value::Num(lhs), Value::Num(rhs)) = (lhs, rhs) {
+                            Value::Num(match op {
                                 Token::Plus => lhs + rhs,
                                 Token::Minus => lhs - rhs,
                                 Token::Star => lhs * rhs,

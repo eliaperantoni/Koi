@@ -257,7 +257,7 @@ impl Scanner {
 
         let lexeme: String = (&self.chars[start..self.current]).into_iter().collect();
 
-        Token::Number {
+        Token::Num {
             value: lexeme.parse().expect("could not parse number literal")
         }
     }

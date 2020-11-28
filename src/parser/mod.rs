@@ -37,7 +37,7 @@ impl Parser {
 
         let lhs = self.advance();
         let mut lhs = match lhs {
-            Number { value } => Expr::Value(Value::Number(value)),
+            Num { value } => Expr::Value(Value::Num(value)),
             LeftParen => {
                 let lhs = self.parse_expr( 0);
                 assert_eq!(self.advance(), RightParen);
