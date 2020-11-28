@@ -23,5 +23,5 @@ fn interprets_arithmetic_expressions() {
 
 #[test]
 fn interprets_boolean_expression() {
-    assert_eq!(eval("false || false && true && (false || true)"), Value::Bool(true));
+    assert_eq!(eval("true || false && true && (false || true)"), Value::Bool(true));
 }
