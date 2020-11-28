@@ -55,8 +55,6 @@ impl Interpreter {
                     _ => panic!("bad op {:?}", op),
                 }
             }
-
-            Expr::Paren { expr } => self.eval(expr),
         }
     }
 }

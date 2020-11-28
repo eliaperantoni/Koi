@@ -1,6 +1,5 @@
 use crate::scanner::Token;
 use crate::ast::{Value, Expr};
-use crate::ast::Expr::Paren;
 
 #[cfg(test)]
 mod test;

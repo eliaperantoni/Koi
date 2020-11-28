@@ -10,7 +10,6 @@ pub enum Expr {
     Value(Value),
     Unary { op: Token, rhs: Box<Expr> },
     Binary { lhs: Box<Expr>, rhs: Box<Expr>, op: Token },
-    Paren { expr: Box<Expr> },
 }
 
 impl From<Value> for Expr {
