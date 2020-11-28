@@ -241,8 +241,6 @@ impl Scanner {
     }
 
     fn scan_number_literal(&mut self) -> Token {
-        let mut is_float = false;
-
         let start = self.current;
 
         while !self.is_at_end() && self.peek().is_ascii_digit() {
@@ -255,20 +253,12 @@ impl Scanner {
             while !self.is_at_end() && self.peek().is_ascii_digit() {
                 self.advance();
             }
-
-            is_float = true;
         }
 
         let lexeme: String = (&self.chars[start..self.current]).into_iter().collect();
 
-        if is_float {
-            Token::Float {
-                value: lexeme.parse().expect("could not parse float literal")
-            }
-        } else {
-            Token::Int {
-                value: lexeme.parse().expect("could not parse int literal")
-            }
+        Token::Number {
+            value: lexeme.parse().expect("could not parse number literal")
         }
     }
 }

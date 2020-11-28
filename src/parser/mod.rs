@@ -36,7 +36,7 @@ impl Parser {
 
         let lhs = self.advance();
         let mut lhs = match lhs {
-            Int { value } => Expr::Value(Value::Int(value)),
+            Number { value } => Expr::Value(Value::Number(value)),
             Plus | Minus | PlusPlus | MinusMinus | Bang => {
                 let ((), r_bp) = prefix_binding_power(&lhs);
                 let rhs = self.parse_expr(r_bp);

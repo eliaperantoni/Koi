@@ -1,10 +1,7 @@
 #[derive(PartialEq, Debug, Clone)]
 pub enum Token {
     Identifier,
-    Int {
-        value: i64,
-    },
-    Float {
+    Number {
         value: f64,
     },
     String {

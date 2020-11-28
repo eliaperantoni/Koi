@@ -76,33 +76,25 @@ fn scans_string_literal_with_escape_chars() {
 }
 
 #[test]
-fn scans_int_literals() {
-    let scanner = Scanner::new("12 3634 3333");
+fn scans_number_literals() {
+    let scanner = Scanner::new("12 3634 3333 3.14 10. .5");
     assert_eq!(scanner.scan(), vec![
-        Token::Int {
-            value: 12,
+        Token::Number {
+            value: 12.0,
         },
-        Token::Int {
-            value: 3634,
+        Token::Number {
+            value: 3634.0,
         },
-        Token::Int {
-            value: 3333,
+        Token::Number {
+            value: 3333.0,
         },
-        Token::Eof,
-    ]);
-}
-
-#[test]
-fn scans_float_literal() {
-    let scanner = Scanner::new("3.14 10. .5");
-    assert_eq!(scanner.scan(), vec![
-        Token::Float {
+        Token::Number {
             value: 3.14,
         },
-        Token::Float {
+        Token::Number {
             value: 10.0,
         },
-        Token::Float {
+        Token::Number {
             value: 0.5,
         },
         Token::Eof,
@@ -119,8 +111,8 @@ fn scans_simple_interpolated_string() {
             begins_cmd: false,
             ends_cmd: false,
         },
-        Token::Int {
-            value: 1,
+        Token::Number {
+            value: 1.0,
         },
         Token::String {
             value: "b".to_owned(),
@@ -142,8 +134,8 @@ fn scans_complex_interpolated_string() {
             begins_cmd: false,
             ends_cmd: false,
         },
-        Token::Int {
-            value: 1,
+        Token::Number {
+            value: 1.0,
         },
         Token::String {
             value: "a".to_owned(),
@@ -151,12 +143,12 @@ fn scans_complex_interpolated_string() {
             begins_cmd: false,
             ends_cmd: false,
         },
-        Token::Int {
-            value: 2,
+        Token::Number {
+            value: 2.0,
         },
         Token::Plus,
-        Token::Int {
-            value: 2,
+        Token::Number {
+            value: 2.0,
         },
         Token::String {
             value: "b".to_owned(),
@@ -164,8 +156,8 @@ fn scans_complex_interpolated_string() {
             begins_cmd: false,
             ends_cmd: false,
         },
-        Token::Int {
-            value: 3,
+        Token::Number {
+            value: 3.0,
         },
         Token::String {
             value: "".to_owned(),
@@ -187,8 +179,8 @@ fn scans_completely_interpolated_string() {
             begins_cmd: false,
             ends_cmd: false,
         },
-        Token::Int {
-            value: 1,
+        Token::Number {
+            value: 1.0,
         },
         Token::String {
             value: "".to_owned(),
@@ -318,8 +310,8 @@ fn scans_mono_string_interpolated_command() {
             begins_cmd: true,
             ends_cmd: false,
         },
-        Token::Int {
-            value: 111,
+        Token::Number {
+            value: 111.0,
         },
         Token::String {
             value: "".to_owned(),
@@ -367,8 +359,8 @@ fn scans_command_with_interpolation() {
             begins_cmd: true,
             ends_cmd: false,
         },
-        Token::Int {
-            value: 1,
+        Token::Number {
+            value: 1.0,
         },
         Token::String {
             value: "a".to_owned(),
@@ -382,8 +374,8 @@ fn scans_command_with_interpolation() {
             begins_cmd: false,
             ends_cmd: false,
         },
-        Token::Int {
-            value: 2,
+        Token::Number {
+            value: 2.0,
         },
         Token::String {
             value: "".to_owned(),
@@ -409,8 +401,8 @@ fn scans_command_with_interpolation() {
             begins_cmd: false,
             ends_cmd: false,
         },
-        Token::Int {
-            value: 3,
+        Token::Number {
+            value: 3.0,
         },
         Token::String {
             value: "c".to_owned(),
@@ -430,8 +422,8 @@ fn scans_command_with_interpolation() {
             begins_cmd: false,
             ends_cmd: false,
         },
-        Token::Int {
-            value: 4,
+        Token::Number {
+            value: 4.0,
         },
         Token::String {
             value: "".to_owned(),
@@ -459,8 +451,8 @@ fn scans_command_with_interpolated_string_literal() {
             begins_cmd: true,
             ends_cmd: false,
         },
-        Token::Int {
-            value: 111,
+        Token::Number {
+            value: 111.0,
         },
         Token::String {
             value: "ccc".to_owned(),
