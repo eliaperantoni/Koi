@@ -178,3 +178,24 @@ fn parses_parenthesized() {
         }.into(),
     });
 }
+
+#[test]
+fn parses_bool_expr() {
+    assert_eq!(parse("true || false && true && (false || true)"), Expr::Binary {
+        lhs: Expr::Value(Value::Bool(true)).into(),
+        op: Token::PipePipe,
+        rhs: Expr::Binary {
+            lhs: Expr::Binary {
+                lhs: Expr::Value(Value::Bool(false)).into(),
+                op: Token::AmperAmper,
+                rhs: Expr::Value(Value::Bool(true)).into(),
+            }.into(),
+            op: Token::AmperAmper,
+            rhs: Expr::Binary {
+                lhs: Expr::Value(Value::Bool(false)).into(),
+                op: Token::PipePipe,
+                rhs: Expr::Value(Value::Bool(true)).into(),
+            }.into(),
+        }.into(),
+    });
+}

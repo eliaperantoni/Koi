@@ -13,6 +13,8 @@ impl Interpreter {
     }
 
     pub fn eval(&self, expr: &Expr) -> Value {
+        use Token::*;
+
         match expr {
             Expr::Value(value) => value.clone(),
 
@@ -20,8 +22,8 @@ impl Interpreter {
                 let rhs = self.eval(rhs);
 
                 match op {
-                    Token::Plus => rhs,
-                    Token::Minus => {
+                    Plus => rhs,
+                    Minus => {
                         if let Value::Num(number) = rhs {
                             Value::Num(-number)
                         } else {
@@ -37,21 +39,35 @@ impl Interpreter {
                 let rhs = self.eval(rhs);
 
                 match op {
-                    Token::Plus | Token::Minus | Token::Star | Token::Slash | Token::Perc | Token::Caret => {
+                    Plus | Minus | Star | Slash | Perc | Caret => {
                         if let (Value::Num(lhs), Value::Num(rhs)) = (lhs, rhs) {
                             Value::Num(match op {
-                                Token::Plus => lhs + rhs,
-                                Token::Minus => lhs - rhs,
-                                Token::Star => lhs * rhs,
-                                Token::Slash => lhs / rhs,
-                                Token::Perc => lhs % rhs,
-                                Token::Caret => lhs.powf(rhs),
+                                Plus => lhs + rhs,
+                                Minus => lhs - rhs,
+                                Star => lhs * rhs,
+                                Slash => lhs / rhs,
+                                Perc => lhs % rhs,
+                                Caret => lhs.powf(rhs),
                                 _ => unreachable!(),
                             })
                         } else {
                             panic!("bad operands, expected numbers");
                         }
-                    }
+                    },
+
+                    // TODO Make boolean expressions short circuit
+                    PipePipe | AmperAmper => {
+                        if let (Value::Bool(lhs), Value::Bool(rhs)) = (lhs, rhs) {
+                            Value::Bool(match op {
+                                PipePipe => lhs || rhs,
+                                AmperAmper => lhs && rhs,
+                                _ => unreachable!(),
+                            })
+                        } else {
+                            panic!("bad operands, expected bools");
+                        }
+                    },
+                    
                     _ => panic!("bad op {:?}", op),
                 }
             }

@@ -3,6 +3,7 @@ use crate::scanner::Token;
 #[derive(PartialEq, Debug, Clone)]
 pub enum Value {
     Num(f64),
+    Bool(bool),
 }
 
 #[derive(PartialEq, Debug)]
