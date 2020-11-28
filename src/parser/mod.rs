@@ -1,5 +1,6 @@
 use crate::scanner::Token;
 use crate::ast::{Value, Expr};
+use crate::ast::Expr::Paren;
 
 #[cfg(test)]
 mod test;
@@ -37,6 +38,11 @@ impl Parser {
         let lhs = self.advance();
         let mut lhs = match lhs {
             Number { value } => Expr::Value(Value::Number(value)),
+            LeftParen => {
+                let lhs = self.parse_expr( 0);
+                assert_eq!(self.advance(), RightParen);
+                lhs
+            }
             Plus | Minus | PlusPlus | MinusMinus | Bang => {
                 let ((), r_bp) = prefix_binding_power(&lhs);
                 let rhs = self.parse_expr(r_bp);
@@ -58,19 +64,24 @@ impl Parser {
                 t @ _ => panic!("bad token {:?}", t),
             };
 
-            let (l_bp, r_bp) = infix_binding_power(&op);
-            if l_bp < min_bp {
-                break;
+            if let Some((l_bp, r_bp)) = infix_binding_power(&op) {
+                if l_bp < min_bp {
+                    break;
+                }
+
+                self.advance();
+                let rhs = self.parse_expr(r_bp);
+
+                lhs = Expr::Binary {
+                    lhs: Box::from(lhs),
+                    rhs: Box::from(rhs),
+                    op,
+                };
+
+                continue;
             }
 
-            self.advance();
-            let rhs = self.parse_expr(r_bp);
-
-            lhs = Expr::Binary {
-                lhs: Box::from(lhs),
-                rhs: Box::from(rhs),
-                op,
-            };
+            break;
         }
 
         lhs
@@ -85,9 +96,9 @@ fn prefix_binding_power(op: &Token) -> ((), u8) {
     }
 }
 
-fn infix_binding_power(op: &Token) -> (u8, u8) {
+fn infix_binding_power(op: &Token) -> Option<(u8, u8)> {
     use Token::*;
-    match op {
+    let res = match op {
         Caret => (18, 17),
         Star | Slash | Perc => (13, 14),
         Plus | Minus => (11, 12),
@@ -96,6 +107,7 @@ fn infix_binding_power(op: &Token) -> (u8, u8) {
         AmperAmper => (5, 6),
         PipePipe => (3, 4),
         Equal | PlusEqual | MinusEqual | StarEqual | SlashEqual | PercEqual | CaretEqual => (2, 1),
-        _ => panic!("bad op {:?}", op),
-    }
+        _ => return None,
+    };
+    Some(res)
 }
