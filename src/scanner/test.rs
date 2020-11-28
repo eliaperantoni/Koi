@@ -1,49 +1,48 @@
 use super::*;
 
+fn scan(source: &str) -> Vec<Token> {
+    let mut scanner = Scanner::new(source);
+    scanner.scan()
+}
+
 #[test]
 fn ignores_whitespace() {
-    let scanner = Scanner::new("    \r\n.");
-    assert_eq!(scanner.scan(), vec![Token::Dot, Token::Eof]);
+    assert_eq!(scan("    \r\n."), vec![Token::Dot, Token::Eof]);
 }
 
 #[test]
 fn scans_empty_string() {
-    let scanner = Scanner::new("");
-    assert_eq!(scanner.scan(), vec![Token::Eof]);
+    assert_eq!(scan(""), vec![Token::Eof]);
 }
 
 #[test]
 fn scans_keyword() {
-    let scanner = Scanner::new("while");
-    assert_eq!(scanner.scan(), vec![Token::While, Token::Eof]);
+    assert_eq!(scan("while"), vec![Token::While, Token::Eof]);
 }
 
 #[test]
 fn stops_scanning() {
-    let scanner = Scanner::new(".");
-    assert_eq!(scanner.scan(), vec![Token::Dot, Token::Eof]);
+    assert_eq!(scan("."), vec![Token::Dot, Token::Eof]);
 }
 
 #[test]
 #[should_panic]
 fn panics_unexpected_symbol() {
-    let scanner = Scanner::new("§");
-    scanner.scan();
+    scan("§");
 }
 
 #[test]
 fn scans_identifier() {
-    let scanner = Scanner::new("columbia");
-    assert_eq!(scanner.scan(), vec![Token::Identifier, Token::Eof]);
+    assert_eq!(scan("columbia"), vec![Token::Identifier, Token::Eof]);
 }
 
 #[test]
 fn scans_complex_string() {
     use Token::*;
 
-    let scanner = Scanner::new("for.while:return cc whine&&!==++--break,continue\
-    ;(){}[]exp+=-=*=/=%=^=^%*/-+true:h;false!nil?var/if else;fn::== =for");
-    assert_eq!(scanner.scan(), vec![
+    let source = "for.while:return cc whine&&!==++--break,continue;(){}[]exp+=-=*=/=%=^=^%*/-+\
+    true:h;false!nil?var/if else;fn::== =for";
+    assert_eq!(scan(source), vec![
         For, Dot, While, Colon, Return, Identifier, Identifier, AmperAmper, BangEqual, Equal, PlusPlus,
         MinusMinus, Break, Comma, Continue, Semicolon, LeftParen, RightParen, LeftBrace, RightBrace,
         LeftBracket, RightBracket, Exp, PlusEqual, MinusEqual, StarEqual, SlashEqual, PercEqual,
@@ -55,8 +54,7 @@ fn scans_complex_string() {
 
 #[test]
 fn scans_simple_string_literal() {
-    let scanner = Scanner::new("\"hello world\"");
-    assert_eq!(scanner.scan(), vec![Token::String {
+    assert_eq!(scan("\"hello world\""), vec![Token::String {
         value: "hello world".to_owned(),
         does_interp: false,
         begins_cmd: false,
@@ -66,8 +64,7 @@ fn scans_simple_string_literal() {
 
 #[test]
 fn scans_string_literal_with_escape_chars() {
-    let scanner = Scanner::new("\"\\n\\t\\r\\\\\"");
-    assert_eq!(scanner.scan(), vec![Token::String {
+    assert_eq!(scan("\"\\n\\t\\r\\\\\""), vec![Token::String {
         value: "\n\t\r\\".to_owned(),
         does_interp: false,
         begins_cmd: false,
@@ -77,8 +74,7 @@ fn scans_string_literal_with_escape_chars() {
 
 #[test]
 fn scans_number_literals() {
-    let scanner = Scanner::new("12 3634 3333 3.14 10. .5");
-    assert_eq!(scanner.scan(), vec![
+    assert_eq!(scan("12 3634 3333 3.14 10. .5"), vec![
         Token::Num {
             value: 12.0,
         },
@@ -103,8 +99,7 @@ fn scans_number_literals() {
 
 #[test]
 fn scans_simple_interpolated_string() {
-    let scanner = Scanner::new("\"a{1}b\"");
-    assert_eq!(scanner.scan(), vec![
+    assert_eq!(scan("\"a{1}b\""), vec![
         Token::String {
             value: "a".to_owned(),
             does_interp: true,
@@ -126,8 +121,7 @@ fn scans_simple_interpolated_string() {
 
 #[test]
 fn scans_complex_interpolated_string() {
-    let scanner = Scanner::new("\"{1}a{2+2}b{3}\"");
-    assert_eq!(scanner.scan(), vec![
+    assert_eq!(scan("\"{1}a{2+2}b{3}\""), vec![
         Token::String {
             value: "".to_owned(),
             does_interp: true,
@@ -171,8 +165,7 @@ fn scans_complex_interpolated_string() {
 
 #[test]
 fn scans_completely_interpolated_string() {
-    let scanner = Scanner::new("\"{1}\"");
-    assert_eq!(scanner.scan(), vec![
+    assert_eq!(scan("\"{1}\""), vec![
         Token::String {
             value: "".to_owned(),
             does_interp: true,
@@ -197,8 +190,7 @@ fn scans_completely_interpolated_string() {
 // working as intended even in these edge cases
 #[test]
 fn scans_empty_interpolation() {
-    let scanner = Scanner::new("\"a{}b{}\"");
-    assert_eq!(scanner.scan(), vec![
+    assert_eq!(scan("\"a{}b{}\""), vec![
         Token::String {
             value: "a".to_owned(),
             does_interp: true,
@@ -223,8 +215,7 @@ fn scans_empty_interpolation() {
 
 #[test]
 fn scans_nested_interpolated_string() {
-    let scanner = Scanner::new("\"l1{\"l2{\"l3\"+\"innermost\"}\"}l1end\"");
-    assert_eq!(scanner.scan(), vec![
+    assert_eq!(scan("\"l1{\"l2{\"l3\"+\"innermost\"}\"}l1end\""), vec![
         Token::String {
             value: "l1".to_owned(),
             does_interp: true,
@@ -268,8 +259,7 @@ fn scans_nested_interpolated_string() {
 
 #[test]
 fn scans_simple_command() {
-    let scanner = Scanner::new("$(docker ps)");
-    assert_eq!(scanner.scan(), vec![
+    assert_eq!(scan("$(docker ps)"), vec![
         Token::String {
             value: "docker".to_owned(),
             does_interp: false,
@@ -288,8 +278,7 @@ fn scans_simple_command() {
 
 #[test]
 fn scans_mono_string_command() {
-    let scanner = Scanner::new("$(aaa)");
-    assert_eq!(scanner.scan(), vec![
+    assert_eq!(scan("$(aaa)"), vec![
         Token::String {
             value: "aaa".to_owned(),
             does_interp: false,
@@ -302,8 +291,7 @@ fn scans_mono_string_command() {
 
 #[test]
 fn scans_mono_string_interpolated_command() {
-    let scanner = Scanner::new("$({111})");
-    assert_eq!(scanner.scan(), vec![
+    assert_eq!(scan("$({111})"), vec![
         Token::String {
             value: "".to_owned(),
             does_interp: true,
@@ -325,8 +313,7 @@ fn scans_mono_string_interpolated_command() {
 
 #[test]
 fn scans_command_with_string_literal() {
-    let scanner = Scanner::new("$(a \"b $() b\" c)");
-    assert_eq!(scanner.scan(), vec![
+    assert_eq!(scan("$(a \"b $() b\" c)"), vec![
         Token::String {
             value: "a".to_owned(),
             does_interp: false,
@@ -351,8 +338,7 @@ fn scans_command_with_string_literal() {
 
 #[test]
 fn scans_command_with_interpolation() {
-    let scanner = Scanner::new("$(a{1}a b{2} b c {3}c d {4} d)");
-    assert_eq!(scanner.scan(), vec![
+    assert_eq!(scan("$(a{1}a b{2} b c {3}c d {4} d)"), vec![
         Token::String {
             value: "a".to_owned(),
             does_interp: true,
@@ -443,8 +429,7 @@ fn scans_command_with_interpolation() {
 
 #[test]
 fn scans_command_with_interpolated_string_literal() {
-    let scanner = Scanner::new("$(\"ccc{111}ccc\")");
-    assert_eq!(scanner.scan(), vec![
+    assert_eq!(scan("$(\"ccc{111}ccc\")"), vec![
         Token::String {
             value: "ccc".to_owned(),
             does_interp: true,
@@ -466,8 +451,7 @@ fn scans_command_with_interpolated_string_literal() {
 
 #[test]
 fn scans_command_with_interpolated_command() {
-    let scanner = Scanner::new("$({$(a)})");
-    assert_eq!(scanner.scan(), vec![
+    assert_eq!(scan("$({$(a)})"), vec![
         Token::String {
             value: "".to_owned(),
             does_interp: true,

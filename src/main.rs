@@ -15,8 +15,8 @@ fn main() {
     let source = fs::read_to_string(path);
     let source = source.unwrap_or(String::from("could not read source"));
 
-    let scanner = Scanner::new(&source);
+    let mut scanner = Scanner::new(&source);
     let tokens = scanner.scan();
 
-    let parser = Parser::new(tokens);
+    let _parser = Parser::new(tokens);
 }

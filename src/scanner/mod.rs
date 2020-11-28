@@ -23,7 +23,7 @@ impl Scanner {
         }
     }
 
-    pub fn scan(mut self) -> Vec<Token> {
+    pub fn scan(&mut self) -> Vec<Token> {
         let mut tokens = self.scan_tokens(false);
         tokens.push(Token::Eof);
         tokens
