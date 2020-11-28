@@ -1,6 +1,5 @@
 use crate::ast::{Expr, Value};
 use crate::scanner::Token;
-use std::borrow::Borrow;
 use std::hint::unreachable_unchecked;
 
 #[cfg(test)]
@@ -18,7 +17,7 @@ impl Interpreter {
             Expr::Value(value) => value.clone(),
 
             Expr::Unary { op, rhs } => {
-                let rhs = self.eval(rhs.borrow());
+                let rhs = self.eval(rhs);
 
                 match op {
                     Token::Plus => rhs,
@@ -34,8 +33,8 @@ impl Interpreter {
             }
 
             Expr::Binary { lhs, op, rhs } => {
-                let lhs = self.eval(lhs.borrow());
-                let rhs = self.eval(rhs.borrow());
+                let lhs = self.eval(lhs);
+                let rhs = self.eval(rhs);
 
                 match op {
                     Token::Plus | Token::Minus | Token::Star | Token::Slash | Token::Perc | Token::Caret => {
@@ -57,7 +56,7 @@ impl Interpreter {
                 }
             }
 
-            Expr::Paren { expr } => self.eval(expr.borrow()),
+            Expr::Paren { expr } => self.eval(expr),
         }
     }
 }
