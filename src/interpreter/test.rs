@@ -20,7 +20,7 @@ fn eval(source: &str) -> Value {
         panic!("expected a single expression")
     };
 
-    let mut interpreter = Interpreter::new();
+    let interpreter = Interpreter::new();
     interpreter.eval(expr)
 }
 
