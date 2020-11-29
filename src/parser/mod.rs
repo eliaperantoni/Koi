@@ -60,6 +60,7 @@ impl Parser {
     fn parse_stmt(&mut self) -> Stmt {
         match self.peek() {
             Token::Var => self.parse_var_decl(),
+            Token::LeftBrace => self.parse_block(),
             Token::If => self.parse_if(),
             _ => {
                 let stmt = self.parse_expr(0).into();
@@ -67,6 +68,20 @@ impl Parser {
                 stmt
             }
         }
+    }
+
+    fn parse_block(&mut self) -> Stmt {
+        // Consume Token::LeftBrace
+        self.advance();
+
+        let mut stmts = Vec::new();
+        while self.peek() != Token::Eof && self.peek() != Token::RightBrace {
+            stmts.push(self.parse_stmt());
+        }
+
+        self.consume(Token::RightBrace);
+
+        Stmt::Block(stmts)
     }
 
     fn parse_if(&mut self) -> Stmt {
