@@ -2,12 +2,23 @@ use super::*;
 
 use crate::scanner::Scanner;
 
-fn parse_expr(source: &str) -> Expr {
+fn make_parser(source: &str) -> Parser {
     let mut scanner = Scanner::new(source);
     let tokens = scanner.scan();
 
-    let mut parser = Parser::new(tokens);
-    parser.parse_expr(0)
+    Parser::new(tokens)
+}
+
+fn parse_expr(source: &str) -> Expr {
+    make_parser(source).parse_expr(0)
+}
+
+fn parse_stmt(source: &str) -> Stmt {
+    make_parser(source).parse_stmt()
+}
+
+fn parse(source: &str) -> Vec<Stmt> {
+    make_parser(source).parse()
 }
 
 #[test]
@@ -227,4 +238,9 @@ fn parses_interpolated_suffix_string() {
         segments: vec!["abc".to_owned(), "".to_owned()],
         exprs: vec![Expr::Value(Value::Num(1.0)).into()],
     }.into());
+}
+
+#[test]
+fn parses_expr_stmt() {
+    assert_eq!(parse_stmt("true;"), Stmt::Expr(Expr::Value(Value::Bool(true))));
 }

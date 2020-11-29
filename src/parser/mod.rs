@@ -29,6 +29,15 @@ impl Parser {
         token
     }
 
+    /// Expects the next token to be equal to the provided one (panics otherwise) and moves to the
+    /// next one
+    fn consume(&mut self, token: Token) {
+        if self.peek() != token {
+            panic!("consume expected {:?} but got {:?}", token, self.peek());
+        }
+        self.advance();
+    }
+
     /// Parses a series of statements (program)
     pub fn parse(&mut self) -> Vec<Stmt> {
         let mut stmts = Vec::new();
@@ -41,7 +50,11 @@ impl Parser {
     /// Parses a single statement
     fn parse_stmt(&mut self) -> Stmt {
         match self.peek() {
-            _ => self.parse_expr(0).into(),
+            _ => {
+                let stmt = self.parse_expr(0).into();
+                self.consume(Token::Semicolon);
+                stmt
+            },
         }
     }
 

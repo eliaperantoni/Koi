@@ -3,7 +3,10 @@ use crate::scanner::Scanner;
 use crate::parser::Parser;
 
 fn eval(source: &str) -> Value {
-    let mut scanner = Scanner::new(source);
+    let mut source = source.to_owned();
+    source.push(';');
+
+    let mut scanner = Scanner::new(&source);
     let tokens = scanner.scan();
 
     let mut parser = Parser::new(tokens);
