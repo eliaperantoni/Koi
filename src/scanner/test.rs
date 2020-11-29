@@ -552,6 +552,21 @@ fn scans_var_decl_initialized() {
 }
 
 #[test]
+fn scans_block() {
+    assert_eq!(scan("{1;2;3;}"), vec![
+        Token::LeftBrace,
+        Token::Num{value: 1.0},
+        Token::Semicolon,
+        Token::Num{value: 2.0},
+        Token::Semicolon,
+        Token::Num{value: 3.0},
+        Token::Semicolon,
+        Token::RightBrace,
+        Token::Eof,
+    ]);
+}
+
+#[test]
 fn scans_if() {
     assert_eq!(scan("if true { 1; }"), vec![
         Token::If,

@@ -279,6 +279,15 @@ fn parses_var_decl_initialized() {
 }
 
 #[test]
+fn parses_block() {
+    assert_eq!(parse_stmt("{1;2;3;}"), Stmt::Block (vec![
+        Stmt::Expr(Expr::Value(Value::Num(1.0))),
+        Stmt::Expr(Expr::Value(Value::Num(2.0))),
+        Stmt::Expr(Expr::Value(Value::Num(3.0))),
+    ]));
+}
+
+#[test]
 fn parses_if_stmt() {
     assert_eq!(parse_stmt("if true { 1; }"), Stmt::If {
         cond: Expr::Value(Value::Bool(true)),

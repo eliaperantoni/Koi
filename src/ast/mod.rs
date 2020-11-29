@@ -46,6 +46,7 @@ pub enum Stmt {
         name: String,
         initializer: Option<Expr>,
     },
+    Block(Vec<Stmt>),
     If {
         cond: Expr,
         then_do: Vec<Stmt>,
