@@ -534,3 +534,19 @@ fn scans_var_decl() {
         Token::Eof,
     ]);
 }
+
+#[test]
+fn scans_var_decl_initialized() {
+    assert_eq!(scan("var abc = 123;"), vec![
+        Token::Var,
+        Token::Identifier {
+            name: "abc".to_owned(),
+        },
+        Token::Equal,
+        Token::Num {
+            value: 123.0,
+        },
+        Token::Semicolon,
+        Token::Eof,
+    ]);
+}
