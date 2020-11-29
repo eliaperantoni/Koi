@@ -60,12 +60,17 @@ impl Parser {
     fn parse_stmt(&mut self) -> Stmt {
         match self.peek() {
             Token::Var => self.parse_var_decl(),
+            Token::If => self.parse_if(),
             _ => {
                 let stmt = self.parse_expr(0).into();
                 self.consume(Token::Semicolon);
                 stmt
             }
         }
+    }
+
+    fn parse_if(&mut self) -> Stmt {
+        unimplemented!();
     }
 
     fn parse_var_decl(&mut self) -> Stmt {
