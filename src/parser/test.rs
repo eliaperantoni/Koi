@@ -277,3 +277,48 @@ fn parses_var_decl_initialized() {
         initializer: Some(Expr::Value(Value::Num(123.0))),
     });
 }
+
+#[test]
+fn parses_if_stmt() {
+    assert_eq!(parse_stmt("if true { 1; }"), Stmt::If {
+        cond: Expr::Value(Value::Bool(true)),
+        then_do: vec![Stmt::Expr(Expr::Value(Value::Num(1.0)))],
+        else_do: vec![],
+    });
+}
+
+#[test]
+fn parses_if_else_stmt() {
+    assert_eq!(parse_stmt("if true { 1; } else { 2; }"), Stmt::If {
+        cond: Expr::Value(Value::Bool(true)),
+        then_do: vec![Stmt::Expr(Expr::Value(Value::Num(1.0)))],
+        else_do: vec![Stmt::Expr(Expr::Value(Value::Num(2.0)))],
+    });
+}
+
+#[test]
+fn parses_if_elseif_stmt() {
+    assert_eq!(parse_stmt("if true { 1; } else if true { 2; }"), Stmt::If {
+        cond: Expr::Value(Value::Bool(true)),
+        then_do: vec![Stmt::Expr(Expr::Value(Value::Num(1.0)))],
+        else_do: vec![Stmt::If {
+            cond: Expr::Value(Value::Bool(true)),
+            then_do: vec![Stmt::Expr(Expr::Value(Value::Num(2.0)))],
+            else_do: vec![],
+        }],
+    });
+}
+
+
+#[test]
+fn parses_if_elseif_else_stmt() {
+    assert_eq!(parse_stmt("if true { 1; } else if true { 2; } else { 3; }"), Stmt::If {
+        cond: Expr::Value(Value::Bool(true)),
+        then_do: vec![Stmt::Expr(Expr::Value(Value::Num(1.0)))],
+        else_do: vec![Stmt::If {
+            cond: Expr::Value(Value::Bool(true)),
+            then_do: vec![Stmt::Expr(Expr::Value(Value::Num(2.0)))],
+            else_do: vec![Stmt::Expr(Expr::Value(Value::Num(3.0)))],
+        }],
+    });
+}
