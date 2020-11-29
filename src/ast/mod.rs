@@ -46,6 +46,11 @@ pub enum Stmt {
         name: String,
         initializer: Option<Expr>,
     },
+    If {
+        cond: Expr,
+        then_do: Vec<Stmt>,
+        else_do: Vec<Stmt>,
+    },
 }
 
 impl From<Expr> for Stmt {
