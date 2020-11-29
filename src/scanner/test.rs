@@ -550,3 +550,79 @@ fn scans_var_decl_initialized() {
         Token::Eof,
     ]);
 }
+
+#[test]
+fn scans_if() {
+    assert_eq!(scan("if true { 1; }"), vec![
+        Token::If,
+        Token::True,
+        Token::LeftBrace,
+        Token::Num{value: 1.0},
+        Token::Semicolon,
+        Token::RightBrace,
+        Token::Eof,
+    ]);
+}
+
+#[test]
+fn scans_if_else() {
+    assert_eq!(scan("if true { 1; } else { 2; }"), vec![
+        Token::If,
+        Token::True,
+        Token::LeftBrace,
+        Token::Num{value: 1.0},
+        Token::Semicolon,
+        Token::RightBrace,
+        Token::Else,
+        Token::LeftBrace,
+        Token::Num{value: 2.0},
+        Token::Semicolon,
+        Token::RightBrace,
+        Token::Eof,
+    ]);
+}
+
+#[test]
+fn scans_if_elseif() {
+    assert_eq!(scan("if true { 1; } else if true { 2; }"), vec![
+        Token::If,
+        Token::True,
+        Token::LeftBrace,
+        Token::Num{value: 1.0},
+        Token::Semicolon,
+        Token::RightBrace,
+        Token::Else,
+        Token::If,
+        Token::True,
+        Token::LeftBrace,
+        Token::Num{value: 2.0},
+        Token::Semicolon,
+        Token::RightBrace,
+        Token::Eof,
+    ]);
+}
+
+#[test]
+fn scans_if_elseif_else() {
+    assert_eq!(scan("if true { 1; } else if true { 2; } else { 3; }"), vec![
+        Token::If,
+        Token::True,
+        Token::LeftBrace,
+        Token::Num{value: 1.0},
+        Token::Semicolon,
+        Token::RightBrace,
+        Token::Else,
+        Token::If,
+        Token::True,
+        Token::LeftBrace,
+        Token::Num{value: 2.0},
+        Token::Semicolon,
+        Token::RightBrace,
+        Token::Else,
+        Token::LeftBrace,
+        Token::Num{value: 3.0},
+        Token::Semicolon,
+        Token::RightBrace,
+        Token::Eof,
+    ]);
+}
