@@ -129,14 +129,14 @@ impl Scanner {
                 Token::String { ref mut begins_cmd, .. } => {
                     *begins_cmd = true;
                 }
-                _ => {unreachable!();}
+                _ => { unreachable!(); }
             };
 
             match tokens.last_mut().unwrap() {
                 Token::String { ref mut ends_cmd, .. } => {
                     *ends_cmd = true;
                 }
-                _ => {unreachable!();}
+                _ => { unreachable!(); }
             };
         }
 
@@ -151,6 +151,12 @@ impl Scanner {
         }
 
         let word_chars = &self.chars[start..self.current];
+
+        let make_identifier = || {
+            Token::Identifier {
+                name: word_chars.iter().collect(),
+            }
+        };
 
         match word_chars[0] {
             'i' if word_chars[1] == 'f' => Token::If,
@@ -168,7 +174,7 @@ impl Scanner {
                     'n' => Token::Fn,
                     'o' if word_chars[2] == 'r' => Token::For,
                     'a' if check_keyword(&word_chars[2..], "lse") => Token::False,
-                    _ => { Token::Identifier }
+                    _ => make_identifier(),
                 }
             }
 
@@ -176,11 +182,11 @@ impl Scanner {
                 match word_chars[1] {
                     'x' if word_chars[2] == 'p' => Token::Exp,
                     'l' if check_keyword(&word_chars[2..], "se") => Token::Else,
-                    _ => { Token::Identifier }
+                    _ => make_identifier(),
                 }
             }
 
-            _ => { Token::Identifier }
+            _ => make_identifier(),
         }
     }
 

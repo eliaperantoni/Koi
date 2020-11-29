@@ -33,7 +33,7 @@ fn panics_unexpected_symbol() {
 
 #[test]
 fn scans_identifier() {
-    assert_eq!(scan("columbia"), vec![Token::Identifier, Token::Eof]);
+    assert_eq!(scan("columbia"), vec![Token::Identifier {name: "columbia".to_owned()}, Token::Eof]);
 }
 
 #[test]
@@ -43,11 +43,60 @@ fn scans_complex_string() {
     let source = "for.while:return cc whine&&!==++--break,continue;(){}[]exp+=-=*=/=%=^=^%*/-+\
     true:h;false!nil?var/if else;fn::== =for";
     assert_eq!(scan(source), vec![
-        For, Dot, While, Colon, Return, Identifier, Identifier, AmperAmper, BangEqual, Equal, PlusPlus,
-        MinusMinus, Break, Comma, Continue, Semicolon, LeftParen, RightParen, LeftBrace, RightBrace,
-        LeftBracket, RightBracket, Exp, PlusEqual, MinusEqual, StarEqual, SlashEqual, PercEqual,
-        CaretEqual, Caret, Perc, Star, Slash, Minus, Plus, True, Colon, Identifier, Semicolon, False,
-        Bang, Nil, Question, Var, Slash, If, Else, Semicolon, Fn, Colon, Colon, EqualEqual, Equal, For,
+        For,
+        Dot,
+        While,
+        Colon,
+        Return,
+        Identifier {name: "cc".to_owned()},
+        Identifier {name: "whine".to_owned()},
+        AmperAmper,
+        BangEqual,
+        Equal,
+        PlusPlus,
+        MinusMinus,
+        Break,
+        Comma,
+        Continue,
+        Semicolon,
+        LeftParen,
+        RightParen,
+        LeftBrace,
+        RightBrace,
+        LeftBracket,
+        RightBracket,
+        Exp,
+        PlusEqual,
+        MinusEqual,
+        StarEqual,
+        SlashEqual,
+        PercEqual,
+        CaretEqual,
+        Caret,
+        Perc,
+        Star,
+        Slash,
+        Minus,
+        Plus,
+        True,
+        Colon,
+        Identifier {name: "h".to_owned()},
+        Semicolon,
+        False,
+        Bang,
+        Nil,
+        Question,
+        Var,
+        Slash,
+        If,
+        Else,
+        Semicolon,
+        Fn,
+        Colon,
+        Colon,
+        EqualEqual,
+        Equal,
+        For,
         Eof,
     ]);
 }
