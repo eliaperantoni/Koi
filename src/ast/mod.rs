@@ -42,6 +42,10 @@ impl From<Value> for Expr {
 #[derive(PartialEq, Debug, Clone)]
 pub enum Stmt {
     Expr(Expr),
+    Var {
+        name: String,
+        initializer: Option<Expr>,
+    },
 }
 
 impl From<Expr> for Stmt {

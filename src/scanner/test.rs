@@ -522,3 +522,15 @@ fn scans_command_with_interpolated_command() {
         Token::Eof,
     ]);
 }
+
+#[test]
+fn scans_var_decl() {
+    assert_eq!(scan("var abc;"), vec![
+        Token::Var,
+        Token::Identifier {
+            name: "abc".to_owned(),
+        },
+        Token::Semicolon,
+        Token::Eof,
+    ]);
+}

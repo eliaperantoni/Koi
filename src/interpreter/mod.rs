@@ -23,6 +23,7 @@ impl Interpreter {
     fn exec(&mut self, stmt: &Stmt) {
         match stmt {
             Stmt::Expr(expr) => self.eval(expr),
+            _ => unimplemented!(),
         };
     }
 
@@ -64,10 +65,10 @@ impl Interpreter {
                 match op {
                     Token::PipePipe => {
                         return Value::Bool(lhs.is_truthy() || self.eval(rhs).is_truthy());
-                    },
+                    }
                     Token::AmperAmper => {
                         return Value::Bool(lhs.is_truthy() && self.eval(rhs).is_truthy());
-                    },
+                    }
                     _ => (),
                 }
 
