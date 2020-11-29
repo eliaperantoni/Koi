@@ -9,6 +9,8 @@ fn eval(source: &str) -> Value {
     let mut parser = Parser::new(tokens);
     let prog = parser.parse();
 
+    assert_eq!(prog.len(), 1);
+
     let expr = if let Stmt::Expr(expr) = &prog[0] {
         expr
     } else {
