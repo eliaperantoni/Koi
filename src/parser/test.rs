@@ -288,6 +288,12 @@ fn parses_block() {
 }
 
 #[test]
+#[should_panic]
+fn panics_open_block() {
+    parse_stmt("{1;2;3;");
+}
+
+#[test]
 fn parses_if_stmt() {
     assert_eq!(parse_stmt("if true { 1; }"), Stmt::If {
         cond: Expr::Value(Value::Bool(true)),
