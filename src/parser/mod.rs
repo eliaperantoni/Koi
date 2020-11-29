@@ -18,8 +18,17 @@ impl Parser {
     }
 
     /// Returns the next token without moving
-    fn peek(&mut self) -> Token {
+    fn peek(&self) -> Token {
         self.tokens[self.current].clone()
+    }
+
+    fn matches(&mut self, target: Token) -> bool {
+        if self.peek() == target {
+            self.advance();
+            true
+        } else {
+            false
+        }
     }
 
     /// Returns the next token and moves to the next one
@@ -50,12 +59,42 @@ impl Parser {
     /// Parses a single statement
     fn parse_stmt(&mut self) -> Stmt {
         match self.peek() {
+            Token::Var => self.parse_var_decl(),
             _ => {
                 let stmt = self.parse_expr(0).into();
                 self.consume(Token::Semicolon);
                 stmt
-            },
+            }
         }
+    }
+
+    fn parse_var_decl(&mut self) -> Stmt {
+        // Consume Token::Var
+        self.advance();
+
+        let name = if let Token::Identifier { name } = self.advance() {
+            name
+        } else {
+            panic!("expected identifier in var declaration");
+        };
+
+        let stmt = if self.matches(Token::Equal) {
+            let expr = self.parse_expr(0);
+
+            Stmt::Var {
+                name,
+                initializer: Some(expr),
+            }
+        } else {
+            Stmt::Var {
+                name,
+                initializer: None,
+            }
+        };
+
+        self.consume(Token::Semicolon);
+
+        stmt
     }
 
     /// Parses an expression

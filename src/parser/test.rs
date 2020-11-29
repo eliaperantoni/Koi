@@ -261,3 +261,19 @@ fn parses_expr_stmts() {
         }),
     ]);
 }
+
+#[test]
+fn parses_var_decl() {
+    assert_eq!(parse_stmt("var abc;"), Stmt::Var {
+        name: "abc".to_owned(),
+        initializer: None,
+    });
+}
+
+#[test]
+fn parses_var_decl_initialized() {
+    assert_eq!(parse_stmt("var abc = 123;"), Stmt::Var {
+        name: "abc".to_owned(),
+        initializer: Some(Expr::Value(Value::Num(123.0))),
+    });
+}
