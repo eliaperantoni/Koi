@@ -1,5 +1,5 @@
 use crate::scanner::Token;
-use crate::ast::{Value, Expr};
+use crate::ast::{Value, Expr, Stmt};
 
 #[cfg(test)]
 mod test;
@@ -17,29 +17,44 @@ impl Parser {
         }
     }
 
+    /// Returns the next token without moving
     fn peek(&mut self) -> Token {
         self.tokens[self.current].clone()
     }
 
+    /// Returns the next token and moves to the next one
     fn advance(&mut self) -> Token {
         let token = self.peek();
         self.current += 1;
         token
     }
 
-    pub fn parse(&mut self) -> Expr {
-        self.parse_expr(0)
+    /// Parses a series of statements (program)
+    pub fn parse(&mut self) -> Vec<Stmt> {
+        let mut stmts = Vec::new();
+        while self.peek() != Token::Eof {
+            stmts.push(self.parse_stmt());
+        }
+        stmts
     }
 
+    /// Parses a single statement
+    fn parse_stmt(&mut self) -> Stmt {
+        match self.peek() {
+            _ => self.parse_expr(0).into(),
+        }
+    }
+
+    /// Parses an expression
     fn parse_expr(&mut self, min_bp: u8) -> Expr {
         use Token::*;
 
         let lhs = self.advance();
         let mut lhs = match lhs {
-            Num { value } => Expr::Literal(Value::Num(value)),
+            Num { value } => Expr::Value(Value::Num(value)),
             String { mut value, mut does_interp, .. } => {
                 if !does_interp {
-                    return Expr::Literal(Value::String(value.clone()));
+                    return Expr::Value(Value::String(value.clone()));
                 }
 
                 let mut segments = Vec::new();
@@ -66,8 +81,8 @@ impl Parser {
 
                 Expr::Interp { segments, exprs }
             }
-            True => Expr::Literal(Value::Bool(true)),
-            False => Expr::Literal(Value::Bool(false)),
+            True => Expr::Value(Value::Bool(true)),
+            False => Expr::Value(Value::Bool(false)),
             LeftParen => {
                 let lhs = self.parse_expr(0);
                 assert_eq!(self.advance(), RightParen);
@@ -116,6 +131,7 @@ impl Parser {
     }
 }
 
+/// Returns the right binding power of a prefix operator
 fn prefix_binding_power(op: &Token) -> ((), u8) {
     use Token::*;
     match op {
@@ -124,6 +140,8 @@ fn prefix_binding_power(op: &Token) -> ((), u8) {
     }
 }
 
+/// Returns the left and right binding power of an infix operator or None if the provided Token is
+/// not an infix operator
 fn infix_binding_power(op: &Token) -> Option<(u8, u8)> {
     use Token::*;
     let res = match op {

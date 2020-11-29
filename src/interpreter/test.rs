@@ -7,10 +7,16 @@ fn eval(source: &str) -> Value {
     let tokens = scanner.scan();
 
     let mut parser = Parser::new(tokens);
-    let expr = parser.parse();
+    let prog = parser.parse();
+
+    let expr = if let Stmt::Expr(expr) = &prog[0] {
+        expr
+    } else {
+        panic!("expected a single expression")
+    };
 
     let mut interpreter = Interpreter::new();
-    interpreter.eval(&expr)
+    interpreter.eval(expr)
 }
 
 #[test]

@@ -27,7 +27,7 @@ impl Value {
 
 #[derive(PartialEq, Debug, Clone)]
 pub enum Expr {
-    Literal(Value),
+    Value(Value),
     Interp { segments: Vec<String>, exprs: Vec<Expr> },
     Unary { op: Token, rhs: Box<Expr> },
     Binary { lhs: Box<Expr>, rhs: Box<Expr>, op: Token },
@@ -35,6 +35,16 @@ pub enum Expr {
 
 impl From<Value> for Expr {
     fn from(value: Value) -> Self {
-        Expr::Literal(value)
+        Expr::Value(value)
+    }
+}
+
+pub enum Stmt {
+    Expr(Expr),
+}
+
+impl From<Expr> for Stmt {
+    fn from(expr: Expr) -> Self {
+        Stmt::Expr(expr)
     }
 }

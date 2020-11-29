@@ -1,4 +1,4 @@
-use crate::ast::{Expr, Value};
+use crate::ast::{Expr, Value, Stmt};
 use crate::scanner::Token;
 use itertools::{interleave, Itertools};
 
@@ -12,9 +12,24 @@ impl Interpreter {
         Interpreter {}
     }
 
-    pub fn eval(&self, expr: &Expr) -> Value {
+    /// Executes a series of statements (program)
+    pub fn interpret(&mut self, prog: &Vec<Stmt>) {
+        for stmt in prog {
+            self.exec(stmt);
+        }
+    }
+
+    /// Executes a single statement
+    fn exec(&mut self, stmt: &Stmt) {
+        match stmt {
+            Stmt::Expr(expr) => self.eval(expr),
+        };
+    }
+
+    /// Evaluates an expression and returns a value
+    fn eval(&self, expr: &Expr) -> Value {
         match expr {
-            Expr::Literal(value) => value.clone(),
+            Expr::Value(value) => value.clone(),
 
             Expr::Interp { segments, exprs } => {
                 let segments = interleave(
