@@ -244,3 +244,20 @@ fn parses_interpolated_suffix_string() {
 fn parses_expr_stmt() {
     assert_eq!(parse_stmt("true;"), Stmt::Expr(Expr::Value(Value::Bool(true))));
 }
+
+#[test]
+fn parses_expr_stmts() {
+    assert_eq!(parse("true;\n1+2;\ntrue&&false;\n"), vec![
+        Stmt::Expr(Expr::Value(Value::Bool(true))),
+        Stmt::Expr(Expr::Binary {
+            lhs: Expr::Value(Value::Num(1.0)).into(),
+            op: Token::Plus,
+            rhs: Expr::Value(Value::Num(2.0)).into(),
+        }),
+        Stmt::Expr(Expr::Binary {
+            lhs: Expr::Value(Value::Bool(true)).into(),
+            op: Token::AmperAmper,
+            rhs: Expr::Value(Value::Bool(false)).into(),
+        }),
+    ]);
+}
