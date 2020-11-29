@@ -85,7 +85,30 @@ impl Parser {
     }
 
     fn parse_if(&mut self) -> Stmt {
-        unimplemented!();
+        // Consume Token::If
+        self.advance();
+
+        let cond = self.parse_expr(0);
+
+        let then_do = match self.parse_block() {
+            Stmt::Block(stmts) => stmts,
+            _ => unreachable!(),
+        };
+
+        let else_do = if self.matches(Token::Else) {
+            match self.parse_block() {
+                Stmt::Block(stmts) => stmts,
+                _ => unreachable!(),
+            }
+        } else {
+            vec![]
+        };
+
+        Stmt::If {
+            cond,
+            then_do,
+            else_do,
+        }
     }
 
     fn parse_var_decl(&mut self) -> Stmt {
