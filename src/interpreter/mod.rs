@@ -22,7 +22,12 @@ impl Interpreter {
     /// Executes a single statement
     fn exec(&mut self, stmt: &Stmt) {
         match stmt {
-            Stmt::Expr(expr) => self.eval(expr),
+            Stmt::Expr(expr) => {
+                self.eval(expr);
+            },
+            Stmt::Print(expr) => {
+                println!("{}", self.eval(expr).stringify());
+            },
             _ => unimplemented!(),
         };
     }

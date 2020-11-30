@@ -431,3 +431,8 @@ fn parses_if_complex_and_nested() {
 
     assert_eq!(got, want);
 }
+
+#[test]
+fn parses_print() {
+    assert_eq!(parse_stmt(":2;"), Stmt::Print(Expr::Value(Value::Num(2.0))));
+}

@@ -66,6 +66,12 @@ impl Parser {
             Token::Var => self.parse_var_decl(),
             Token::LeftBrace => self.parse_block(),
             Token::If => self.parse_if(),
+            Token::Colon => {
+                self.advance();
+                let stmt = Stmt::Print(self.parse_expr(0));
+                self.consume(Token::Semicolon);
+                stmt
+            },
             _ => {
                 let stmt = self.parse_expr(0).into();
                 self.consume(Token::Semicolon);
@@ -102,7 +108,7 @@ impl Parser {
         let else_do = if self.matches(Token::Else) {
             if self.peek() == Token::If {
                 vec![self.parse_if()]
-            } else  {
+            } else {
                 match self.parse_block() {
                     Stmt::Block(stmts) => stmts,
                     _ => unreachable!(),

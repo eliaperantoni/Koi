@@ -8,6 +8,7 @@ use std::env::args;
 
 use scanner::Scanner;
 use parser::Parser;
+use interpreter::Interpreter;
 
 fn main() {
     let path = args().nth(1).unwrap_or(String::from("usage: ampere PATH"));
@@ -18,5 +19,9 @@ fn main() {
     let mut scanner = Scanner::new(&source);
     let tokens = scanner.scan();
 
-    let _parser = Parser::new(tokens);
+    let mut parser = Parser::new(tokens);
+    let prog= parser.parse();
+
+    let mut interpreter = Interpreter::new();
+    interpreter.interpret(&prog);
 }

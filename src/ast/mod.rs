@@ -52,6 +52,7 @@ pub enum Stmt {
         then_do: Vec<Stmt>,
         else_do: Vec<Stmt>,
     },
+    Print(Expr),
 }
 
 impl From<Expr> for Stmt {
