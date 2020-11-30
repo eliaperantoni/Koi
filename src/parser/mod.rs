@@ -19,7 +19,11 @@ impl Parser {
 
     /// Returns the next token without moving
     fn peek(&self) -> Token {
-        self.tokens[self.current].clone()
+        self.peek_n(0)
+    }
+
+    fn peek_n(&self, n: usize) -> Token {
+        self.tokens[self.current + n].clone()
     }
 
     fn matches(&mut self, target: Token) -> bool {
@@ -96,9 +100,13 @@ impl Parser {
         };
 
         let else_do = if self.matches(Token::Else) {
-            match self.parse_block() {
-                Stmt::Block(stmts) => stmts,
-                _ => unreachable!(),
+            if self.peek() == Token::If {
+                vec![self.parse_if()]
+            } else  {
+                match self.parse_block() {
+                    Stmt::Block(stmts) => stmts,
+                    _ => unreachable!(),
+                }
             }
         } else {
             vec![]
