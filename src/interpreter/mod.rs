@@ -34,7 +34,7 @@ impl Interpreter {
         match stmt {
             Stmt::Expr(expr) => {
                 self.eval(expr);
-            }
+            },
             Stmt::Print(expr) => {
                 let res = self.eval(expr).stringify();
 
@@ -43,13 +43,21 @@ impl Interpreter {
                 } else {
                     println!("{}", res);
                 }
-            }
+            },
             Stmt::Var { name, initializer } => {
                 self.vars.insert(name.to_owned(), match initializer {
                     Some(expr) => self.eval(expr),
                     None => Value::Nil,
                 });
-            }
+            },
+            Stmt::If {cond, then_do, else_do} => {
+                let cond = self.eval(cond);
+                if cond.is_truthy() {
+                    self.interpret(then_do);
+                } else {
+                    self.interpret(else_do);
+                }
+            },
             _ => unimplemented!(),
         };
     }

@@ -70,3 +70,52 @@ fn interprets_var_declaration_and_access() {
 fn interprets_uninitialized_var() {
     assert_eq!(exec("var x;: x;"), "nil".to_owned());
 }
+
+#[test]
+fn interprets_if_statement() {
+    assert_eq!(exec(r#"
+        if true {
+            : "branch11";
+        } else if false {
+            : "branch12";
+        } else {
+            : "branch13";
+        }
+
+        if false {
+            : "branch21";
+        } else if true {
+            : "branch22";
+        } else {
+            : "branch23";
+        }
+
+        if false {
+            : "branch31";
+        } else if false {
+            : "branch32";
+        } else {
+            : "branch33";
+        }
+
+        if false {
+            : "woompa loompa";
+        }
+
+        if true {
+            : "branch41";
+        }
+
+        if false {
+            : "branch51";
+        } else {
+            : "branch52";
+        }
+
+        if false {
+            : "branch61";
+        } else if true {
+            : "branch62";
+        }
+    "#), "branch11branch22branch33branch41branch52branch62".to_owned());
+}
