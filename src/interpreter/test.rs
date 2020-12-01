@@ -24,6 +24,20 @@ fn eval(source: &str) -> Value {
     interpreter.eval(expr)
 }
 
+fn exec(source: &str) -> String {
+    let mut scanner = Scanner::new(&source);
+    let tokens = scanner.scan();
+
+    let mut parser = Parser::new(tokens);
+    let prog = parser.parse();
+
+    let mut interpreter = Interpreter::new();
+    interpreter.capture = true;
+    interpreter.interpret(&prog);
+
+    interpreter.captured
+}
+
 #[test]
 fn interprets_arithmetic_expressions() {
     assert_eq!(eval("2"), Value::Num(2.0));
@@ -40,4 +54,19 @@ fn interprets_boolean_expression() {
 #[test]
 fn interprets_interpolated_string() {
     assert_eq!(eval("\"a{\"b\"}c{12.2}d{true}e\""), Value::String("abc12.2dtruee".to_owned()));
+}
+
+#[test]
+fn nil_literal_evaluates_to_nil() {
+    assert_eq!(eval("nil"), Value::Nil);
+}
+
+#[test]
+fn interprets_var_declaration_and_access() {
+    assert_eq!(exec("var x = 512;: x;"), "512".to_owned());
+}
+
+#[test]
+fn interprets_uninitialized_var() {
+    assert_eq!(exec("var x;: x;"), "nil".to_owned());
 }
