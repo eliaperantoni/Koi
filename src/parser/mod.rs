@@ -71,7 +71,7 @@ impl Parser {
                 let stmt = Stmt::Print(self.parse_expr(0));
                 self.consume(Token::Semicolon);
                 stmt
-            },
+            }
             _ => {
                 let stmt = self.parse_expr(0).into();
                 self.consume(Token::Semicolon);
@@ -189,14 +189,16 @@ impl Parser {
                 segments.push(value.clone());
 
                 Expr::Interp { segments, exprs }
-            }
+            },
             True => Expr::Value(Value::Bool(true)),
             False => Expr::Value(Value::Bool(false)),
+            Nil => Expr::Value(Value::Nil),
+            Identifier {name} => Expr::Var(name),
             LeftParen => {
                 let lhs = self.parse_expr(0);
                 assert_eq!(self.advance(), RightParen);
                 lhs
-            }
+            },
             Plus | Minus | PlusPlus | MinusMinus | Bang => {
                 let ((), r_bp) = prefix_binding_power(&lhs);
                 let rhs = self.parse_expr(r_bp);
@@ -205,7 +207,7 @@ impl Parser {
                     rhs: Box::from(rhs),
                     op: lhs,
                 }
-            }
+            },
             t @ _ => panic!("bad token {:?}", t),
         };
 

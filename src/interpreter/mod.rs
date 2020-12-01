@@ -1,15 +1,20 @@
 use crate::ast::{Expr, Value, Stmt};
 use crate::scanner::Token;
 use itertools::{interleave, Itertools};
+use std::collections::HashMap;
 
 #[cfg(test)]
 mod test;
 
-pub struct Interpreter {}
+pub struct Interpreter {
+    vars: HashMap<String, Value>,
+}
 
 impl Interpreter {
     pub fn new() -> Interpreter {
-        Interpreter {}
+        Interpreter {
+            vars: HashMap::new(),
+        }
     }
 
     /// Executes a series of statements (program)
@@ -28,6 +33,12 @@ impl Interpreter {
             Stmt::Print(expr) => {
                 println!("{}", self.eval(expr).stringify());
             },
+            Stmt::Var {name, initializer} => {
+                self.vars.insert(name.to_owned(), match initializer {
+                    Some(expr) => self.eval(expr),
+                    None => Value::Nil,
+                });
+            },
             _ => unimplemented!(),
         };
     }
@@ -36,7 +47,9 @@ impl Interpreter {
     fn eval(&self, expr: &Expr) -> Value {
         match expr {
             Expr::Value(value) => value.clone(),
-
+            Expr::Var(name) => self.vars.get(name).and_then(
+                |value| Some(value.clone()),
+            ).unwrap_or(Value::Nil),
             Expr::Interp { segments, exprs } => {
                 let segments = interleave(
                     segments.iter().map(String::clone),
