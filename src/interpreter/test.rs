@@ -24,7 +24,7 @@ fn eval(source: &str) -> Value {
     interpreter.eval(expr)
 }
 
-fn exec(source: &str) -> String {
+fn interpret(source: &str) -> String {
     let mut scanner = Scanner::new(&source);
     let tokens = scanner.scan();
 
@@ -63,17 +63,17 @@ fn nil_literal_evaluates_to_nil() {
 
 #[test]
 fn interprets_var_declaration_and_access() {
-    assert_eq!(exec("var x = 512;: x;"), "512".to_owned());
+    assert_eq!(interpret("var x = 512;: x;"), "512".to_owned());
 }
 
 #[test]
 fn interprets_uninitialized_var() {
-    assert_eq!(exec("var x;: x;"), "nil".to_owned());
+    assert_eq!(interpret("var x;: x;"), "nil".to_owned());
 }
 
 #[test]
 fn interprets_if_statement() {
-    assert_eq!(exec(r#"
+    assert_eq!(interpret(r#"
         if true {
             : "branch11";
         } else if false {
