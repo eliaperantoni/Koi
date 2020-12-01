@@ -8,12 +8,17 @@ mod test;
 
 pub struct Interpreter {
     vars: HashMap<String, Value>,
+
+    capture: bool,
+    captured: String,
 }
 
 impl Interpreter {
     pub fn new() -> Interpreter {
         Interpreter {
             vars: HashMap::new(),
+            capture: false,
+            captured: String::new(),
         }
     }
 
@@ -29,16 +34,22 @@ impl Interpreter {
         match stmt {
             Stmt::Expr(expr) => {
                 self.eval(expr);
-            },
+            }
             Stmt::Print(expr) => {
-                println!("{}", self.eval(expr).stringify());
-            },
-            Stmt::Var {name, initializer} => {
+                let res = self.eval(expr).stringify();
+
+                if self.capture {
+                    self.captured.push_str(&res);
+                } else {
+                    println!("{}", res);
+                }
+            }
+            Stmt::Var { name, initializer } => {
                 self.vars.insert(name.to_owned(), match initializer {
                     Some(expr) => self.eval(expr),
                     None => Value::Nil,
                 });
-            },
+            }
             _ => unimplemented!(),
         };
     }
