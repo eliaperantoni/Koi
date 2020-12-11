@@ -284,3 +284,14 @@ d = {
 
 In both cases newlines appear inside `{}` but in one case they are meaningful in the other they are not. This cannot work
 in Ampere. Go's solution is quite simple and neat. I'll ponder whether or not it's applicable to Ampere.
+
+TODO: Look at more programming languages with blocks and implicit semicolons (like Go)
+
+- [ ] Ruby
+- [ ] Swift
+- [ ] Dart
+- [ ] Magpie
+- [ ] Finch
+- [ ] Vigil
+- [ ] Kotlin
+- [ ] TypeScript
