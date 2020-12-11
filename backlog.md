@@ -125,3 +125,162 @@ harder and here's what I've found:
     ```
   
     Doesn't support piping.
+
+
+## 11/12/2020
+
+Yesterday I got a lot of useful info comparing my design to what others have come up with. I was also relieved to find
+that my syntax for commands was not as bad as I thought: some are very similar to mine (Shok) while others (like Ammonite)
+are even worse in my opinion.
+
+I was thinking that understanding how to deal with implicit semicolons could help me on settling on a syntax for commands.
+It's also a very important aspect of my language anyways and I should look into it ASAP.
+
+I went to read a section from my trusty [Crafting Interpreters](http://craftinginterpreters.com/scanning.html#design-note)
+(thank you [Robert](https://journal.stuffwithstuff.com/)) <3) which explains how Go and Python handle that.
+
+Go uses a simple rule: only newlines that come after certain token types are significant. Take a look at this code:
+
+```go
+fmt.Println("Hello, World!")
+x := 12 * 2
+y := fmt.Sprintf("x is %d", x)
+go func(){
+    fmt.Println(y)
+}()
+z := 225 - y
+for i := 0; i < 10; i++ {
+    if i % 2 == 0 {
+        continue
+    } else if i == 15 {
+        break
+    }
+    z -= i
+}
+```
+
+Do you notice a pattern on tokens that end a statement? It's always a `)`, an identifier, any literal or some specific
+keywords like `break` and `continue`. Go's lexer takes advantage of this and inserts implicit semicolons whenever it
+encounters a newline preceded by one of these tokens.
+
+But it works wonders when you want to spread out on multiple lines as well! Take a look at this example in which the code
+uses as many lines as possible:
+
+```go
+fmt.
+    Println(
+        "Hello, World!",
+    )
+
+ctx :=
+    context.
+        WithValue(
+            context.
+                Background(
+                ),
+            "value",
+            12,
+        ).
+        Err(
+        ).
+        Error(
+        )
+```
+
+There are only two statements and they are both function calls (i.e. they both end in `)` and a newline so the lexer will
+put an implicit semicolon there).
+
+Can you see how ignored newlines are always preceded by very specific token types? `(` opens the parameters list for a
+function call, `:=`/`=` precede the expression in a declaration/assignment, `.` precedes the identifier in an access 
+operator, `,` comes after a parameter in a function call.
+
+Not that the last parameter in a function call still has to be followed by a `,` unless the `)` appears on the same line.
+This is not valid:
+
+```go
+fmt.Printf(
+    "2*5 is %d",
+    10
+)
+```
+
+And the reason is pretty simple: the lexer sees `10`, a literal, and a newline that follows. An int literal is one of those
+tokens that force newlines that follow to be treated as semicolons.
+
+Similarly, chained function calls must end each line with `.` so that the lexer knows it has to hold on! This is not valid:
+
+```go
+context.Background()
+       .Err()
+```
+
+You can take a look at the Go's lexer's unit tests [here](https://github.com/golang/go/blob/master/src/go/scanner/scanner_test.go#L369)
+for more examples.
+
+
+Indeed if we take a look at Go's lexer's [source code](https://github.com/golang/go/blob/master/src/go/scanner/scanner.go#L782)
+we can see it using those patterns we talked about. `Scan()` scans the next token and returns it.
+The function immediately calls `skipWhitespace()` which discards any whitespace expect newlines if `insertSemi` is true.
+Going back to `Scan()` we see that tokens such as `)` (that allow a following newline to be lexed as an implicit semicolon)
+set `insertSemi` to true. The next time `Scan()` is called `skipWhitespace()` will not discard the newline which is going
+to be scanned as `SEMICOLON`. Neat!
+
+What about Python? Python treats all newlines as significant (i.e. treats them as semicolons) expect when inside a pair
+of `()`, `[]` or `{}`. That's why function calls, arrays and objects can still be spread over multiple lines.
+
+```python
+range(
+    5,
+    100,
+    2
+)
+
+[
+    1,
+    2,
+    3
+]
+
+{
+    "a": 1,
+    "b": 2,
+    "c": 3
+}
+```
+
+That's also why lambdas cannot contain multiple statements on multiple lines! The newlines, that normally mark the end of
+a statement in Python, are ignored in lambdas because they oftern appear inside `()`... :
+
+```python
+map(lambda e: e * 2, [1, 2, 3])
+```
+
+...and even when they don't, you still cannot use multiple lines because they terminate the outer statement:
+
+```python
+fn = lambda e: e = e * 2 # implicit ; here
+               return e  # implicit ; here
+```
+
+So where do we go from here? No clue yet!
+
+![](https://i.imgflip.com/ry4bq.jpg)
+
+But I think Python and Go were really insightful. TBH I think Python's approach only works because it doesn't have `{}`
+blocks which Ampere does. Otherwise how would the lexer know it has to treat newlines in the if statement (with an
+hypothetical `{}` block) as semicolons but not in the dict?
+
+```python
+if True {
+    print("foo")
+    print("bar")
+}
+
+d = {
+    "foo": 1,
+    "bar": 2
+}
+```
+
+In both cases newlines appear inside `{}` but in one case they are meaningful in the other they are not. This cannot work
+in Ampere. Go's solution is quite simple and neat. I'll ponder whether or not it's applicable to Ampere.
