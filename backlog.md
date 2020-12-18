@@ -290,8 +290,16 @@ TODO: Look at more programming languages with blocks and implicit semicolons (li
 - [ ] Ruby
 - [ ] Swift
 - [ ] Dart
+- [ ] Wren
 - [ ] Magpie
 - [ ] Finch
 - [ ] Vigil
 - [ ] Kotlin
 - [ ] TypeScript
+
+## 16/12/2020
+
+Idea: the lexer distinguishes lines that are code and lines that are commands. When it is at the begging of the file or
+it has just read a `\n` (this means that it is at the start of a line) it checks to see if there is any unquoted `=` or
+`(` on the same line. If that's not the case: the line is scanned as a command. Otherwise it's scanned as normal code and
+uses a strategy similar to Go's to ignore newlines that follow tokens such as `.`, `,`, `[`, `(` etcetera
