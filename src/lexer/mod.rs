@@ -24,13 +24,9 @@ impl Lexer {
     fn make_lexeme(&self, from: usize, to: usize) -> String {
         (&self.source[from..to]).iter().collect()
     }
-}
 
-impl Iterator for Lexer {
-    type Item = Token;
-
-    fn next(&mut self) -> Option<Self::Item> {
-        let symbol = match self.peek_at(0)? {
+    fn try_scan_symbol(&mut self) -> Option<Token> {
+        let kind_length_pair = match self.peek_at(0)? {
             ',' => Some((TokenKind::Comma, 1)),
             '.' => Some((TokenKind::Dot, 1)),
             ':' => Some((TokenKind::Colon, 1)),
@@ -110,7 +106,7 @@ impl Iterator for Lexer {
             _ => None,
         };
 
-        if let Some((kind, length)) = symbol {
+        if let Some((kind, length)) = kind_length_pair {
             let lexeme = self.make_lexeme(self.cursor, self.cursor + length);
 
             self.cursor += length;
@@ -119,8 +115,20 @@ impl Iterator for Lexer {
                 lexeme,
                 kind,
             })
-        } else{
+        } else {
             None
         }
+    }
+}
+
+impl Iterator for Lexer {
+    type Item = Token;
+
+    fn next(&mut self) -> Option<Self::Item> {
+        if let Some(token) = self.try_scan_symbol() {
+            return Some(token);
+        }
+
+        None
     }
 }
