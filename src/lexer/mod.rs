@@ -1,4 +1,5 @@
 use crate::token::{Token, TokenKind};
+use itertools::Itertools;
 
 pub struct Lexer {
     source: Vec<char>,
@@ -25,12 +26,12 @@ impl Lexer {
         (&self.source[from..to]).iter().collect()
     }
 
-    fn try_scan_symbol(&mut self) -> Option<Token> {
-        let kind_length_pair = match self.peek_at(0)? {
-            ',' => Some((TokenKind::Comma, 1)),
-            '.' => Some((TokenKind::Dot, 1)),
-            ':' => Some((TokenKind::Colon, 1)),
-            ';' => Some((TokenKind::Semicolon, 1)),
+    fn scan_symbol(&mut self) -> Token {
+        let (kind, length) = match self.peek_at(0).unwrap() {
+            ',' => (TokenKind::Comma, 1),
+            '.' => (TokenKind::Dot, 1),
+            ':' => (TokenKind::Colon, 1),
+            ';' => (TokenKind::Semicolon, 1),
 
             ' ' => {
                 let mut length = 1;
@@ -40,16 +41,16 @@ impl Lexer {
                         _ => break,
                     }
                 }
-                Some((TokenKind::Space, length))
+                (TokenKind::Space, length)
             }
-            '\n' => Some((TokenKind::Newline, 1)),
+            '\n' => (TokenKind::Newline, 1),
 
-            '(' => Some((TokenKind::LeftParen, 1)),
-            ')' => Some((TokenKind::RightParen, 1)),
-            '[' => Some((TokenKind::LeftBracket, 1)),
-            ']' => Some((TokenKind::RightBracket, 1)),
-            '{' => Some((TokenKind::LeftBrace, 1)),
-            '}' => Some((TokenKind::RightBrace, 1)),
+            '(' => (TokenKind::LeftParen, 1),
+            ')' => (TokenKind::RightParen, 1),
+            '[' => (TokenKind::LeftBracket, 1),
+            ']' => (TokenKind::RightBracket, 1),
+            '{' => (TokenKind::LeftBrace, 1),
+            '}' => (TokenKind::RightBrace, 1),
 
             // Chars that may only appear by themselves or followed by an equals sign
             '!' | '=' | '/' | '^' | '%' | '>' | '<' => {
@@ -64,59 +65,88 @@ impl Lexer {
                     _ => unreachable!(),
                 };
 
-                Some(if let Some('=') = self.peek_at(1) {
+                if let Some('=') = self.peek_at(1) {
                     (equal_kind, 2)
                 } else {
                     (kind, 1)
-                })
+                }
             }
 
-            '+' => Some(match self.peek_at(1) {
+            '+' => match self.peek_at(1) {
                 Some('+') => (TokenKind::PlusPlus, 2),
                 Some('=') => (TokenKind::PlusEqual, 2),
                 _ => (TokenKind::Plus, 1),
-            }),
-            '-' => Some(match self.peek_at(1) {
+            },
+            '-' => match self.peek_at(1) {
                 Some('-') => (TokenKind::MinusMinus, 2),
                 Some('=') => (TokenKind::MinusEqual, 2),
                 _ => (TokenKind::Minus, 1),
-            }),
+            },
 
-            '*' => Some(match self.peek_at(1) {
+            '*' => match self.peek_at(1) {
                 Some('=') => (TokenKind::StarEqual, 2),
                 Some('>') => (TokenKind::StarGreat, 2),
                 Some('<') => (TokenKind::StarLess, 2),
                 Some('|') => (TokenKind::StarPipe, 2),
                 _ => (TokenKind::Star, 1),
-            }),
-
-            '|' => Some(match self.peek_at(1) {
-                Some('|') => (TokenKind::PipePipe, 2),
-                _ => (TokenKind::Pipe, 1),
-            }),
-
-            '&' => match self.peek_at(1) {
-                Some('&') => Some((TokenKind::AmperAmper, 2)),
-                Some('>') => Some((TokenKind::AmperGreat, 2)),
-                Some('<') => Some((TokenKind::AmperLess, 2)),
-                Some('|') => Some((TokenKind::AmperPipe, 2)),
-                _ => None,
             },
 
+            '|' => match self.peek_at(1) {
+                Some('|') => (TokenKind::PipePipe, 2),
+                _ => (TokenKind::Pipe, 1),
+            },
+
+            '&' => match self.peek_at(1) {
+                Some('&') => (TokenKind::AmperAmper, 2),
+                Some('>') => (TokenKind::AmperGreat, 2),
+                Some('<') => (TokenKind::AmperLess, 2),
+                Some('|') => (TokenKind::AmperPipe, 2),
+                _ => panic!("unexpected character"),
+            },
+
+            _ => panic!("unexpected character"),
+        };
+
+        let lexeme = self.make_lexeme(self.cursor, self.cursor + length);
+
+        self.cursor += length;
+
+        Token {
+            lexeme,
+            kind,
+        }
+    }
+
+    fn scan_number(&mut self) -> Token {
+        let mut iter = self.source[self.cursor..].iter();
+
+        let int_part: String = iter.take_while_ref(|&c| c.is_ascii_digit()).collect();
+
+        let dec_part: Option<String> = match iter.next() {
+            Some('.') => {
+                Some(iter.take_while_ref(|&c| c.is_ascii_digit()).collect())
+            }
             _ => None,
         };
 
-        if let Some((kind, length)) = kind_length_pair {
-            let lexeme = self.make_lexeme(self.cursor, self.cursor + length);
+        let length = int_part.len() + dec_part.map(|s| 1 + s.len()).unwrap_or(0);
+        let lexeme = self.make_lexeme(self.cursor, self.cursor + length);
+        let value = lexeme.parse().expect("could not parse number literal");
 
-            self.cursor += length;
+        self.cursor += lexeme.len();
 
-            Some(Token {
-                lexeme,
-                kind,
-            })
-        } else {
-            None
+        Token {
+            lexeme,
+            kind: TokenKind::Num {
+                value,
+            },
+        }
+    }
+
+    fn scan_word(&mut self) -> Token {
+        Token {
+            lexeme: "".to_owned(),
+            kind: TokenKind::Eof,
         }
     }
 }
@@ -125,10 +155,24 @@ impl Iterator for Lexer {
     type Item = Token;
 
     fn next(&mut self) -> Option<Self::Item> {
-        if let Some(token) = self.try_scan_symbol() {
-            return Some(token);
-        }
+        match (self.peek_at(0), self.peek_at(1)) {
+            (None, _) => None,
 
-        None
+            (Some(digit), _) |
+            (Some('.'), Some(digit))
+            if digit.is_ascii_digit() => Some(self.scan_number()),
+
+            (Some(c), _) if is_word_char(c) => Some(self.scan_word()),
+
+            _ => Some(self.scan_symbol()),
+        }
+    }
+}
+
+fn is_word_char(c: char) -> bool {
+    match c {
+        '$' | '_' => true,
+        _ if c.is_ascii_alphabetic() => true,
+        _ => false,
     }
 }
