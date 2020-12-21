@@ -63,11 +63,11 @@ impl Lexer {
             '{' => {
                 self.braces_count += 1;
                 (TokenKind::LeftBrace, 1)
-            },
+            }
             '}' => {
                 self.braces_count -= 1;
                 (TokenKind::RightBrace, 1)
-            },
+            }
 
             // Chars that may only appear by themselves or followed by an equals sign
             '!' | '=' | '/' | '^' | '%' | '>' | '<' => {
@@ -200,16 +200,19 @@ impl Lexer {
     }
 
     fn scan_string(&mut self) -> Token {
+        // A string literal is scanned in one go. The first token is returned, the rest is saved in
+        // a buffer and tokens are returned in the next calls to `next`
+        let mut tokens = Vec::new();
+
         // Either ' or "
         // Safe to unwrap because the lexer calls this method when the current char is ' or " so there
         // is at least one character
         let delimiter = self.peek_at(0).unwrap();
+
+        let mut lexeme_start = self.cursor;
+
         // Consume delimiter
         self.cursor += 1;
-
-        // A string literal is scanned in one go. The first token is returned, the rest is saved in
-        // a buffer and tokens are returned in the next calls to `next`
-        let mut tokens = Vec::new();
 
         // Piece of string between delimiters and/or braces
         let mut literal_piece = String::new();
@@ -225,35 +228,37 @@ impl Lexer {
 
             if ch == delimiter {
                 tokens.push(Token {
-                    lexeme: "foo".to_owned(),
+                    lexeme: self.make_lexeme(lexeme_start, self.cursor),
                     kind: TokenKind::String {
                         value: literal_piece.clone(),
                         does_interp: false,
-                    }
+                    },
                 });
                 break;
             }
 
             if ch == '{' {
                 tokens.push(Token {
-                    lexeme: "foo".to_owned(),
+                    lexeme: self.make_lexeme(lexeme_start, self.cursor),
                     kind: TokenKind::String {
                         value: literal_piece.clone(),
                         does_interp: true,
-                    }
+                    },
                 });
-
-                literal_piece = String::new();
 
                 self.interp_count += 1;
                 tokens.append(&mut self.collect::<Vec<Token>>());
                 self.interp_count -= 1;
 
-                if let Some('}') = self.peek_at(0) {
-                    self.cursor += 1;
-                } else {
-                    panic!("expected closing brace at end of interpolated expression");
+                match self.peek_at(0) {
+                    Some('}') => (),
+                    _ => panic!("expected closing brace at end of interpolated expression")
                 }
+
+                lexeme_start = self.cursor;
+                literal_piece = String::new();
+
+                self.cursor += 1;
 
                 continue;
             }
