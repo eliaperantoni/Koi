@@ -1,6 +1,9 @@
 use crate::token::{Token, TokenKind};
 use itertools::Itertools;
 
+#[cfg(test)]
+mod test;
+
 pub struct Lexer {
     source: Vec<char>,
     cursor: usize,
@@ -9,6 +12,8 @@ pub struct Lexer {
     braces_count: u8,
 
     buffer: Vec<Token>,
+
+    sent_eof: bool,
 }
 
 impl Lexer {
@@ -21,6 +26,8 @@ impl Lexer {
             braces_count: 0,
 
             buffer: Vec::new(),
+
+            sent_eof: false,
         }
     }
 
@@ -294,7 +301,15 @@ impl Iterator for Lexer {
         }
 
         match (self.peek_at(0), self.peek_at(1)) {
-            (None, _) => None,
+            (None, _) => if self.sent_eof {
+                None
+            } else {
+                self.sent_eof = true;
+                Some(Token {
+                    lexeme: "".to_owned(),
+                    kind: TokenKind::Eof,
+                })
+            },
 
             (Some('}'), _) if self.interp_count > 0 && self.braces_count == 0 => None,
 
