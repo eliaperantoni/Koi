@@ -4,7 +4,10 @@ use itertools::Itertools;
 pub struct Lexer {
     source: Vec<char>,
     cursor: usize,
+
     interp_count: u8,
+    braces_count: u8,
+
     buffer: Vec<Token>,
 }
 
@@ -13,7 +16,10 @@ impl Lexer {
         Lexer {
             source: source.chars().collect(),
             cursor: 0,
+
             interp_count: 0,
+            braces_count: 0,
+
             buffer: Vec::new(),
         }
     }
@@ -53,8 +59,15 @@ impl Lexer {
             ')' => (TokenKind::RightParen, 1),
             '[' => (TokenKind::LeftBracket, 1),
             ']' => (TokenKind::RightBracket, 1),
-            '{' => (TokenKind::LeftBrace, 1),
-            '}' => (TokenKind::RightBrace, 1),
+
+            '{' => {
+                self.braces_count += 1;
+                (TokenKind::LeftBrace, 1)
+            },
+            '}' => {
+                self.braces_count -= 1;
+                (TokenKind::RightBrace, 1)
+            },
 
             // Chars that may only appear by themselves or followed by an equals sign
             '!' | '=' | '/' | '^' | '%' | '>' | '<' => {
@@ -278,7 +291,7 @@ impl Iterator for Lexer {
         match (self.peek_at(0), self.peek_at(1)) {
             (None, _) => None,
 
-            (Some('}'), _) if self.interp_count > 0 => None,
+            (Some('}'), _) if self.interp_count > 0 && self.braces_count == 0 => None,
 
             (Some(digit), _) | (Some('.'), Some(digit)) if digit.is_ascii_digit() => Some(self.scan_number()),
             (Some('"'), _) | (Some('\''), _) => Some(self.scan_string()),
