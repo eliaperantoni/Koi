@@ -144,9 +144,41 @@ impl Lexer {
     }
 
     fn scan_word(&mut self) -> Token {
-        Token {
-            lexeme: "".to_owned(),
-            kind: TokenKind::Eof,
+        let mut iter = self.source[self.cursor..].iter();
+
+        let word: String = iter.take_while_ref(|&&c| can_start_word(c) || c.is_ascii_digit()).collect();
+
+        let kw_kind = match word.as_ref() {
+            "for" => Some(TokenKind::For),
+            "while" => Some(TokenKind::While),
+            "if" => Some(TokenKind::If),
+            "else" => Some(TokenKind::Else),
+            "fn" => Some(TokenKind::Fn),
+            "return" => Some(TokenKind::Return),
+            "break" => Some(TokenKind::Break),
+            "continue" => Some(TokenKind::Continue),
+            "var" => Some(TokenKind::Var),
+            "exp" => Some(TokenKind::Exp),
+            "true" => Some(TokenKind::True),
+            "false" => Some(TokenKind::False),
+            "nil" => Some(TokenKind::Nil),
+            _ => None,
+        };
+
+        self.cursor += word.len();
+
+        if let Some(kind) = kw_kind {
+            Token {
+                lexeme: word.clone(),
+                kind,
+            }
+        } else {
+            Token {
+                lexeme: word.clone(),
+                kind: TokenKind::Identifier {
+                    name: word.clone(),
+                },
+            }
         }
     }
 }
@@ -162,14 +194,14 @@ impl Iterator for Lexer {
             (Some('.'), Some(digit))
             if digit.is_ascii_digit() => Some(self.scan_number()),
 
-            (Some(c), _) if is_word_char(c) => Some(self.scan_word()),
+            (Some(c), _) if can_start_word(c) => Some(self.scan_word()),
 
             _ => Some(self.scan_symbol()),
         }
     }
 }
 
-fn is_word_char(c: char) -> bool {
+fn can_start_word(c: char) -> bool {
     match c {
         '$' | '_' => true,
         _ if c.is_ascii_alphabetic() => true,
