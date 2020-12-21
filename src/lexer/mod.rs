@@ -4,6 +4,8 @@ use itertools::Itertools;
 pub struct Lexer {
     source: Vec<char>,
     cursor: usize,
+    interp_count: u8,
+    buffer: Vec<Token>,
 }
 
 impl Lexer {
@@ -11,6 +13,8 @@ impl Lexer {
         Lexer {
             source: source.chars().collect(),
             cursor: 0,
+            interp_count: 0,
+            buffer: Vec::new(),
         }
     }
 
@@ -181,18 +185,103 @@ impl Lexer {
             }
         }
     }
+
+    fn scan_string(&mut self) -> Token {
+        // Either ' or "
+        // Safe to unwrap because the lexer calls this method when the current char is ' or " so there
+        // is at least one character
+        let delimiter = self.peek_at(0).unwrap();
+        // Consume delimiter
+        self.cursor += 1;
+
+        // A string literal is scanned in one go. The first token is returned, the rest is saved in
+        // a buffer and tokens are returned in the next calls to `next`
+        let mut tokens = Vec::new();
+
+        // Piece of string between delimiters and/or braces
+        let mut literal_piece = String::new();
+
+        loop {
+            let ch = if let Some(ch) = self.peek_at(0) {
+                ch
+            } else {
+                panic!("unterminated string");
+            };
+
+            self.cursor += 1;
+
+            if ch == delimiter {
+                tokens.push(Token {
+                    lexeme: "foo".to_owned(),
+                    kind: TokenKind::String {
+                        value: literal_piece.clone(),
+                        does_interp: false,
+                    }
+                });
+                break;
+            }
+
+            if ch == '{' {
+                tokens.push(Token {
+                    lexeme: "foo".to_owned(),
+                    kind: TokenKind::String {
+                        value: literal_piece.clone(),
+                        does_interp: true,
+                    }
+                });
+
+                literal_piece = String::new();
+
+                self.interp_count += 1;
+                tokens.append(&mut self.collect::<Vec<Token>>());
+                self.interp_count -= 1;
+
+                if let Some('}') = self.peek_at(0) {
+                    self.cursor += 1;
+                } else {
+                    panic!("expected closing brace at end of interpolated expression");
+                }
+
+                continue;
+            }
+
+            if ch == '\\' {
+                let ch = match self.peek_at(0) {
+                    Some('n') => '\n',
+                    Some('t') => '\t',
+                    Some('r') => '\r',
+                    Some(_) => panic!("unexpected escape character"),
+                    None => panic!("unterminated string"),
+                };
+
+                literal_piece.push(ch);
+                self.cursor += 1;
+            } else {
+                literal_piece.push(ch);
+            }
+        }
+
+        let first = tokens.remove(0);
+        self.buffer.append(&mut tokens);
+        first
+    }
 }
 
 impl Iterator for Lexer {
     type Item = Token;
 
     fn next(&mut self) -> Option<Self::Item> {
+        if !self.buffer.is_empty() {
+            return Some(self.buffer.remove(0));
+        }
+
         match (self.peek_at(0), self.peek_at(1)) {
             (None, _) => None,
 
-            (Some(digit), _) |
-            (Some('.'), Some(digit))
-            if digit.is_ascii_digit() => Some(self.scan_number()),
+            (Some('}'), _) if self.interp_count > 0 => None,
+
+            (Some(digit), _) | (Some('.'), Some(digit)) if digit.is_ascii_digit() => Some(self.scan_number()),
+            (Some('"'), _) | (Some('\''), _) => Some(self.scan_string()),
 
             (Some(c), _) if can_start_word(c) => Some(self.scan_word()),
 
@@ -202,9 +291,5 @@ impl Iterator for Lexer {
 }
 
 fn can_start_word(c: char) -> bool {
-    match c {
-        '$' | '_' => true,
-        _ if c.is_ascii_alphabetic() => true,
-        _ => false,
-    }
+    ['$', '_'].contains(&c) || c.is_ascii_alphabetic()
 }
