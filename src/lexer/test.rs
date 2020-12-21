@@ -67,3 +67,20 @@ fn scans_simple_string_literal() {
         }
     ]);
 }
+
+#[test]
+fn scans_string_literal_with_escape_chars() {
+    assert_eq!(scan("\"\\n\\t\\r\\\\\""), vec![
+        Token {
+            kind: TokenKind::String {
+                value: "\n\t\r\\".to_owned(),
+                does_interp: false,
+            },
+            lexeme: "\"\\n\\t\\r\\\\\"".to_owned(),
+        },
+        Token {
+            kind: TokenKind::Eof,
+            lexeme: "".to_owned(),
+        }
+    ]);
+}

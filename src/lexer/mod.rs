@@ -275,6 +275,7 @@ impl Lexer {
                     Some('n') => '\n',
                     Some('t') => '\t',
                     Some('r') => '\r',
+                    Some('\\') => '\\',
                     Some(_) => panic!("unexpected escape character"),
                     None => panic!("unterminated string"),
                 };
