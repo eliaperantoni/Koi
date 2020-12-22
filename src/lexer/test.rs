@@ -16,11 +16,49 @@ fn scans_empty_string() {
 }
 
 #[test]
-fn scans_keyword() {
-    assert_eq!(scan("while"), vec![
+fn scans_spaces() {
+    assert_eq!(scan("   "), vec![
+        Token {
+            kind: TokenKind::Space,
+            lexeme: "   ".to_owned(),
+        },
+        Token {
+            kind: TokenKind::Eof,
+            lexeme: "".to_owned(),
+        }
+    ]);
+}
+
+#[test]
+fn scans_keywords() {
+    assert_eq!(scan("while for return continue"), vec![
         Token {
             kind: TokenKind::While,
             lexeme: "while".to_owned(),
+        },
+        Token {
+            kind: TokenKind::Space,
+            lexeme: " ".to_owned(),
+        },
+        Token {
+            kind: TokenKind::For,
+            lexeme: "for".to_owned(),
+        },
+        Token {
+            kind: TokenKind::Space,
+            lexeme: " ".to_owned(),
+        },
+        Token {
+            kind: TokenKind::Return,
+            lexeme: "return".to_owned(),
+        },
+        Token {
+            kind: TokenKind::Space,
+            lexeme: " ".to_owned(),
+        },
+        Token {
+            kind: TokenKind::Continue,
+            lexeme: "continue".to_owned(),
         },
         Token {
             kind: TokenKind::Eof,
@@ -36,7 +74,7 @@ fn panics_unexpected_symbol() {
 }
 
 #[test]
-fn scans_identifier() {
+fn scans_identifiers() {
     assert_eq!(scan("whilee"), vec![
         Token {
             kind: TokenKind::Identifier {
@@ -77,6 +115,221 @@ fn scans_string_literal_with_escape_chars() {
                 does_interp: false,
             },
             lexeme: "\"\\n\\t\\r\\\\\"".to_owned(),
+        },
+        Token {
+            kind: TokenKind::Eof,
+            lexeme: "".to_owned(),
+        }
+    ]);
+}
+
+fn scans_number_literals() {
+    assert_eq!(scan("12 3.14 10. .5"), vec![
+        Token {
+            kind: TokenKind::Num {
+                value: 12.0,
+            },
+            lexeme: "12".to_owned(),
+        },
+        Token {
+            kind: TokenKind::Eof,
+            lexeme: "".to_owned(),
+        },
+        Token {
+            kind: TokenKind::Num {
+                value: 3.14,
+            },
+            lexeme: "3.14".to_owned(),
+        },
+        Token {
+            kind: TokenKind::Eof,
+            lexeme: "".to_owned(),
+        },
+        Token {
+            kind: TokenKind::Num {
+                value: 10.0,
+            },
+            lexeme: "10.".to_owned(),
+        },
+        Token {
+            kind: TokenKind::Eof,
+            lexeme: "".to_owned(),
+        },
+        Token {
+            kind: TokenKind::Num {
+                value: 0.5,
+            },
+            lexeme: ".5".to_owned(),
+        },
+        Token {
+            kind: TokenKind::Eof,
+            lexeme: "".to_owned(),
+        }
+    ]);
+}
+
+#[test]
+fn scans_interpolated_string() {
+    assert_eq!(scan("\"a{for}b\""), vec![
+        Token {
+            kind: TokenKind::String {
+                value: "a".to_owned(),
+                does_interp: true,
+            },
+            lexeme: "\"a{".to_owned(),
+        },
+        Token {
+            kind: TokenKind::For,
+            lexeme: "for".to_owned(),
+        },
+        Token {
+            kind: TokenKind::String {
+                value: "b".to_owned(),
+                does_interp: false,
+            },
+            lexeme: "}b\"".to_owned(),
+        },
+        Token {
+            kind: TokenKind::Eof,
+            lexeme: "".to_owned(),
+        }
+    ]);
+}
+
+#[test]
+fn scans_interpolated_string_trimmed() {
+    assert_eq!(scan("\"{for}\""), vec![
+        Token {
+            kind: TokenKind::String {
+                value: "".to_owned(),
+                does_interp: true,
+            },
+            lexeme: "\"{".to_owned(),
+        },
+        Token {
+            kind: TokenKind::For,
+            lexeme: "for".to_owned(),
+        },
+        Token {
+            kind: TokenKind::String {
+                value: "".to_owned(),
+                does_interp: false,
+            },
+            lexeme: "}\"".to_owned(),
+        },
+        Token {
+            kind: TokenKind::Eof,
+            lexeme: "".to_owned(),
+        }
+    ]);
+}
+
+#[test]
+fn scans_interpolated_string_empty() {
+    assert_eq!(scan("\"a{}b\""), vec![
+        Token {
+            kind: TokenKind::String {
+                value: "a".to_owned(),
+                does_interp: true,
+            },
+            lexeme: "\"a{".to_owned(),
+        },
+        Token {
+            kind: TokenKind::String {
+                value: "b".to_owned(),
+                does_interp: false,
+            },
+            lexeme: "}b\"".to_owned(),
+        },
+        Token {
+            kind: TokenKind::Eof,
+            lexeme: "".to_owned(),
+        }
+    ]);
+}
+
+#[test]
+fn scans_interpolated_string_nested() {
+    assert_eq!(scan("\"a{\"b{for}b\"}a\""), vec![
+        Token {
+            kind: TokenKind::String {
+                value: "a".to_owned(),
+                does_interp: true,
+            },
+            lexeme: "\"a{".to_owned(),
+        },
+        Token {
+            kind: TokenKind::String {
+                value: "b".to_owned(),
+                does_interp: true,
+            },
+            lexeme: "\"b{".to_owned(),
+        },
+        Token {
+            kind: TokenKind::For,
+            lexeme: "for".to_owned(),
+        },
+        Token {
+            kind: TokenKind::String {
+                value: "b".to_owned(),
+                does_interp: false,
+            },
+            lexeme: "}b\"".to_owned(),
+        },
+        Token {
+            kind: TokenKind::String {
+                value: "a".to_owned(),
+                does_interp: false,
+            },
+            lexeme: "}a\"".to_owned(),
+        },
+        Token {
+            kind: TokenKind::Eof,
+            lexeme: "".to_owned(),
+        }
+    ]);
+}
+
+#[test]
+fn scans_interpolated_string_dict() {
+    assert_eq!(scan("\"a{{x:1}}b\""), vec![
+        Token {
+            kind: TokenKind::String {
+                value: "a".to_owned(),
+                does_interp: true,
+            },
+            lexeme: "\"a{".to_owned(),
+        },
+        Token {
+            kind: TokenKind::LeftBrace,
+            lexeme: "{".to_owned(),
+        },
+        Token {
+            kind: TokenKind::Identifier {
+                name: "x".to_owned(),
+            },
+            lexeme: "x".to_owned(),
+        },
+        Token {
+            kind: TokenKind::Colon,
+            lexeme: ":".to_owned(),
+        },
+        Token {
+            kind: TokenKind::Num {
+                value: 1.0,
+            },
+            lexeme: "1".to_owned(),
+        },
+        Token {
+            kind: TokenKind::RightBrace,
+            lexeme: "}".to_owned(),
+        },
+        Token {
+            kind: TokenKind::String {
+                value: "b".to_owned(),
+                does_interp: false,
+            },
+            lexeme: "}b\"".to_owned(),
         },
         Token {
             kind: TokenKind::Eof,
