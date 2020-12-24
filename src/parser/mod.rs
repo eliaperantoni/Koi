@@ -4,6 +4,10 @@ use crate::token::{Token, TokenKind};
 use crate::ast::Expr::Binary;
 use itertools::__std_iter::Peekable;
 
+// TODO Parse assignment
+// TODO Parse array literals
+// TODO Parse dict literals
+
 pub struct Parser {
     lexer: Peekable<Lexer>,
 }
