@@ -134,8 +134,6 @@ fn make_infix_expr(lhs: Expr, op: &TokenKind, rhs: Expr) -> Expr {
     let lhs = Box::new(lhs);
     let rhs = Box::new(rhs);
 
-    let op = op;
-
     match *op {
         TokenKind::Plus => Expr::Binary(lhs, BinaryOp::Sum, rhs),
         TokenKind::Minus => Expr::Binary(lhs, BinaryOp::Sub, rhs),
