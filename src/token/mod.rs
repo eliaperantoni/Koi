@@ -87,8 +87,8 @@ pub enum TokenKind {
 
     Space,
     Newline,
+}
 
-    Eof,
 impl TokenKind {
     pub fn is_infix(&self) -> bool {
         use TokenKind::*;

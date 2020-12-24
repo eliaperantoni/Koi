@@ -7,12 +7,7 @@ fn scan(source: &str) -> Vec<Token> {
 
 #[test]
 fn scans_empty_string() {
-    assert_eq!(scan(""), vec![
-        Token {
-            kind: TokenKind::Eof,
-            lexeme: "".to_owned(),
-        }
-    ]);
+    assert_eq!(scan(""), vec![]);
 }
 
 #[test]
@@ -21,10 +16,6 @@ fn scans_spaces() {
         Token {
             kind: TokenKind::Space,
             lexeme: "   ".to_owned(),
-        },
-        Token {
-            kind: TokenKind::Eof,
-            lexeme: "".to_owned(),
         }
     ]);
 }
@@ -59,10 +50,6 @@ fn scans_keywords() {
         Token {
             kind: TokenKind::Continue,
             lexeme: "continue".to_owned(),
-        },
-        Token {
-            kind: TokenKind::Eof,
-            lexeme: "".to_owned(),
         }
     ]);
 }
@@ -79,10 +66,6 @@ fn scans_identifiers() {
         Token {
             kind: TokenKind::Identifier("whilee".to_owned()),
             lexeme: "whilee".to_owned(),
-        },
-        Token {
-            kind: TokenKind::Eof,
-            lexeme: "".to_owned(),
         }
     ]);
 }
@@ -96,10 +79,6 @@ fn scans_simple_string_literal() {
                 does_interp: false,
             },
             lexeme: "\"hello world\"".to_owned(),
-        },
-        Token {
-            kind: TokenKind::Eof,
-            lexeme: "".to_owned(),
         }
     ]);
 }
@@ -113,10 +92,6 @@ fn scans_string_literal_with_escape_chars() {
                 does_interp: false,
             },
             lexeme: "\"\\n\\t\\r\\\\\"".to_owned(),
-        },
-        Token {
-            kind: TokenKind::Eof,
-            lexeme: "".to_owned(),
         }
     ]);
 }
@@ -151,10 +126,6 @@ fn scans_number_literals() {
         Token {
             kind: TokenKind::Num(0.5),
             lexeme: ".5".to_owned(),
-        },
-        Token {
-            kind: TokenKind::Eof,
-            lexeme: "".to_owned(),
         }
     ]);
 }
@@ -179,10 +150,6 @@ fn scans_interpolated_string() {
                 does_interp: false,
             },
             lexeme: "}b\"".to_owned(),
-        },
-        Token {
-            kind: TokenKind::Eof,
-            lexeme: "".to_owned(),
         }
     ]);
 }
@@ -207,10 +174,6 @@ fn scans_interpolated_string_trimmed() {
                 does_interp: false,
             },
             lexeme: "}\"".to_owned(),
-        },
-        Token {
-            kind: TokenKind::Eof,
-            lexeme: "".to_owned(),
         }
     ]);
 }
@@ -231,10 +194,6 @@ fn scans_interpolated_string_empty() {
                 does_interp: false,
             },
             lexeme: "}b\"".to_owned(),
-        },
-        Token {
-            kind: TokenKind::Eof,
-            lexeme: "".to_owned(),
         }
     ]);
 }
@@ -273,10 +232,6 @@ fn scans_interpolated_string_nested() {
                 does_interp: false,
             },
             lexeme: "}a\"".to_owned(),
-        },
-        Token {
-            kind: TokenKind::Eof,
-            lexeme: "".to_owned(),
         }
     ]);
 }
@@ -317,10 +272,6 @@ fn scans_interpolated_string_dict() {
                 does_interp: false,
             },
             lexeme: "}b\"".to_owned(),
-        },
-        Token {
-            kind: TokenKind::Eof,
-            lexeme: "".to_owned(),
         }
     ]);
 }
