@@ -116,10 +116,6 @@ impl Parser {
                         expr
                     }
 
-                    TokenKind::Dot => {
-                        
-                    }
-
                     _ => unreachable!(),
                 }
             };
@@ -132,15 +128,14 @@ impl Parser {
 fn infix_binding_power(op: &TokenKind) -> (u8, u8) {
     use TokenKind::*;
     match op {
-        Equal | PlusEqual | MinusEqual | StarEqual | SlashEqual | PercEqual | CaretEqual => (),
-        Plus | Minus => (),
-        Star | Slash | Perc => (),
-        Caret => (),
-        Great | GreatEqual | Less | LessEqual => (),
-        EqualEqual | BangEqual => (),
-        AmperAmper => (),
-        PipePipe => (),
-        Dot | LeftBracket => (),
+        Caret => (16, 15),
+        Star | Slash | Perc => (13, 14),
+        Plus | Minus => (11, 12),
+        Great | GreatEqual | Less | LessEqual => (9, 10),
+        EqualEqual | BangEqual => (7, 8),
+        AmperAmper => (5, 6),
+        PipePipe => (3, 4),
+        Equal | PlusEqual | MinusEqual | StarEqual | SlashEqual | PercEqual | CaretEqual => (2, 1),
         _ => panic!("bad op"),
     }
 }

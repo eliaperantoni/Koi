@@ -118,9 +118,6 @@ impl TokenKind {
 
             AmperAmper,
             PipePipe,
-
-            Dot,
-            LeftBracket,
         ].contains(self)
     }
 }
