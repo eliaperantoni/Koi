@@ -1,8 +1,11 @@
 mod token;
 mod lexer;
 mod ast;
+mod parser;
 
 fn main() {
-    let lexer = lexer::Lexer::new("ls -l cd ..".to_owned());
-    println!("{:?}", lexer.collect::<Vec<token::Token>>());
+    let lexer = lexer::Lexer::new("whilee".to_owned());
+    let mut parser = parser::Parser::new(lexer);
+
+    println!("{:?}", parser.parse_expression(0));
 }

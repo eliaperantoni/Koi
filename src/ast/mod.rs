@@ -23,7 +23,11 @@ pub enum Expr {
     Literal(Value),
     Unary(UnaryOp, Box<Expr>),
     Binary(Box<Expr>, BinaryOp, Box<Expr>),
-    Interp(Vec<String>, Vec<Expr>),
+
+    Interp {
+        strings: Vec<String>,
+        exprs: Vec<Expr>,
+    },
 
     Get(String),
     Set(String, Box<Expr>),
