@@ -7,7 +7,6 @@ use itertools::__std_iter::Peekable;
 // TODO Parse assignment
 // TODO Parse array literals
 // TODO Parse dict literals
-// TODO Fix binding powers
 // TODO Write tests for parser
 
 pub struct Parser {
@@ -207,8 +206,8 @@ fn make_infix_expr(lhs: Expr, op: &TokenKind, rhs: Expr) -> Expr {
 fn postfix_binding_power(op: &TokenKind) -> Option<(u8, ())> {
     use TokenKind::*;
     let bp = match op {
-        LeftBracket | Dot => (5, ()),
-        PlusPlus | MinusMinus => (1, ()),
+        LeftBracket | Dot => (21, ()),
+        PlusPlus | MinusMinus => (19, ()),
         _ => return None,
     };
     Some(bp)
@@ -217,8 +216,7 @@ fn postfix_binding_power(op: &TokenKind) -> Option<(u8, ())> {
 fn prefix_binding_power(op: &TokenKind) -> Option<((), u8)> {
     use TokenKind::*;
     let bp = match op {
-        Plus | Minus => ((), 5),
-        PlusPlus | MinusMinus => ((), 1),
+        Plus | Minus | PlusPlus | MinusMinus => ((), 17),
         _ => return None,
     };
     Some(bp)
