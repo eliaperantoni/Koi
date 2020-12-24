@@ -13,7 +13,13 @@ pub enum BinaryOp {
     Mul,
     Div,
     Mod,
-    Perc,
+    Pow,
+
+    Great,
+    Less,
+
+    Equal,
+
     And,
     Or,
 }

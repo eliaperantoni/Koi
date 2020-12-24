@@ -120,6 +120,7 @@ impl TokenKind {
             PipePipe,
 
             Dot,
+            LeftBracket,
         ].contains(self)
     }
 }

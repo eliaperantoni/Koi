@@ -1,6 +1,7 @@
 use crate::lexer::Lexer;
 use crate::ast::*;
 use crate::token::{Token, TokenKind};
+use crate::ast::Expr::Binary;
 
 pub struct Parser {
     lexer: Lexer,
@@ -50,14 +51,96 @@ impl Parser {
             _ => panic!("bad token"),
         };
 
+        loop {
+            let op = self.lexer.next();
+            let op = match op {
+                Some(Token { kind, .. }) if kind.is_infix() => kind,
+                None => break,
+                _ => panic!("bad token"),
+            };
+
+            let (l_bp, r_bp) = infix_binding_power(&op);
+            if l_bp < min_bp {
+                break;
+            }
+
+            let rhs = self.parse_expression(r_bp);
+
+            lhs = {
+                let lhs = Box::new(lhs);
+                let rhs = Box::new(rhs);
+
+                match op {
+                    TokenKind::Plus => Expr::Binary(lhs, BinaryOp::Sum, rhs),
+                    TokenKind::Minus => Expr::Binary(lhs, BinaryOp::Sub, rhs),
+                    TokenKind::Star => Expr::Binary(lhs, BinaryOp::Mul, rhs),
+                    TokenKind::Slash => Expr::Binary(lhs, BinaryOp::Div, rhs),
+                    TokenKind::Perc => Expr::Binary(lhs, BinaryOp::Mod, rhs),
+                    TokenKind::Caret => Expr::Binary(lhs, BinaryOp::Pow, rhs),
+
+                    TokenKind::AmperAmper => Expr::Binary(lhs, BinaryOp::And, rhs),
+                    TokenKind::PipePipe => Expr::Binary(lhs, BinaryOp::Or, rhs),
+
+                    TokenKind::EqualEqual | TokenKind::BangEqual => {
+                        let mut expr = Expr::Binary(lhs, BinaryOp::Equal, rhs);
+
+                        if TokenKind::BangEqual == op {
+                            expr = Expr::Unary(UnaryOp::Not, Box::new(expr));
+                        }
+
+                        expr
+                    }
+
+                    TokenKind::Great | TokenKind::GreatEqual | TokenKind::Less | TokenKind::LessEqual => {
+                        let mut expr = Expr::Binary(
+                            lhs.clone(),
+                            match op {
+                                TokenKind::Great | TokenKind::GreatEqual => BinaryOp::Great,
+                                TokenKind::Less | TokenKind::LessEqual => BinaryOp::Less,
+                                _ => unreachable!(),
+                            },
+                            rhs.clone(),
+                        );
+
+                        if [TokenKind::GreatEqual, TokenKind::LessEqual].contains(&op) {
+                            let lhs = lhs.clone();
+                            let rhs = rhs.clone();
+
+                            expr = Expr::Binary(
+                                Box::new(expr),
+                                BinaryOp::Or,
+                                Box::new(Expr::Binary(lhs, BinaryOp::Equal, rhs)),
+                            );
+                        }
+
+                        expr
+                    }
+
+                    TokenKind::Dot => {
+                        
+                    }
+
+                    _ => unreachable!(),
+                }
+            };
+        }
+
         lhs
     }
 }
 
-fn infix_binding_power(op: char) -> (u8, u8) {
+fn infix_binding_power(op: &TokenKind) -> (u8, u8) {
+    use TokenKind::*;
     match op {
-        '+' | '-' => (1, 2),
-        '*' | '/' => (3, 4),
-        _ => panic!("bad op: {:?}"),
+        Equal | PlusEqual | MinusEqual | StarEqual | SlashEqual | PercEqual | CaretEqual => (),
+        Plus | Minus => (),
+        Star | Slash | Perc => (),
+        Caret => (),
+        Great | GreatEqual | Less | LessEqual => (),
+        EqualEqual | BangEqual => (),
+        AmperAmper => (),
+        PipePipe => (),
+        Dot | LeftBracket => (),
+        _ => panic!("bad op"),
     }
 }
