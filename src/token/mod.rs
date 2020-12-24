@@ -89,4 +89,37 @@ pub enum TokenKind {
     Newline,
 
     Eof,
+impl TokenKind {
+    pub fn is_infix(&self) -> bool {
+        use TokenKind::*;
+        [
+            BangEqual,
+            Equal,
+            EqualEqual,
+
+            PlusEqual,
+            MinusEqual,
+            StarEqual,
+            SlashEqual,
+            CaretEqual,
+            PercEqual,
+
+            Great,
+            GreatEqual,
+            Less,
+            LessEqual,
+
+            Plus,
+            Minus,
+            Star,
+            Slash,
+            Caret,
+            Perc,
+
+            AmperAmper,
+            PipePipe,
+
+            Dot,
+        ].contains(self)
+    }
 }
