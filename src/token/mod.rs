@@ -120,4 +120,13 @@ impl TokenKind {
             PipePipe,
         ].contains(self)
     }
+
+    pub fn is_prefix(&self) -> bool {
+        use TokenKind::*;
+        [
+            Plus,
+            Minus,
+            Bang,
+        ].contains(self)
+    }
 }

@@ -2,15 +2,16 @@ use crate::lexer::Lexer;
 use crate::ast::*;
 use crate::token::{Token, TokenKind};
 use crate::ast::Expr::Binary;
+use itertools::__std_iter::Peekable;
 
 pub struct Parser {
-    lexer: Lexer,
+    lexer: Peekable<Lexer>,
 }
 
 impl Parser {
     pub fn new(lexer: Lexer) -> Parser {
         Parser {
-            lexer,
+            lexer: lexer.peekable(),
         }
     }
 
@@ -48,86 +49,129 @@ impl Parser {
 
             Some(Token { kind: TokenKind::Nil, .. }) => Expr::Literal(Value::Nil),
 
+            Some(Token { kind, .. }) if prefix_binding_power(&kind).is_some() => {
+                let ((), r_bp) = prefix_binding_power(&kind).unwrap();
+                let rhs = self.parse_expression(r_bp);
+
+                make_prefix_expr(&kind, rhs)
+            }
+
+            Some(Token { kind: TokenKind::LeftParen, .. }) => {
+                let lhs = self.parse_expression(0);
+
+                match self.lexer.next() {
+                    Some(Token { kind: TokenKind::RightParen, .. }) => (),
+                    _ => panic!("unterminated parenthesized expression"),
+                };
+
+                lhs
+            }
+
             _ => panic!("bad token"),
         };
 
         loop {
-            let op = self.lexer.next();
-            let op = match op {
-                Some(Token { kind, .. }) if kind.is_infix() => kind,
+            let op = match self.lexer.peek() {
+                Some(Token { kind, .. }) => kind,
                 None => break,
-                _ => panic!("bad token"),
             };
 
-            let (l_bp, r_bp) = infix_binding_power(&op);
-            if l_bp < min_bp {
-                break;
+            if let Some((l_bp, r_bp)) = infix_binding_power(&op) {
+                if l_bp < min_bp {
+                    break;
+                }
+
+                let op = self.lexer.next().unwrap().kind;
+
+                let rhs = self.parse_expression(r_bp);
+                lhs = make_infix_expr(lhs, &op, rhs);
+                continue;
             }
 
-            let rhs = self.parse_expression(r_bp);
-
-            lhs = {
-                let lhs = Box::new(lhs);
-                let rhs = Box::new(rhs);
-
-                match op {
-                    TokenKind::Plus => Expr::Binary(lhs, BinaryOp::Sum, rhs),
-                    TokenKind::Minus => Expr::Binary(lhs, BinaryOp::Sub, rhs),
-                    TokenKind::Star => Expr::Binary(lhs, BinaryOp::Mul, rhs),
-                    TokenKind::Slash => Expr::Binary(lhs, BinaryOp::Div, rhs),
-                    TokenKind::Perc => Expr::Binary(lhs, BinaryOp::Mod, rhs),
-                    TokenKind::Caret => Expr::Binary(lhs, BinaryOp::Pow, rhs),
-
-                    TokenKind::AmperAmper => Expr::Binary(lhs, BinaryOp::And, rhs),
-                    TokenKind::PipePipe => Expr::Binary(lhs, BinaryOp::Or, rhs),
-
-                    TokenKind::EqualEqual | TokenKind::BangEqual => {
-                        let mut expr = Expr::Binary(lhs, BinaryOp::Equal, rhs);
-
-                        if TokenKind::BangEqual == op {
-                            expr = Expr::Unary(UnaryOp::Not, Box::new(expr));
-                        }
-
-                        expr
-                    }
-
-                    TokenKind::Great | TokenKind::GreatEqual | TokenKind::Less | TokenKind::LessEqual => {
-                        let mut expr = Expr::Binary(
-                            lhs.clone(),
-                            match op {
-                                TokenKind::Great | TokenKind::GreatEqual => BinaryOp::Great,
-                                TokenKind::Less | TokenKind::LessEqual => BinaryOp::Less,
-                                _ => unreachable!(),
-                            },
-                            rhs.clone(),
-                        );
-
-                        if [TokenKind::GreatEqual, TokenKind::LessEqual].contains(&op) {
-                            let lhs = lhs.clone();
-                            let rhs = rhs.clone();
-
-                            expr = Expr::Binary(
-                                Box::new(expr),
-                                BinaryOp::Or,
-                                Box::new(Expr::Binary(lhs, BinaryOp::Equal, rhs)),
-                            );
-                        }
-
-                        expr
-                    }
-
-                    _ => unreachable!(),
-                }
-            };
+            break;
         }
 
         lhs
     }
 }
 
-fn infix_binding_power(op: &TokenKind) -> (u8, u8) {
-    use TokenKind::*;
+fn make_prefix_expr(op: &TokenKind, rhs: Expr) -> Expr {
     match op {
+        TokenKind::Plus => rhs,
+        TokenKind::Minus => Expr::Unary(UnaryOp::Neg, Box::new(rhs)),
+        TokenKind::Bang => Expr::Unary(UnaryOp::Not, Box::new(rhs)),
+        _ => unreachable!()
+    }
+}
+
+fn make_infix_expr(lhs: Expr, op: &TokenKind, rhs: Expr) -> Expr {
+    let lhs = Box::new(lhs);
+    let rhs = Box::new(rhs);
+
+    let op = op;
+
+    match *op {
+        TokenKind::Plus => Expr::Binary(lhs, BinaryOp::Sum, rhs),
+        TokenKind::Minus => Expr::Binary(lhs, BinaryOp::Sub, rhs),
+        TokenKind::Star => Expr::Binary(lhs, BinaryOp::Mul, rhs),
+        TokenKind::Slash => Expr::Binary(lhs, BinaryOp::Div, rhs),
+        TokenKind::Perc => Expr::Binary(lhs, BinaryOp::Mod, rhs),
+        TokenKind::Caret => Expr::Binary(lhs, BinaryOp::Pow, rhs),
+
+        TokenKind::AmperAmper => Expr::Binary(lhs, BinaryOp::And, rhs),
+        TokenKind::PipePipe => Expr::Binary(lhs, BinaryOp::Or, rhs),
+
+        TokenKind::EqualEqual | TokenKind::BangEqual => {
+            let mut expr = Expr::Binary(lhs, BinaryOp::Equal, rhs);
+
+            if matches!(op, TokenKind::BangEqual) {
+                expr = Expr::Unary(UnaryOp::Not, Box::new(expr));
+            }
+
+            expr
+        }
+
+        TokenKind::Great | TokenKind::GreatEqual | TokenKind::Less | TokenKind::LessEqual => {
+            let mut expr = Expr::Binary(
+                lhs.clone(),
+                match op {
+                    TokenKind::Great | TokenKind::GreatEqual => BinaryOp::Great,
+                    TokenKind::Less | TokenKind::LessEqual => BinaryOp::Less,
+                    _ => unreachable!(),
+                },
+                rhs.clone(),
+            );
+
+            if matches!(op, TokenKind::GreatEqual | TokenKind::LessEqual) {
+                let lhs = lhs.clone();
+                let rhs = rhs.clone();
+
+                expr = Expr::Binary(
+                    Box::new(expr),
+                    BinaryOp::Or,
+                    Box::new(Expr::Binary(lhs, BinaryOp::Equal, rhs)),
+                );
+            }
+
+            expr
+        }
+
+        _ => unreachable!(),
+    }
+}
+
+fn prefix_binding_power(op: &TokenKind) -> Option<((), u8)> {
+    use TokenKind::*;
+    let bp = match op {
+        Plus | Minus => ((), 5),
+        _ => return None,
+    };
+    Some(bp)
+}
+
+fn infix_binding_power(op: &TokenKind) -> Option<(u8, u8)> {
+    use TokenKind::*;
+    let bp = match op {
         Caret => (16, 15),
         Star | Slash | Perc => (13, 14),
         Plus | Minus => (11, 12),
@@ -136,6 +180,7 @@ fn infix_binding_power(op: &TokenKind) -> (u8, u8) {
         AmperAmper => (5, 6),
         PipePipe => (3, 4),
         Equal | PlusEqual | MinusEqual | StarEqual | SlashEqual | PercEqual | CaretEqual => (2, 1),
-        _ => panic!("bad op"),
-    }
+        _ => return None,
+    };
+    Some(bp)
 }
