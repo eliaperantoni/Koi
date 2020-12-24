@@ -78,27 +78,29 @@ impl Parser {
 
                 let op = self.lexer.next().unwrap().kind;
 
-                match op {
+                lhs = match op {
                     TokenKind::LeftBracket => {
-                        let rhs = self.parse_expression(0);
-                        lhs = Expr::GetField {
-                            base: Box::new(lhs),
-                            index: Box::new(rhs),
-                        };
+                        let index = self.parse_expression(0);
                         assert!(matches!(self.lexer.next(), Some(Token { kind: TokenKind::RightBracket, .. })));
+
+                        Expr::GetField {
+                            base: Box::new(lhs),
+                            index: Box::new(index),
+                        }
                     }
                     TokenKind::Dot => {
                         let name = match self.lexer.next() {
                             Some(Token { kind: TokenKind::Identifier(name), .. }) => name,
                             _ => panic!("expected identifier"),
                         };
-                        lhs = Expr::GetField {
+
+                        Expr::GetField {
                             base: Box::new(lhs),
                             index: Box::new(Expr::Literal(Value::String(name))),
-                        };
+                        }
                     }
-                    _ => unreachable!(),
-                }
+                    _ => make_postfix_expr(lhs, &op),
+                };
                 continue;
             }
 
@@ -121,11 +123,23 @@ impl Parser {
     }
 }
 
+fn make_postfix_expr(lhs: Expr, op: &TokenKind) -> Expr {
+    match *op {
+        TokenKind::PlusPlus => Expr::Unary(UnaryOp::PostInc, Box::new(lhs)),
+        TokenKind::MinusMinus => Expr::Unary(UnaryOp::PostDec, Box::new(lhs)),
+        _ => unreachable!()
+    }
+}
+
 fn make_prefix_expr(op: &TokenKind, rhs: Expr) -> Expr {
     match *op {
         TokenKind::Plus => rhs,
         TokenKind::Minus => Expr::Unary(UnaryOp::Neg, Box::new(rhs)),
         TokenKind::Bang => Expr::Unary(UnaryOp::Not, Box::new(rhs)),
+
+        TokenKind::PlusPlus => Expr::Unary(UnaryOp::PreInc, Box::new(rhs)),
+        TokenKind::MinusMinus => Expr::Unary(UnaryOp::PreDec, Box::new(rhs)),
+
         _ => unreachable!()
     }
 }
@@ -188,6 +202,7 @@ fn postfix_binding_power(op: &TokenKind) -> Option<(u8, ())> {
     use TokenKind::*;
     let bp = match op {
         LeftBracket | Dot => (5, ()),
+        PlusPlus | MinusMinus => (1, ()),
         _ => return None,
     };
     Some(bp)
@@ -197,6 +212,7 @@ fn prefix_binding_power(op: &TokenKind) -> Option<((), u8)> {
     use TokenKind::*;
     let bp = match op {
         Plus | Minus => ((), 5),
+        PlusPlus | MinusMinus => ((), 1),
         _ => return None,
     };
     Some(bp)

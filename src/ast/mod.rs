@@ -4,6 +4,12 @@ use std::collections::HashMap;
 pub enum UnaryOp {
     Neg,
     Not,
+
+    PreDec,
+    PreInc,
+
+    PostDec,
+    PostInc,
 }
 
 #[derive(Copy, Clone, Eq, PartialEq, Debug)]
