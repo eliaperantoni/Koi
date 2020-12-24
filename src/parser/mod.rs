@@ -57,9 +57,9 @@ impl Parser {
             }
 
             Some(Token { kind: TokenKind::LeftParen, .. }) => {
-                let lhs = self.parse_expression(0);
+                let expr = self.parse_expression(0);
                 assert!(matches!(self.lexer.next(), Some(Token { kind: TokenKind::RightParen, .. })));
-                lhs
+                expr
             }
 
             _ => panic!("bad token"),
