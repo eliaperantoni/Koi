@@ -161,9 +161,7 @@ impl Lexer {
 
         Token {
             lexeme,
-            kind: TokenKind::Num {
-                value,
-            },
+            kind: TokenKind::Num(value),
         }
     }
 
@@ -199,9 +197,7 @@ impl Lexer {
         } else {
             Token {
                 lexeme: word.clone(),
-                kind: TokenKind::Identifier {
-                    name: word.clone(),
-                },
+                kind: TokenKind::Identifier(word.clone()),
             }
         }
     }

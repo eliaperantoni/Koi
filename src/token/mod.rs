@@ -6,12 +6,8 @@ pub struct Token {
 
 #[derive(PartialEq, Debug, Clone)]
 pub enum TokenKind {
-    Identifier {
-        name: String,
-    },
-    Num {
-        value: f64,
-    },
+    Identifier(String),
+    Num(f64),
     String {
         value: String,
         does_interp: bool,

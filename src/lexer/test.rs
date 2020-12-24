@@ -77,9 +77,7 @@ fn panics_unexpected_symbol() {
 fn scans_identifiers() {
     assert_eq!(scan("whilee"), vec![
         Token {
-            kind: TokenKind::Identifier {
-                name: "whilee".to_owned(),
-            },
+            kind: TokenKind::Identifier("whilee".to_owned()),
             lexeme: "whilee".to_owned(),
         },
         Token {
@@ -126,9 +124,7 @@ fn scans_string_literal_with_escape_chars() {
 fn scans_number_literals() {
     assert_eq!(scan("12 3.14 10. .5"), vec![
         Token {
-            kind: TokenKind::Num {
-                value: 12.0,
-            },
+            kind: TokenKind::Num(12.0),
             lexeme: "12".to_owned(),
         },
         Token {
@@ -136,9 +132,7 @@ fn scans_number_literals() {
             lexeme: "".to_owned(),
         },
         Token {
-            kind: TokenKind::Num {
-                value: 3.14,
-            },
+            kind: TokenKind::Num(3.14),
             lexeme: "3.14".to_owned(),
         },
         Token {
@@ -146,9 +140,7 @@ fn scans_number_literals() {
             lexeme: "".to_owned(),
         },
         Token {
-            kind: TokenKind::Num {
-                value: 10.0,
-            },
+            kind: TokenKind::Num(10.0),
             lexeme: "10.".to_owned(),
         },
         Token {
@@ -156,9 +148,7 @@ fn scans_number_literals() {
             lexeme: "".to_owned(),
         },
         Token {
-            kind: TokenKind::Num {
-                value: 0.5,
-            },
+            kind: TokenKind::Num(0.5),
             lexeme: ".5".to_owned(),
         },
         Token {
@@ -305,9 +295,7 @@ fn scans_interpolated_string_dict() {
             lexeme: "{".to_owned(),
         },
         Token {
-            kind: TokenKind::Identifier {
-                name: "x".to_owned(),
-            },
+            kind: TokenKind::Identifier("x".to_owned()),
             lexeme: "x".to_owned(),
         },
         Token {
@@ -315,9 +303,7 @@ fn scans_interpolated_string_dict() {
             lexeme: ":".to_owned(),
         },
         Token {
-            kind: TokenKind::Num {
-                value: 1.0,
-            },
+            kind: TokenKind::Num(1.0),
             lexeme: "1".to_owned(),
         },
         Token {
