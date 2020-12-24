@@ -7,6 +7,8 @@ use itertools::__std_iter::Peekable;
 // TODO Parse assignment
 // TODO Parse array literals
 // TODO Parse dict literals
+// TODO Fix binding powers
+// TODO Write tests for parser
 
 pub struct Parser {
     lexer: Peekable<Lexer>,
