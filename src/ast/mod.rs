@@ -1,10 +1,12 @@
 use std::collections::HashMap;
 
+#[derive(Copy, Clone, Eq, PartialEq, Debug)]
 pub enum UnaryOp {
     Neg,
     Not,
 }
 
+#[derive(Copy, Clone, Eq, PartialEq, Debug)]
 pub enum BinaryOp {
     Sum,
     Sub,
@@ -16,6 +18,7 @@ pub enum BinaryOp {
     Or,
 }
 
+#[derive(Clone, Debug)]
 pub enum Expr {
     Literal(Value),
     Unary(UnaryOp, Box<Expr>),
@@ -32,6 +35,7 @@ pub enum Expr {
     SetDict(Box<Expr>, String, Box<Expr>),
 }
 
+#[derive(Clone, Debug)]
 pub enum Value {
     Nil,
     Num(f64),
