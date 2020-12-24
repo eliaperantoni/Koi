@@ -28,11 +28,15 @@ pub enum Expr {
     Get(String),
     Set(String, Box<Expr>),
 
-    GetVec(Box<Expr>, usize),
-    SetVec(Box<Expr>, usize, Box<Expr>),
-
-    GetDict(Box<Expr>, String),
-    SetDict(Box<Expr>, String, Box<Expr>),
+    GetField {
+        base: Box<Expr>,
+        index: Box<Expr>,
+    },
+    SetField {
+        base: Box<Expr>,
+        index: Box<Expr>,
+        value: Box<Expr>,
+    },
 }
 
 #[derive(Clone, Debug)]
