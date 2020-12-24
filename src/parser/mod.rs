@@ -58,12 +58,7 @@ impl Parser {
 
             Some(Token { kind: TokenKind::LeftParen, .. }) => {
                 let lhs = self.parse_expression(0);
-
-                match self.lexer.next() {
-                    Some(Token { kind: TokenKind::RightParen, .. }) => (),
-                    _ => panic!("unterminated parenthesized expression"),
-                };
-
+                assert!(matches!(self.lexer.next(), Some(Token { kind: TokenKind::RightParen, .. })));
                 lhs
             }
 
@@ -75,6 +70,37 @@ impl Parser {
                 Some(Token { kind, .. }) => kind,
                 None => break,
             };
+
+            if let Some((l_bp, ())) = postfix_binding_power(op) {
+                if l_bp < min_bp {
+                    break;
+                }
+
+                let op = self.lexer.next().unwrap().kind;
+
+                match op {
+                    TokenKind::LeftBracket => {
+                        let rhs = self.parse_expression(0);
+                        lhs = Expr::GetField {
+                            base: Box::new(lhs),
+                            index: Box::new(rhs),
+                        };
+                        assert!(matches!(self.lexer.next(), Some(Token { kind: TokenKind::RightBracket, .. })));
+                    }
+                    TokenKind::Dot => {
+                        let name = match self.lexer.next() {
+                            Some(Token { kind: TokenKind::Identifier(name), .. }) => name,
+                            _ => panic!("expected identifier"),
+                        };
+                        lhs = Expr::GetField {
+                            base: Box::new(lhs),
+                            index: Box::new(Expr::Literal(Value::String(name))),
+                        };
+                    }
+                    _ => unreachable!(),
+                }
+                continue;
+            }
 
             if let Some((l_bp, r_bp)) = infix_binding_power(&op) {
                 if l_bp < min_bp {
@@ -96,7 +122,7 @@ impl Parser {
 }
 
 fn make_prefix_expr(op: &TokenKind, rhs: Expr) -> Expr {
-    match op {
+    match *op {
         TokenKind::Plus => rhs,
         TokenKind::Minus => Expr::Unary(UnaryOp::Neg, Box::new(rhs)),
         TokenKind::Bang => Expr::Unary(UnaryOp::Not, Box::new(rhs)),
@@ -158,6 +184,15 @@ fn make_infix_expr(lhs: Expr, op: &TokenKind, rhs: Expr) -> Expr {
 
         _ => unreachable!(),
     }
+}
+
+fn postfix_binding_power(op: &TokenKind) -> Option<(u8, ())> {
+    use TokenKind::*;
+    let bp = match op {
+        LeftBracket | Dot => (5, ()),
+        _ => return None,
+    };
+    Some(bp)
 }
 
 fn prefix_binding_power(op: &TokenKind) -> Option<((), u8)> {
