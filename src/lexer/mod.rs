@@ -245,9 +245,14 @@ impl Lexer {
                     },
                 });
 
+                let my_braces_count = self.braces_count;
+                self.braces_count = 0;
+
                 self.interp_count += 1;
                 tokens.append(&mut self.collect::<Vec<Token>>());
                 self.interp_count -= 1;
+
+                self.braces_count = my_braces_count;
 
                 match self.peek_at(0) {
                     Some('}') => (),
