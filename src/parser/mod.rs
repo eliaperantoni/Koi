@@ -8,13 +8,13 @@ mod stmt;
 mod test;
 
 pub struct Parser {
-    lexer: Peekable<Lexer>,
+    lexer: Lexer,
 }
 
 impl Parser {
     pub fn new(lexer: Lexer) -> Parser {
         Parser {
-            lexer: lexer.peekable(),
+            lexer,
         }
     }
 }

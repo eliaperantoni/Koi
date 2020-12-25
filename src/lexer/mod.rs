@@ -1,5 +1,6 @@
-use crate::token::{Token, TokenKind};
 use itertools::Itertools;
+
+use crate::token::{Token, TokenKind};
 
 #[cfg(test)]
 mod test;
@@ -12,6 +13,8 @@ pub struct Lexer {
     braces_count: u8,
 
     buffer: Vec<Token>,
+
+    peeked: Option<Token>,
 }
 
 impl Lexer {
@@ -24,10 +27,21 @@ impl Lexer {
             braces_count: 0,
 
             buffer: Vec::new(),
+
+            peeked: None,
         }
     }
 
-    fn peek_at(&self, offset: usize) -> Option<char> {
+    pub fn peek(&mut self) -> Option<&Token> {
+        if self.peeked.is_some() {
+            return self.peeked.as_ref();
+        }
+
+        self.peeked = self.next();
+        self.peeked.as_ref()
+    }
+
+    fn char_at(&self, offset: usize) -> Option<char> {
         if self.cursor + offset >= self.source.len() {
             return None;
         }
@@ -40,7 +54,7 @@ impl Lexer {
     }
 
     fn scan_symbol(&mut self) -> Token {
-        let (kind, length) = match self.peek_at(0).unwrap() {
+        let (kind, length) = match self.char_at(0).unwrap() {
             ',' => (TokenKind::Comma, 1),
             '.' => (TokenKind::Dot, 1),
             ':' => (TokenKind::Colon, 1),
@@ -49,7 +63,7 @@ impl Lexer {
             ' ' => {
                 let mut length = 1;
                 loop {
-                    match self.peek_at(length) {
+                    match self.char_at(length) {
                         Some(' ') => length += 1,
                         _ => break,
                     }
@@ -74,7 +88,7 @@ impl Lexer {
 
             // Chars that may only appear by themselves or followed by an equals sign
             '!' | '=' | '/' | '^' | '%' | '>' | '<' => {
-                let (kind, equal_kind) = match self.peek_at(0).unwrap() {
+                let (kind, equal_kind) = match self.char_at(0).unwrap() {
                     '!' => (TokenKind::Bang, TokenKind::BangEqual),
                     '=' => (TokenKind::Equal, TokenKind::EqualEqual),
                     '/' => (TokenKind::Slash, TokenKind::SlashEqual),
@@ -85,25 +99,25 @@ impl Lexer {
                     _ => unreachable!(),
                 };
 
-                if let Some('=') = self.peek_at(1) {
+                if let Some('=') = self.char_at(1) {
                     (equal_kind, 2)
                 } else {
                     (kind, 1)
                 }
             }
 
-            '+' => match self.peek_at(1) {
+            '+' => match self.char_at(1) {
                 Some('+') => (TokenKind::PlusPlus, 2),
                 Some('=') => (TokenKind::PlusEqual, 2),
                 _ => (TokenKind::Plus, 1),
             },
-            '-' => match self.peek_at(1) {
+            '-' => match self.char_at(1) {
                 Some('-') => (TokenKind::MinusMinus, 2),
                 Some('=') => (TokenKind::MinusEqual, 2),
                 _ => (TokenKind::Minus, 1),
             },
 
-            '*' => match self.peek_at(1) {
+            '*' => match self.char_at(1) {
                 Some('=') => (TokenKind::StarEqual, 2),
                 Some('>') => (TokenKind::StarGreat, 2),
                 Some('<') => (TokenKind::StarLess, 2),
@@ -111,12 +125,12 @@ impl Lexer {
                 _ => (TokenKind::Star, 1),
             },
 
-            '|' => match self.peek_at(1) {
+            '|' => match self.char_at(1) {
                 Some('|') => (TokenKind::PipePipe, 2),
                 _ => (TokenKind::Pipe, 1),
             },
 
-            '&' => match self.peek_at(1) {
+            '&' => match self.char_at(1) {
                 Some('&') => (TokenKind::AmperAmper, 2),
                 Some('>') => (TokenKind::AmperGreat, 2),
                 Some('<') => (TokenKind::AmperLess, 2),
@@ -206,7 +220,7 @@ impl Lexer {
         // Either ' or "
         // Safe to unwrap because the lexer calls this method when the current char is ' or " so there
         // is at least one character
-        let delimiter = self.peek_at(0).unwrap();
+        let delimiter = self.char_at(0).unwrap();
 
         let mut lexeme_start = self.cursor;
 
@@ -217,7 +231,7 @@ impl Lexer {
         let mut literal_piece = String::new();
 
         loop {
-            let ch = if let Some(ch) = self.peek_at(0) {
+            let ch = if let Some(ch) = self.char_at(0) {
                 ch
             } else {
                 panic!("unterminated string");
@@ -254,7 +268,7 @@ impl Lexer {
 
                 self.braces_count = my_braces_count;
 
-                match self.peek_at(0) {
+                match self.char_at(0) {
                     Some('}') => (),
                     _ => panic!("expected closing brace at end of interpolated expression")
                 }
@@ -268,7 +282,7 @@ impl Lexer {
             }
 
             if ch == '\\' {
-                let ch = match self.peek_at(0) {
+                let ch = match self.char_at(0) {
                     Some('n') => '\n',
                     Some('t') => '\t',
                     Some('r') => '\r',
@@ -294,11 +308,15 @@ impl Iterator for Lexer {
     type Item = Token;
 
     fn next(&mut self) -> Option<Self::Item> {
+        if self.peeked.is_some() {
+            return self.peeked.take();
+        }
+
         if !self.buffer.is_empty() {
             return Some(self.buffer.remove(0));
         }
 
-        match (self.peek_at(0), self.peek_at(1)) {
+        match (self.char_at(0), self.char_at(1)) {
             (None, _) => None,
 
             (Some('}'), _) if self.interp_count > 0 && self.braces_count == 0 => None,
