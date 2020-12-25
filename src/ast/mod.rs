@@ -57,7 +57,15 @@ pub enum Expr {
         index: Box<Expr>,
         value: Box<Expr>,
     },
+
+    Call {
+        func: Box<Expr>,
+        args: Vec<Expr>,
+    },
 }
+
+#[derive(Clone, Debug)]
+pub enum Stmt {}
 
 #[derive(Clone, Debug)]
 pub enum Value {
@@ -65,6 +73,12 @@ pub enum Value {
     Num(f64),
     String(String),
     Bool(bool),
+
     Vec(Vec<Value>),
     Dict(HashMap<Value, Value>),
+
+    Func {
+        args: Vec<String>,
+        stmt: Vec<Stmt>,
+    },
 }

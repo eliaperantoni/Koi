@@ -2,6 +2,7 @@ use itertools::__std_iter::Peekable;
 use crate::lexer::Lexer;
 
 mod expr;
+mod stmt;
 
 pub struct Parser {
     lexer: Peekable<Lexer>,

@@ -91,6 +91,35 @@ impl Parser {
                             index: Box::new(Expr::Literal(Value::String(name))),
                         }
                     }
+                    TokenKind::LeftParen => {
+                        let mut args = Vec::new();
+
+                        match self.lexer.peek() {
+                            Some(Token { kind: TokenKind::RightParen, .. }) => {
+                                self.lexer.next();
+                                return Expr::Call {
+                                    args,
+                                    func: Box::new(lhs),
+                                };
+                            }
+                            _ => ()
+                        }
+
+                        loop {
+                            args.push(self.parse_expression(0));
+
+                            match self.lexer.next() {
+                                Some(Token { kind: TokenKind::Comma, .. }) => (),
+                                Some(Token { kind: TokenKind::RightParen, .. }) => break,
+                                _ => panic!("expected comma or parenthesis after argument"),
+                            }
+                        }
+
+                        Expr::Call {
+                            args,
+                            func: Box::new(lhs),
+                        }
+                    }
                     _ => make_postfix_expr(lhs, &op),
                 };
                 continue;

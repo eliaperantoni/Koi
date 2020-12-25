@@ -4,7 +4,7 @@ mod ast;
 mod parser;
 
 fn main() {
-    let lexer = lexer::Lexer::new("x^=5".to_owned());
+    let lexer = lexer::Lexer::new("x.y".to_owned());
 
     if false {
         println!("{:?}", lexer.collect::<Vec<token::Token>>());
