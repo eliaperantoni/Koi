@@ -7,7 +7,6 @@ use crate::ast::Expr::Binary;
 use crate::lexer::Lexer;
 use crate::token::{Token, TokenKind};
 
-// TODO Parse assignment
 // TODO Write tests for parser
 
 pub struct Parser {
@@ -262,6 +261,33 @@ fn make_infix_expr(lhs: Expr, op: &TokenKind, rhs: Expr) -> Expr {
             }
 
             expr
+        }
+
+        TokenKind::Equal |
+        TokenKind::PlusEqual | TokenKind::MinusEqual |
+        TokenKind::StarEqual | TokenKind::SlashEqual |
+        TokenKind::PercEqual | TokenKind::CaretEqual => {
+            let rhs = if !matches!(*op, TokenKind::Equal) {
+                let op = match *op {
+                    TokenKind::PlusEqual => BinaryOp::Sum,
+                    TokenKind::MinusEqual => BinaryOp::Sub,
+                    TokenKind::StarEqual => BinaryOp::Mul,
+                    TokenKind::SlashEqual => BinaryOp::Div,
+                    TokenKind::PercEqual => BinaryOp::Mod,
+                    TokenKind::CaretEqual => BinaryOp::Pow,
+                    _ => unreachable!()
+                };
+
+                Box::new(Expr::Binary(lhs.clone(), op, rhs))
+            } else {
+                rhs
+            };
+
+            match *lhs {
+                Expr::Get(name) => Expr::Set(name, rhs),
+                Expr::GetField { base, index } => Expr::SetField { base, index, value: rhs },
+                _ => panic!("bad assignment target")
+            }
         }
 
         _ => unreachable!(),
