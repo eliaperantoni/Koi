@@ -1,12 +1,14 @@
-use crate::lexer::Lexer;
-use crate::ast::*;
-use crate::token::{Token, TokenKind};
-use crate::ast::Expr::Binary;
+use std::collections::HashMap;
+
 use itertools::__std_iter::Peekable;
+
+use crate::ast::*;
+use crate::ast::Expr::Binary;
+use crate::lexer::Lexer;
+use crate::token::{Token, TokenKind};
 
 // TODO Parse assignment
 // TODO Parse array literals
-// TODO Parse dict literals
 // TODO Write tests for parser
 
 pub struct Parser {
@@ -53,6 +55,8 @@ impl Parser {
             Some(Token { kind: TokenKind::False, .. }) => Expr::Literal(Value::Bool(false)),
 
             Some(Token { kind: TokenKind::Nil, .. }) => Expr::Literal(Value::Nil),
+
+            Some(Token { kind: TokenKind::LeftBrace, .. }) => self.parse_dict_literal(),
 
             Some(Token { kind, .. }) if prefix_binding_power(&kind).is_some() => {
                 let ((), r_bp) = prefix_binding_power(&kind).unwrap();
@@ -125,6 +129,43 @@ impl Parser {
         }
 
         lhs
+    }
+
+    fn parse_dict_literal(&mut self) -> Expr {
+        let mut dict = HashMap::new();
+
+        match self.lexer.peek() {
+            Some(Token { kind: TokenKind::RightBrace, .. }) => {
+                self.lexer.next();
+                return Expr::Dict(dict);
+            }
+            _ => ()
+        }
+
+        loop {
+            let k = match self.lexer.next() {
+                Some(Token { kind: TokenKind::String { value, does_interp }, .. }) if !does_interp => value,
+                Some(Token { kind: TokenKind::Identifier(name), .. }) => name,
+                Some(Token { kind: TokenKind::Num(num), .. }) => num.to_string(),
+                _ => panic!("bad dict key")
+            };
+
+            if !matches!(self.lexer.next(), Some(Token {kind: TokenKind::Colon, ..})) {
+                panic!("expected colon to separate key and value in dict literal");
+            }
+
+            let v = self.parse_expression(0);
+
+            dict.insert(k, v);
+
+            match self.lexer.next() {
+                Some(Token { kind: TokenKind::Comma, .. }) => (),
+                Some(Token { kind: TokenKind::RightBrace, .. }) => break,
+                _ => panic!("expected comma or brace after dict literal pair"),
+            }
+        }
+
+        Expr::Dict(dict)
     }
 }
 

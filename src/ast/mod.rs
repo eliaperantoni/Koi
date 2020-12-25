@@ -33,13 +33,17 @@ pub enum BinaryOp {
 #[derive(Clone, Debug)]
 pub enum Expr {
     Literal(Value),
-    Unary(UnaryOp, Box<Expr>),
-    Binary(Box<Expr>, BinaryOp, Box<Expr>),
+
+    Vec(Vec<Expr>),
+    Dict(HashMap<String, Expr>),
 
     Interp {
         strings: Vec<String>,
         exprs: Vec<Expr>,
     },
+
+    Unary(UnaryOp, Box<Expr>),
+    Binary(Box<Expr>, BinaryOp, Box<Expr>),
 
     Get(String),
     Set(String, Box<Expr>),
