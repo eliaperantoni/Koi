@@ -30,7 +30,7 @@ pub enum BinaryOp {
     Or,
 }
 
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, PartialEq)]
 pub enum Expr {
     Literal(Value),
 
@@ -64,7 +64,7 @@ pub enum Expr {
     },
 }
 
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, PartialEq)]
 pub enum Stmt {
     Expr(Expr)
 }
@@ -81,6 +81,25 @@ pub enum Value {
 
     Func {
         args: Vec<String>,
-        stmt: Vec<Stmt>,
+        stmts: Vec<Stmt>,
     },
+}
+
+impl PartialEq for Value {
+    fn eq(&self, other: &Self) -> bool {
+        use Value::*;
+        match (self, other) {
+            (Nil, Nil) => true,
+            (Num(this), Num(other)) => this == other,
+            (String(this), String(other)) => this == other,
+            (Bool(this), Bool(other)) => this == other,
+            (Vec(this), Vec(other)) => false,
+            (Dict(this), Dict(other)) => false,
+            (
+                Func { args: this_args, stmts: this_stmts },
+                Func { args: other_args, stmts: other_stmts },
+            ) => this_args == other_args && this_stmts == other_stmts,
+            _ => false,
+        }
+    }
 }

@@ -4,6 +4,9 @@ use crate::lexer::Lexer;
 mod expr;
 mod stmt;
 
+#[cfg(test)]
+mod test;
+
 pub struct Parser {
     lexer: Peekable<Lexer>,
 }
