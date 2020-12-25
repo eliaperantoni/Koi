@@ -65,7 +65,9 @@ pub enum Expr {
 }
 
 #[derive(Clone, Debug)]
-pub enum Stmt {}
+pub enum Stmt {
+    Expr(Expr)
+}
 
 #[derive(Clone, Debug)]
 pub enum Value {

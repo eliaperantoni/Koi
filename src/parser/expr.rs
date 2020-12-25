@@ -4,7 +4,7 @@ use super::Parser;
 use std::collections::HashMap;
 
 impl Parser {
-    pub fn parse_expression(&mut self, min_bp: u8) -> Expr {
+    pub fn parse_expression(&mut self, min_bp: u8) -> Result<Expr, &'static str> {
         let mut lhs = match self.lexer.next() {
             Some(Token { kind: TokenKind::Num(num), .. }) => Expr::Literal(Value::Num(num)),
             Some(Token { kind: TokenKind::Identifier(name), .. }) => Expr::Get(name),
@@ -17,7 +17,7 @@ impl Parser {
                 strings.push(value);
 
                 loop {
-                    exprs.push(self.parse_expression(0));
+                    exprs.push(self.parse_expression(0)?);
 
                     if let Some(Token { kind: TokenKind::String { value, does_interp }, .. }) = self.lexer.next() {
                         strings.push(value);
@@ -26,7 +26,7 @@ impl Parser {
                             break;
                         }
                     } else {
-                        panic!("bad token");
+                        return Err("bad token");
                     }
                 }
 
@@ -38,23 +38,25 @@ impl Parser {
 
             Some(Token { kind: TokenKind::Nil, .. }) => Expr::Literal(Value::Nil),
 
-            Some(Token { kind: TokenKind::LeftBracket, .. }) => self.parse_vec_literal(),
-            Some(Token { kind: TokenKind::LeftBrace, .. }) => self.parse_dict_literal(),
+            Some(Token { kind: TokenKind::LeftBracket, .. }) => self.parse_vec_literal()?,
+            Some(Token { kind: TokenKind::LeftBrace, .. }) => self.parse_dict_literal()?,
 
             Some(Token { kind, .. }) if prefix_binding_power(&kind).is_some() => {
                 let ((), r_bp) = prefix_binding_power(&kind).unwrap();
-                let rhs = self.parse_expression(r_bp);
+                let rhs = self.parse_expression(r_bp)?;
 
                 make_prefix_expr(&kind, rhs)
             }
 
             Some(Token { kind: TokenKind::LeftParen, .. }) => {
-                let expr = self.parse_expression(0);
-                assert!(matches!(self.lexer.next(), Some(Token { kind: TokenKind::RightParen, .. })));
+                let expr = self.parse_expression(0)?;
+                if !matches!(self.lexer.next(), Some(Token { kind: TokenKind::RightParen, .. })) {
+                    return Err("expected right parenthesis")
+                }
                 expr
             }
 
-            _ => panic!("bad token"),
+            _ => return Err("bad token"),
         };
 
         loop {
@@ -72,8 +74,11 @@ impl Parser {
 
                 lhs = match op {
                     TokenKind::LeftBracket => {
-                        let index = self.parse_expression(0);
-                        assert!(matches!(self.lexer.next(), Some(Token { kind: TokenKind::RightBracket, .. })));
+                        let index = self.parse_expression(0)?;
+
+                        if !matches!(self.lexer.next(), Some(Token { kind: TokenKind::RightBracket, .. })) {
+                            return Err("expected right bracket");
+                        }
 
                         Expr::GetField {
                             base: Box::new(lhs),
@@ -83,7 +88,7 @@ impl Parser {
                     TokenKind::Dot => {
                         let name = match self.lexer.next() {
                             Some(Token { kind: TokenKind::Identifier(name), .. }) => name,
-                            _ => panic!("expected identifier"),
+                            _ => return Err("expected identifier"),
                         };
 
                         Expr::GetField {
@@ -91,35 +96,7 @@ impl Parser {
                             index: Box::new(Expr::Literal(Value::String(name))),
                         }
                     }
-                    TokenKind::LeftParen => {
-                        let mut args = Vec::new();
-
-                        match self.lexer.peek() {
-                            Some(Token { kind: TokenKind::RightParen, .. }) => {
-                                self.lexer.next();
-                                return Expr::Call {
-                                    args,
-                                    func: Box::new(lhs),
-                                };
-                            }
-                            _ => ()
-                        }
-
-                        loop {
-                            args.push(self.parse_expression(0));
-
-                            match self.lexer.next() {
-                                Some(Token { kind: TokenKind::Comma, .. }) => (),
-                                Some(Token { kind: TokenKind::RightParen, .. }) => break,
-                                _ => panic!("expected comma or parenthesis after argument"),
-                            }
-                        }
-
-                        Expr::Call {
-                            args,
-                            func: Box::new(lhs),
-                        }
-                    }
+                    TokenKind::LeftParen => self.parse_call(lhs)?,
                     _ => make_postfix_expr(lhs, &op),
                 };
                 continue;
@@ -132,7 +109,7 @@ impl Parser {
 
                 let op = self.lexer.next().unwrap().kind;
 
-                let rhs = self.parse_expression(r_bp);
+                let rhs = self.parse_expression(r_bp)?;
                 lhs = make_infix_expr(lhs, &op, rhs);
                 continue;
             }
@@ -140,40 +117,70 @@ impl Parser {
             break;
         }
 
-        lhs
+        Ok(lhs)
     }
 
-    fn parse_vec_literal(&mut self) -> Expr {
-        let mut vec = Vec::new();
+    fn parse_call(&mut self, func: Expr) -> Result<Expr, &'static str> {
+        let mut args = Vec::new();
 
         match self.lexer.peek() {
-            Some(Token { kind: TokenKind::RightBracket, .. }) => {
+            Some(Token { kind: TokenKind::RightParen, .. }) => {
                 self.lexer.next();
-                return Expr::Vec(vec);
+                return Ok(Expr::Call {
+                    args,
+                    func: Box::new(func),
+                });
             }
             _ => ()
         }
 
         loop {
-            vec.push(self.parse_expression(0));
+            args.push(self.parse_expression(0)?);
+
+            match self.lexer.next() {
+                Some(Token { kind: TokenKind::Comma, .. }) => (),
+                Some(Token { kind: TokenKind::RightParen, .. }) => break,
+                _ => return Err("expected comma or right parenthesis"),
+            }
+        }
+
+        Ok(Expr::Call {
+            args,
+            func: Box::new(func),
+        })
+    }
+
+    fn parse_vec_literal(&mut self) -> Result<Expr, &'static str> {
+        let mut vec = Vec::new();
+
+        match self.lexer.peek() {
+            Some(Token { kind: TokenKind::RightBracket, .. }) => {
+                self.lexer.next();
+                return Ok(Expr::Vec(vec));
+            }
+            _ => ()
+        }
+
+        loop {
+            vec.push(self.parse_expression(0)?);
 
             match self.lexer.next() {
                 Some(Token { kind: TokenKind::Comma, .. }) => (),
                 Some(Token { kind: TokenKind::RightBracket, .. }) => break,
-                _ => panic!("expected comma or bracket after vec literal element"),
+                _ => return Err("expected comma or right bracket"),
             }
         }
 
-        Expr::Vec(vec)
+        Ok(Expr::Vec(vec))
     }
 
-    fn parse_dict_literal(&mut self) -> Expr {
+    fn parse_dict_literal(&mut self) -> Result<Expr, &'static str> {
         let mut dict = HashMap::new();
 
         match self.lexer.peek() {
             Some(Token { kind: TokenKind::RightBrace, .. }) => {
                 self.lexer.next();
-                return Expr::Dict(dict);
+                return Ok(Expr::Dict(dict));
             }
             _ => ()
         }
@@ -183,25 +190,25 @@ impl Parser {
                 Some(Token { kind: TokenKind::String { value, does_interp }, .. }) if !does_interp => value,
                 Some(Token { kind: TokenKind::Identifier(name), .. }) => name,
                 Some(Token { kind: TokenKind::Num(num), .. }) => num.to_string(),
-                _ => panic!("bad dict key")
+                _ => return Err("bad dict key")
             };
 
             if !matches!(self.lexer.next(), Some(Token {kind: TokenKind::Colon, ..})) {
-                panic!("expected colon to separate key and value in dict literal");
+                return Err("expected colon");
             }
 
-            let v = self.parse_expression(0);
+            let v = self.parse_expression(0)?;
 
             dict.insert(k, v);
 
             match self.lexer.next() {
                 Some(Token { kind: TokenKind::Comma, .. }) => (),
                 Some(Token { kind: TokenKind::RightBrace, .. }) => break,
-                _ => panic!("expected comma or brace after dict literal pair"),
+                _ => return Err("expected comma or right brace"),
             }
         }
 
-        Expr::Dict(dict)
+        Ok(Expr::Dict(dict))
     }
 }
 
