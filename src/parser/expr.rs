@@ -310,7 +310,7 @@ fn make_infix_expr(lhs: Expr, op: &TokenKind, rhs: Expr) -> Expr {
 fn postfix_binding_power(op: &TokenKind) -> Option<(u8, ())> {
     use TokenKind::*;
     let bp = match op {
-        LeftBracket | Dot => (21, ()),
+        LeftBracket | LeftParen | Dot => (21, ()),
         PlusPlus | MinusMinus => (19, ()),
         _ => return None,
     };
