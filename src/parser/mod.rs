@@ -8,7 +8,6 @@ use crate::lexer::Lexer;
 use crate::token::{Token, TokenKind};
 
 // TODO Parse assignment
-// TODO Parse array literals
 // TODO Write tests for parser
 
 pub struct Parser {
@@ -56,6 +55,7 @@ impl Parser {
 
             Some(Token { kind: TokenKind::Nil, .. }) => Expr::Literal(Value::Nil),
 
+            Some(Token { kind: TokenKind::LeftBracket, .. }) => self.parse_vec_literal(),
             Some(Token { kind: TokenKind::LeftBrace, .. }) => self.parse_dict_literal(),
 
             Some(Token { kind, .. }) if prefix_binding_power(&kind).is_some() => {
@@ -129,6 +129,30 @@ impl Parser {
         }
 
         lhs
+    }
+
+    fn parse_vec_literal(&mut self) -> Expr {
+        let mut vec = Vec::new();
+
+        match self.lexer.peek() {
+            Some(Token { kind: TokenKind::RightBracket, .. }) => {
+                self.lexer.next();
+                return Expr::Vec(vec);
+            }
+            _ => ()
+        }
+
+        loop {
+            vec.push(self.parse_expression(0));
+
+            match self.lexer.next() {
+                Some(Token { kind: TokenKind::Comma, .. }) => (),
+                Some(Token { kind: TokenKind::RightBracket, .. }) => break,
+                _ => panic!("expected comma or bracket after vec literal element"),
+            }
+        }
+
+        Expr::Vec(vec)
     }
 
     fn parse_dict_literal(&mut self) -> Expr {
