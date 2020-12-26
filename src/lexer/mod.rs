@@ -15,6 +15,8 @@ pub struct Lexer {
     buffer: Vec<Token>,
 
     peeked: Option<Token>,
+
+    line: Vec<Token>,
 }
 
 impl Lexer {
@@ -29,6 +31,8 @@ impl Lexer {
             buffer: Vec::new(),
 
             peeked: None,
+
+            line: Vec::new(),
         }
     }
 
@@ -39,6 +43,15 @@ impl Lexer {
 
         self.peeked = self.next();
         self.peeked.as_ref()
+    }
+
+    pub fn rewind_line(&mut self) {
+        let mut buffer = Vec::new();
+        buffer.append(&mut self.line);
+        buffer.append(&mut self.buffer);
+        self.buffer = buffer;
+
+        self.peeked = None;
     }
 
     fn char_at(&self, offset: usize) -> Option<char> {
@@ -259,14 +272,23 @@ impl Lexer {
                     },
                 });
 
-                let my_braces_count = self.braces_count;
-                self.braces_count = 0;
+                let lexer = &mut Lexer {
+                    source: self.source.clone(),
+                    cursor: self.cursor,
 
-                self.interp_count += 1;
-                tokens.append(&mut self.collect::<Vec<Token>>());
-                self.interp_count -= 1;
+                    interp_count: self.interp_count + 1,
+                    braces_count: 0,
 
-                self.braces_count = my_braces_count;
+                    buffer: Vec::new(),
+
+                    peeked: None,
+
+                    line: Vec::new(),
+                };
+
+                tokens.append(&mut lexer.collect::<Vec<Token>>());
+
+                self.cursor = lexer.cursor;
 
                 match self.char_at(0) {
                     Some('}') => (),
@@ -308,26 +330,32 @@ impl Iterator for Lexer {
     type Item = Token;
 
     fn next(&mut self) -> Option<Self::Item> {
-        if self.peeked.is_some() {
-            return self.peeked.take();
+        let token = if self.peeked.is_some() {
+            self.peeked.take()
+        } else if !self.buffer.is_empty() {
+            Some(self.buffer.remove(0))
+        } else {
+            match (self.char_at(0), self.char_at(1)) {
+                (None, _) => None,
+
+                (Some('}'), _) if self.interp_count > 0 && self.braces_count == 0 => None,
+
+                (Some(digit), _) | (Some('.'), Some(digit)) if digit.is_ascii_digit() => Some(self.scan_number()),
+                (Some('"'), _) | (Some('\''), _) => Some(self.scan_string()),
+
+                (Some(c), _) if can_start_word(c) => Some(self.scan_word()),
+
+                _ => Some(self.scan_symbol()),
+            }
+        };
+
+        match token.as_ref() {
+            Some(Token { kind: TokenKind::Newline, .. }) => self.line = Vec::new(),
+            Some(token) => self.line.push(token.clone()),
+            _ => (),
         }
 
-        if !self.buffer.is_empty() {
-            return Some(self.buffer.remove(0));
-        }
-
-        match (self.char_at(0), self.char_at(1)) {
-            (None, _) => None,
-
-            (Some('}'), _) if self.interp_count > 0 && self.braces_count == 0 => None,
-
-            (Some(digit), _) | (Some('.'), Some(digit)) if digit.is_ascii_digit() => Some(self.scan_number()),
-            (Some('"'), _) | (Some('\''), _) => Some(self.scan_string()),
-
-            (Some(c), _) if can_start_word(c) => Some(self.scan_word()),
-
-            _ => Some(self.scan_symbol()),
-        }
+        token
     }
 }
 
