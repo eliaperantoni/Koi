@@ -66,7 +66,8 @@ pub enum Expr {
 
 #[derive(Clone, Debug, PartialEq)]
 pub enum Stmt {
-    Expr(Expr)
+    Expr(Expr),
+    Cmd(Cmd),
 }
 
 #[derive(Clone, Debug)]
@@ -84,6 +85,8 @@ pub enum Value {
         stmts: Vec<Stmt>,
     },
 }
+
+pub type Cmd = Vec<Vec<Expr>>;
 
 impl PartialEq for Value {
     fn eq(&self, other: &Self) -> bool {

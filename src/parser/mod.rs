@@ -3,6 +3,7 @@ use crate::lexer::Lexer;
 
 mod expr;
 mod stmt;
+mod cmd;
 
 #[cfg(test)]
 mod test;
