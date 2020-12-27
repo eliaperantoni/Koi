@@ -1,10 +1,15 @@
+use std::fs;
+use std::error::Error;
+
 mod token;
 mod lexer;
 mod ast;
 mod parser;
 
-fn main() {
-    let lexer = lexer::Lexer::new("\"/usr/bin/bash\" -c input.txt | {\"output.txt\".uppercase()}".to_owned());
+fn main() -> Result<(), Box<dyn Error>> {
+    let source = fs::read_to_string("./prog")?;
+
+    let lexer = lexer::Lexer::new(source);
 
     if false {
         println!("{:?}", lexer.collect::<Vec<token::Token>>());
@@ -12,4 +17,6 @@ fn main() {
         let mut parser = parser::Parser::new(lexer);
         println!("{:?}", parser.parse_stmt());
     }
+
+    Ok(())
 }

@@ -36,6 +36,16 @@ impl Lexer {
         }
     }
 
+    pub fn consume_whitespace(&mut self) {
+        loop {
+            match self.peek() {
+                Some(Token { kind: TokenKind::Newline, .. }) |
+                Some(Token { kind: TokenKind::Space, .. }) => {self.next();}
+                _ => break,
+            }
+        }
+    }
+
     pub fn peek(&mut self) -> Option<&Token> {
         if self.peeked.is_some() {
             return self.peeked.as_ref();
