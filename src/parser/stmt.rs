@@ -19,7 +19,7 @@ impl Parser {
             return Err("expression is neither assignment nor call");
         }
 
-        if !matches!(self.lexer.peek(), Some(Token {kind: TokenKind::Newline, ..})) {
+        if !matches!(self.lexer.peek(), None | Some(Token {kind: TokenKind::Newline, ..})) {
             return Err("no newline at end of expression statement");
         }
 
