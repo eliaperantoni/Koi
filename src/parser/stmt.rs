@@ -8,6 +8,7 @@ impl Parser {
         if let Ok(stmt) = self.parse_expr_stmt() {
             stmt
         } else {
+            self.lexer.rewind_line();
             Stmt::Cmd(self.parse_cmd())
         }
     }

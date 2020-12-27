@@ -9,6 +9,8 @@ impl Parser {
             |t| !matches!(t, Token{kind: TokenKind::Newline, ..}),
         ).collect();
 
-        Vec::new()
+        let string: String = tokens.into_iter().map(|t|t.lexeme).collect::<Vec<String>>().concat();
+
+        vec![vec![Expr::Literal(Value::String(string))]]
     }
 }

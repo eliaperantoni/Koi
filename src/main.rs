@@ -4,7 +4,7 @@ mod ast;
 mod parser;
 
 fn main() {
-    let lexer = lexer::Lexer::new("obj.ciao[0=f(1)\n".to_owned());
+    let lexer = lexer::Lexer::new("\"/usr/bin/bash\" -c input.txt | {\"output.txt\".uppercase()}".to_owned());
 
     if false {
         println!("{:?}", lexer.collect::<Vec<token::Token>>());
