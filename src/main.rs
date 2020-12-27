@@ -7,7 +7,7 @@ mod ast;
 mod parser;
 
 fn main() -> Result<(), Box<dyn Error>> {
-    let source = fs::read_to_string("./prog")?;
+    let source = fs::read_to_string("./prog.amp")?;
 
     let lexer = lexer::Lexer::new(source);
 
