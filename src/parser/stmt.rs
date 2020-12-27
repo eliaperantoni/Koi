@@ -5,11 +5,15 @@ use super::Parser;
 
 impl Parser {
     pub fn parse_stmt(&mut self) -> Stmt {
+        let was_line_start = self.lexer.is_line_start();
+
         if let Ok(stmt) = self.parse_expr_stmt() {
             stmt
-        } else {
+        } else if was_line_start {
             self.lexer.rewind_line();
             Stmt::Cmd(self.parse_cmd())
+        } else {
+            panic!("bad statement");
         }
     }
 
@@ -19,12 +23,6 @@ impl Parser {
         if !matches!(expr, Expr::Set(..) | Expr::SetField {..} | Expr::Call {..}) {
             return Err("expression is neither assignment nor call");
         }
-
-        if !matches!(self.lexer.peek(), None | Some(Token {kind: TokenKind::Newline, ..})) {
-            return Err("no newline at end of expression statement");
-        }
-
-        self.lexer.next();
 
         Ok(Stmt::Expr(expr))
     }

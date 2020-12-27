@@ -15,7 +15,7 @@ fn main() -> Result<(), Box<dyn Error>> {
         println!("{:?}", lexer.collect::<Vec<token::Token>>());
     } else {
         let mut parser = parser::Parser::new(lexer);
-        println!("{:?}", parser.parse_stmt());
+        println!("{:?}", parser.parse());
     }
 
     Ok(())

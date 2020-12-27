@@ -55,6 +55,10 @@ impl Lexer {
         self.peeked.as_ref()
     }
 
+    pub fn is_line_start(&self) -> bool {
+        self.line.is_empty()
+    }
+
     pub fn rewind_line(&mut self) {
         let mut buffer = Vec::new();
         buffer.append(&mut self.line);
