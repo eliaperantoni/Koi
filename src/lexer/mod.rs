@@ -36,11 +36,28 @@ impl Lexer {
         }
     }
 
+    pub fn is_line_start(&self) -> bool {
+        let mut tokens = if self.peeked.is_some() {
+            if let Some((_, rest)) = self.line.split_last() {
+                rest.iter()
+            } else {
+                return false;
+            }
+        } else {
+            self.line.iter()
+        };
+
+        tokens.all(|t| matches!(t,
+            Token{kind: TokenKind::Newline, ..} |
+            Token{kind: TokenKind::Space, ..})
+        )
+    }
+
     pub fn consume_whitespace(&mut self) {
         loop {
             match self.peek() {
                 Some(Token { kind: TokenKind::Newline, .. }) |
-                Some(Token { kind: TokenKind::Space, .. }) => {self.next();}
+                Some(Token { kind: TokenKind::Space, .. }) => { self.next(); }
                 _ => break,
             }
         }
@@ -53,10 +70,6 @@ impl Lexer {
 
         self.peeked = self.next();
         self.peeked.as_ref()
-    }
-
-    pub fn is_line_start(&self) -> bool {
-        self.line.is_empty()
     }
 
     pub fn rewind_line(&mut self) {
@@ -344,9 +357,11 @@ impl Iterator for Lexer {
     type Item = Token;
 
     fn next(&mut self) -> Option<Self::Item> {
-        let token = if self.peeked.is_some() {
-            self.peeked.take()
-        } else if !self.buffer.is_empty() {
+        if self.peeked.is_some() {
+            return self.peeked.take();
+        }
+
+        let token = if !self.buffer.is_empty() {
             Some(self.buffer.remove(0))
         } else {
             match (self.char_at(0), self.char_at(1)) {
