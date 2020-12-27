@@ -1,12 +1,12 @@
-use crate::token::{Token, TokenKind};
-use crate::ast::{UnaryOp, BinaryOp, Value, Expr};
-use super::Parser;
 use std::collections::HashMap;
+
+use crate::ast::{BinaryOp, Expr, UnaryOp, Value};
+use crate::token::{Token, TokenKind};
+
+use super::Parser;
 
 impl Parser {
     pub fn parse_expression(&mut self, min_bp: u8) -> Result<Expr, &'static str> {
-        self.lexer.consume_whitespace();
-
         let mut lhs = match self.lexer.next() {
             Some(Token { kind: TokenKind::Num(num), .. }) => Expr::Literal(Value::Num(num)),
             Some(Token { kind: TokenKind::Identifier(name), .. }) => Expr::Get(name),
@@ -19,7 +19,9 @@ impl Parser {
                 strings.push(value);
 
                 loop {
+                    self.lexer.consume_whitespace();
                     exprs.push(self.parse_expression(0)?);
+                    self.lexer.consume_whitespace();
 
                     if let Some(Token { kind: TokenKind::String { value, does_interp }, .. }) = self.lexer.next() {
                         strings.push(value);
@@ -45,18 +47,20 @@ impl Parser {
 
             Some(Token { kind, .. }) if prefix_binding_power(&kind).is_some() => {
                 let ((), r_bp) = prefix_binding_power(&kind).unwrap();
+
+                self.lexer.consume_whitespace();
                 let rhs = self.parse_expression(r_bp)?;
 
                 make_prefix_expr(&kind, rhs)
             }
 
             Some(Token { kind: TokenKind::LeftParen, .. }) => {
+                self.lexer.consume_whitespace();
                 let expr = self.parse_expression(0)?;
-
                 self.lexer.consume_whitespace();
 
                 if !matches!(self.lexer.next(), Some(Token { kind: TokenKind::RightParen, .. })) {
-                    return Err("expected right parenthesis")
+                    return Err("expected right parenthesis");
                 }
 
                 expr
@@ -67,7 +71,6 @@ impl Parser {
 
         loop {
             self.lexer.consume_whitespace();
-
             let op = match self.lexer.peek() {
                 Some(Token { kind, .. }) => kind,
                 None => break,
@@ -82,8 +85,8 @@ impl Parser {
 
                 lhs = match op {
                     TokenKind::LeftBracket => {
+                        self.lexer.consume_whitespace();
                         let index = self.parse_expression(0)?;
-
                         self.lexer.consume_whitespace();
 
                         if !matches!(self.lexer.next(), Some(Token { kind: TokenKind::RightBracket, .. })) {
@@ -97,7 +100,6 @@ impl Parser {
                     }
                     TokenKind::Dot => {
                         self.lexer.consume_whitespace();
-
                         let name = match self.lexer.next() {
                             Some(Token { kind: TokenKind::Identifier(name), .. }) => name,
                             _ => return Err("expected identifier"),
@@ -121,7 +123,9 @@ impl Parser {
 
                 let op = self.lexer.next().unwrap().kind;
 
+                self.lexer.consume_whitespace();
                 let rhs = self.parse_expression(r_bp)?;
+
                 lhs = make_infix_expr(lhs, &op, rhs);
                 continue;
             }
@@ -136,7 +140,6 @@ impl Parser {
         let mut args = Vec::new();
 
         self.lexer.consume_whitespace();
-
         match self.lexer.peek() {
             Some(Token { kind: TokenKind::RightParen, .. }) => {
                 self.lexer.next();
@@ -149,8 +152,8 @@ impl Parser {
         }
 
         loop {
+            self.lexer.consume_whitespace();
             args.push(self.parse_expression(0)?);
-
             self.lexer.consume_whitespace();
 
             match self.lexer.next() {
@@ -170,7 +173,6 @@ impl Parser {
         let mut vec = Vec::new();
 
         self.lexer.consume_whitespace();
-
         match self.lexer.peek() {
             Some(Token { kind: TokenKind::RightBracket, .. }) => {
                 self.lexer.next();
@@ -180,8 +182,8 @@ impl Parser {
         }
 
         loop {
+            self.lexer.consume_whitespace();
             vec.push(self.parse_expression(0)?);
-
             self.lexer.consume_whitespace();
 
             match self.lexer.next() {
@@ -198,7 +200,6 @@ impl Parser {
         let mut dict = HashMap::new();
 
         self.lexer.consume_whitespace();
-
         match self.lexer.peek() {
             Some(Token { kind: TokenKind::RightBrace, .. }) => {
                 self.lexer.next();
@@ -208,6 +209,7 @@ impl Parser {
         }
 
         loop {
+            self.lexer.consume_whitespace();
             let k = match self.lexer.next() {
                 Some(Token { kind: TokenKind::String { value, does_interp }, .. }) if !does_interp => value,
                 Some(Token { kind: TokenKind::Identifier(name), .. }) => name,
@@ -216,19 +218,16 @@ impl Parser {
             };
 
             self.lexer.consume_whitespace();
-
             if !matches!(self.lexer.next(), Some(Token {kind: TokenKind::Colon, ..})) {
                 return Err("expected colon");
             }
 
             self.lexer.consume_whitespace();
-
             let v = self.parse_expression(0)?;
 
             dict.insert(k, v);
 
             self.lexer.consume_whitespace();
-
             match self.lexer.next() {
                 Some(Token { kind: TokenKind::Comma, .. }) => (),
                 Some(Token { kind: TokenKind::RightBrace, .. }) => break,
