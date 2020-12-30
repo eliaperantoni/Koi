@@ -308,3 +308,110 @@ Idea: the lexer distinguishes lines that are code and lines that are commands. W
 it has just read a `\n` (this means that it is at the start of a line) it checks to see if there is any unquoted `=` or
 `(` on the same line. If that's not the case: the line is scanned as a command. Otherwise it's scanned as normal code
 and uses a strategy similar to Go's to ignore newlines that follow tokens such as `.`, `,`, `[`, `(` etcetera
+
+## 30/12/2020
+
+It's been a while since my last update. Here's what happened: I thought I had the ultimate idea for how to distinguish
+commands from expression statements. It even handled newlines! It goes like this (it's pretty trivial really):
+
++ Don't ignore whitespace in the lexer, scan it as Newline and Space tokens
++ Don't worry about scanning commands differently. Scan them as any other piece of code. I.e. `docker ps -a` is scanned
+  as `Identifier(docker), Space, Identifier(ps), Minus, Identifier(a)`
++ Make all tokens carry their lexeme with them. When scanning a program you get a list of tokens. If we concatenate all
+  their lexemes we should get the original source back back, character by character.
++ When parsing a statement use the following logic: if the statement starts with a keyword (`if`, `let`, etc) the parser
+  already knows what to do next. otherwise try parsing an expression. if there's an error or the expression is neither
+  an assignment nor a call, re-parse the line as a command
+
+```
+# Identifier, Space, Dot, Dot
+# -> Parsed as command
+cd ..
+
+# Identifier, Space, Identifier
+# -> Parsed as command
+docker ps
+
+# Identifier, Dot, Identifier, LeftBracket, Num, RightBracket, LeftParen, RightParen
+# -> Parsed as call
+obj.property[0]()
+
+# Identifier, Space, Equal, Space, String, Num, String
+# -> Parsed as assignment
+x = "foo{1}bar"
+
+# Identifier, Dot, Identifier, LeftParen, Newline, Space, String, Comma, Newline, Space, String, Newline, RightParen
+# -> Parsed as call
+my_object.my_function(
+    "foo",
+    "bar"
+)
+```
+
+Looks solid right?
+
+So I got to work and started implementing the whole thing from scratch because there were some major differences with
+the previous iteration.
+
+I now have a lexer and a parser. They mostly work but my idea had a fatal flaw: I can't figure out if something is an
+expression statement or a command soon enough. This is a disaster for multiline expressions. Take a look at an example:
+
+```
+command1
+command2
+```
+
+What happens here is: the parsed tries parsing an expression statement first. So it reads the `command1` identifier
+token. It consumes all whitespace (in this case a newline) and tries to read an infix operator but finds another
+identifier and bails out: this is not a valid expression. Then the parser rewinds the lexer to start over from the
+beginning of the line and tries again; this time parsing a command. The issue is: the `command1` token has been
+forgotten. The lexer only rewinds the last line which is number 2.
+
+You might think this is easily solvable by rewinding the whole parsing attempt target and this would actually get us
+back to `command1` and work nicely for the previous example. But there's a catch. Let's play a game, can you spot the
+three errors in the following code?
+
+```
+# Assume defined somewhere else
+my_function(
+    "foo",
+    "bar",
+)
+
+# Assume declared somewhere else
+x = {
+    Öregrund: "some swedish city",
+    "code_{146 * 2}": 146 * 2,
+    44.2: "foo bar"
+}
+```
+
+OK, so here they are:
+
++ Unexpected comma on line 4. They are forbidden after the last argument
++ Invalid dict key on line 9. Öregrund is not a valid identifier and is not even lexed. UTF-8 strings are valid keys but
+  must be quoted.
++ Invalid dict key on line 10. Strings are allowed but they must not be interpolated
+
+You would want the interpreter to fail in this scenario and provide an helpful error message so you can fix your code
+but instead it parses correctly! Each and every line is simply treated as a command.
+
+Maybe we had this problem even if all expression statements where on a single line but the way we handle commands only
+amplifies the issue. Here's another example:
+
+```
+my_function(
+    my_other_function()
+,)
+```
+
+What do you think this is parsed as? It's a command (`my_function(`), a function call (`my_other_function()`) and a
+second command (`$)`). Isn't it kinda strange that this is what the interpreter understands? I would have preferred if
+it told me there's an extra `,` inside a function call.
+
+So back to the drawing board once again. I'll have to figure out a way to tweak that original idea in order to have a
+good compromise of good error reporting, command fallback. I might have to restrict what can be split on multiple lines.
+
+The good thing is that my lexer-parser stack is now much more flexible than before. I have complete control over
+whitespace in the parser: I decide exactly where it is ignored and where not, when to continue a line and when not to.
+So at least I don't have to worry about the implementation too much, it will easily adapt.
