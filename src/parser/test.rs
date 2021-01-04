@@ -20,7 +20,7 @@ fn parses_literals() {
         ("false", Expr::Literal(Value::Bool(false))),
         ("nil", Expr::Literal(Value::Nil)),
     ] {
-        assert_eq!(parse_expression(source).unwrap(), *want);
+        assert_eq!(parse_expression(source), *want);
     }
 }
 
@@ -54,7 +54,7 @@ fn parses_lookups() {
             index: Box::new(Expr::Literal(Value::String("beam".to_owned()))),
         }),
     ] {
-        assert_eq!(parse_expression(source).unwrap(), *want);
+        assert_eq!(parse_expression(source), *want);
     }
 }
 
@@ -92,13 +92,13 @@ fn parses_assignments() {
             value: Box::new(Expr::Literal(Value::Num(5.0))),
         }),
     ] {
-        assert_eq!(parse_expression(source).unwrap(), *want);
+        assert_eq!(parse_expression(source), *want);
     }
 }
 
 #[test]
 fn parses_precedence() {
-    assert_eq!(parse_expression("1+2*3").unwrap(), Expr::Binary(
+    assert_eq!(parse_expression("1+2*3"), Expr::Binary(
         Box::new(Expr::Literal(Value::Num(1.0))),
         BinaryOp::Sum,
         Box::new(Expr::Binary(
@@ -111,7 +111,7 @@ fn parses_precedence() {
 
 #[test]
 fn parses_associativity() {
-    assert_eq!(parse_expression("1+2+3").unwrap(), Expr::Binary(
+    assert_eq!(parse_expression("1+2+3"), Expr::Binary(
         Box::new(Expr::Binary(
             Box::new(Expr::Literal(Value::Num(1.0))),
             BinaryOp::Sum,
