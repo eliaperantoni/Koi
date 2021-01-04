@@ -7,7 +7,7 @@ fn make_parser(source: &str) -> Parser {
     Parser::new(lexer)
 }
 
-fn parse_expression(source: &str) -> Result<Expr, &'static str> {
+fn parse_expression(source: &str) -> Expr {
     make_parser(source).parse_expression(0)
 }
 
