@@ -15,8 +15,6 @@ pub struct Lexer {
     buffer: Vec<Token>,
 
     peeked: Option<Token>,
-
-    line: Vec<Token>,
 }
 
 impl Lexer {
@@ -31,26 +29,7 @@ impl Lexer {
             buffer: Vec::new(),
 
             peeked: None,
-
-            line: Vec::new(),
         }
-    }
-
-    pub fn is_line_start(&self) -> bool {
-        let mut tokens = if self.peeked.is_some() {
-            if let Some((_, rest)) = self.line.split_last() {
-                rest.iter()
-            } else {
-                return false;
-            }
-        } else {
-            self.line.iter()
-        };
-
-        tokens.all(|t| matches!(t,
-            Token{kind: TokenKind::Newline, ..} |
-            Token{kind: TokenKind::Space, ..})
-        )
     }
 
     pub fn consume_whitespace(&mut self) {
@@ -70,15 +49,6 @@ impl Lexer {
 
         self.peeked = self.next();
         self.peeked.as_ref()
-    }
-
-    pub fn rewind_line(&mut self) {
-        let mut buffer = Vec::new();
-        buffer.append(&mut self.line);
-        buffer.append(&mut self.buffer);
-        self.buffer = buffer;
-
-        self.peeked = None;
     }
 
     fn char_at(&self, offset: usize) -> Option<char> {
@@ -309,8 +279,6 @@ impl Lexer {
                     buffer: Vec::new(),
 
                     peeked: None,
-
-                    line: Vec::new(),
                 };
 
                 tokens.append(&mut lexer.collect::<Vec<Token>>());
@@ -377,12 +345,6 @@ impl Iterator for Lexer {
                 _ => Some(self.scan_symbol()),
             }
         };
-
-        match token.as_ref() {
-            Some(Token { kind: TokenKind::Newline, .. }) => self.line = Vec::new(),
-            Some(token) => self.line.push(token.clone()),
-            _ => (),
-        }
 
         token
     }
