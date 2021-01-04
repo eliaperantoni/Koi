@@ -415,3 +415,103 @@ good compromise of good error reporting, command fallback. I might have to restr
 The good thing is that my lexer-parser stack is now much more flexible than before. I have complete control over
 whitespace in the parser: I decide exactly where it is ignored and where not, when to continue a line and when not to.
 So at least I don't have to worry about the implementation too much, it will easily adapt.
+
+## 04/01/2021
+
+Happy new year! I've thought about this last problem that afflicted my design and I think I've got something alright
+now. It's surprisingly similar to what Shell++ does but attempts to fix the `cd ..` issue.
+
+Basically parsing a statement on a new line with no leading keyword goes like this: the parser tries to match the line
+with some patterns, if none of those match then the line is treated like a command, otherwise an expression is parsed.
+Here are the patterns:
+
++ `<ID> ' '* '='`
++ `<ID> ' '* '('`
++ `<ID> ' '* '['`
++ `<ID> ' '* '.' <PATTERN>`
+
+Where `<ID>` can be any identifier and `' '*` means "any number of spaces".
+
+The first three are pretty easy: treat any line that starts with an identifier and an assignment or a function call or
+an indexing operator as expression statements.
+
+These are the patterns. Let's call the part of an expression statement that matches any of these pattern: the preamble.
+
+For instance, these lines all get correctly recognized as expression statements (they could still contain syntax errors
+but at least they don't trigger the parser into command-mode):
+
+```
+my_var="foo"
+my_var = "foo"
+
+my_function("foo")
+my_function(
+my_function ("foo")
+my_function("foo",)
+my_function("foo").foo = 10
+
+my_vector[0] = 123
+my_vector [0] = 123
+my_vector[] = 123
+my_vector[0]
+my_vector[0].foo = 10
+```
+
+The only restriction is that the preamble is on the same line but after that you're free to spread across multiple
+lines:
+
+```
+my_function(
+  "foo",
+  "bar"
+)
+```
+
+Also, only the first expression statement is required to have its preamble on a single line but any further expression
+statement is not required to:
+
+```
+my_function("foo") my_function
+("bar")
+```
+
+Yes this is pretty gross but I think this is the most logical thing to do because commands are only allowed to be on a
+line by their own. If we already know a line is part of an expression statement, then what follows is definitely not a
+command and there's no need to check for a valid preamble.
+
+"But Mr.Ampere..." I hear you asking, "...what about the fourth pattern? The one with the dot". That's actually were we
+solve the `cd ..` issue.
+
+We can't simply use a pattern like `<ID> ' '* '.'` because that would match a lot of common commands like `cd ..`
+, `mkdir ./some_dir`, `binary.exe` just to name a few. What we do instead is continuing the pattern test after the dot.
+The `<PATTERN>` you is in the fourth pattern is some sort of recursion: it means "any other pattern can go here". Let's
+look at some examples:
+
+```
+#               v
+my_dict.foo.bar = 10
+ 
+#              v
+my_dict.foo.baz[
+  0
+] = 10
+
+#              v
+my_dict.foo.egg(
+  "foo",
+  "bar"
+)
+```
+
+These are all valid and parsed as expression statements. The `v` indicates where the preamble ends. Note that no
+newlines could have appeared before that point. This is parsed as two commands:
+
+```
+my_dict.foo
+  = 10
+```
+
+I think these rules are pretty simple and easy to remember. This should allow for the user to understand why something
+is getting parsed as a command when unintended and correct it.
+
+I'll implement this and see how it goes!
