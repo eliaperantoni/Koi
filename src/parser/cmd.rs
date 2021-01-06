@@ -45,7 +45,9 @@ impl Parser {
                     exprs.push(expr);
                 }
 
-                segments.push(exprs);
+                if exprs.len() > 0 {
+                    segments.push(exprs);
+                }
 
                 if let Some(Token{kind: TokenKind::Space, ..}) = self.lexer.peek() {
                     self.lexer.next();
