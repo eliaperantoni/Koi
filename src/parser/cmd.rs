@@ -1,10 +1,10 @@
-use crate::ast::{Cmd, Expr, Value};
+use crate::ast::{Cmd, CmdOp, Expr, Value};
 use crate::token::{Token, TokenKind};
 
 use super::Parser;
 
 impl Parser {
-    pub fn parse_cmd(&mut self) -> Cmd {
+    pub fn parse_cmd(&mut self, min_bp: u8) -> Cmd {
         let mut lhs = {
             let mut segments = Vec::new();
 
@@ -18,7 +18,7 @@ impl Parser {
 
                     if {
                         let t = self.lexer.peek().unwrap();
-                        t.is_cmd_op() || [TokenKind::Space, TokenKind::Newline].contains(&t.kind)
+                        binding_power(&t.kind).is_some() || [TokenKind::Space, TokenKind::Newline].contains(&t.kind)
                     } {
                         break;
                     }
@@ -47,38 +47,73 @@ impl Parser {
 
                 segments.push(exprs);
 
-                if self.lexer.peek().is_none() {
-                    break;
-                }
-
-                if {
-                    let t = self.lexer.peek().unwrap();
-                    t.is_cmd_op() || t.kind == TokenKind::Newline
-                } {
-                    break;
-                }
 
                 if self.lexer.peek().unwrap().kind == TokenKind::Space {
                     self.lexer.next();
+                } else {
+                    break;
                 }
             }
 
             Cmd::Atom(segments)
         };
 
+        loop {
+            let op = match self.lexer.peek() {
+                Some(Token { kind, .. }) if kind != &TokenKind::Newline => kind,
+
+                // Should only match if none or newline
+                _ => break
+            };
+
+            // Should be safe to do because previous step consume all tokens that are not valid ops
+            let (l_bp, r_bp) = binding_power(op).unwrap();
+            if l_bp < min_bp {
+                break;
+            }
+
+            self.lexer.next();
+            let rhs = self.parse_cmd(r_bp);
+
+            lhs = Cmd::Op(
+                Box::new(lhs),
+                match op {
+                    TokenKind::PipePipe => CmdOp::And,
+                    TokenKind::AmperAmper => CmdOp::Or,
+
+                    TokenKind::Pipe => CmdOp::OutPipe,
+                    TokenKind::StarPipe => CmdOp::ErrPipe,
+                    TokenKind::AmperPipe => CmdOp::AllPipe,
+
+                    TokenKind::Great => CmdOp::OutWrite,
+                    TokenKind::StarGreat => CmdOp::ErrWrite,
+                    TokenKind::AmperGreat => CmdOp::AllWrite,
+
+                    TokenKind::Less => CmdOp::OutRead,
+                    TokenKind::StarLess => CmdOp::ErrRead,
+                    TokenKind::AmperLess => CmdOp::AllRead,
+
+                    _ => unreachable!()
+                },
+                Box::new(rhs),
+            );
+        }
+
         lhs
     }
 }
 
-impl Token {
-    fn is_cmd_op(&self) -> bool {
-        use TokenKind::*;
+fn binding_power(op: &TokenKind) -> Option<(u8, u8)> {
+    use TokenKind::*;
+    let bp = match op {
+        PipePipe => (0, 0),
+        AmperAmper => (0, 0),
 
-        [
-            PipePipe, AmperAmper, Semicolon,
-            Pipe, StarPipe, AmperPipe,
-            Great, StarGreat, AmperGreat,
-            Less, StarLess, AmperLess,
-        ].contains(&self.kind)
-    }
+        Pipe | StarPipe | AmperPipe => (0, 0),
+        Great | StarGreat | AmperGreat => (0, 0),
+        Less | StarLess | AmperLess => (0, 0),
+
+        _ => return None,
+    };
+    Some(bp)
 }

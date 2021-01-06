@@ -10,9 +10,9 @@ impl Parser {
         if matches!(self.lexer.peek(), Some(Token {kind: TokenKind::Dollar, ..})) {
             self.lexer.next();
             self.lexer.consume_whitespace();
-            Stmt::Cmd(self.parse_cmd())
+            Stmt::Cmd(self.parse_cmd(0))
         } else if !self.is_expr_next() {
-            Stmt::Cmd(self.parse_cmd())
+            Stmt::Cmd(self.parse_cmd(0))
         } else {
             let expr = self.parse_expression(0);
             if !matches!(expr, Expr::Set(..) | Expr::SetField {..} | Expr::Call {..}) {

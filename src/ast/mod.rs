@@ -109,7 +109,6 @@ impl PartialEq for Value {
 pub enum CmdOp {
     And,
     Or,
-    Seq,
 
     OutPipe,
     ErrPipe,
