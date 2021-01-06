@@ -1,4 +1,4 @@
-use crate::ast::{BinaryOp, Expr, UnaryOp, Value};
+use crate::ast::{BinaryOp, Expr, UnaryOp, Value, Cmd, CmdOp};
 use crate::lexer::new as new_lexer;
 
 use super::*;
@@ -130,8 +130,8 @@ fn parses_associativity() {
 #[test]
 fn parses_cmd_stmt() {
     assert_eq!(parse("cmd1\ncmd2"), vec![
-        Stmt::Cmd(vec![vec![Expr::Literal(Value::String("cmd1".to_owned()))]]),
-        Stmt::Cmd(vec![vec![Expr::Literal(Value::String("cmd2".to_owned()))]]),
+        Stmt::Cmd(Cmd::Atom(vec![vec![Expr::Literal(Value::String("cmd1".to_owned()))]])),
+        Stmt::Cmd(Cmd::Atom(vec![vec![Expr::Literal(Value::String("cmd2".to_owned()))]])),
     ]);
 }
 
@@ -158,7 +158,11 @@ fn parses_call_stmt() {
 #[test]
 fn parses_cmd_stmt_with_dot() {
     assert_eq!(parse("cmd.exe"), vec![
-        Stmt::Cmd(vec![vec![Expr::Literal(Value::String("cmd.exe".to_owned()))]]),
+        Stmt::Cmd(Cmd::Atom(vec![vec![
+            Expr::Literal(Value::String("cmd".to_owned())),
+            Expr::Literal(Value::String(".".to_owned())),
+            Expr::Literal(Value::String("exe".to_owned())),
+        ]])),
     ]);
 }
 
@@ -188,9 +192,16 @@ fn parses_call_stmt_with_dots() {
 
 #[test]
 fn parses_incorrect_expr_stmt_with_dots() {
-    assert_eq!(parse("x.foo\n()"), vec![
-        Stmt::Cmd(vec![vec![Expr::Literal(Value::String("x.foo".to_owned()))]]),
-        Stmt::Cmd(vec![vec![Expr::Literal(Value::String("()".to_owned()))]]),
+    assert_eq!(parse("x.foo\n=2"), vec![
+        Stmt::Cmd(Cmd::Atom(vec![vec![
+            Expr::Literal(Value::String("x".to_owned())),
+            Expr::Literal(Value::String(".".to_owned())),
+            Expr::Literal(Value::String("foo".to_owned())),
+        ]])),
+        Stmt::Cmd(Cmd::Atom(vec![vec![
+            Expr::Literal(Value::String("=".to_owned())),
+            Expr::Literal(Value::String("2".to_owned())),
+        ]])),
     ]);
 }
 
@@ -211,7 +222,11 @@ fn parses_explicit_cmd_stmt() {
         Stmt::Expr(Expr::Set("foo".to_owned(), Box::new(Expr::Literal(Value::Num(1.0))))),
     ]);
     assert_eq!(parse("$ foo = 1"), vec![
-        Stmt::Cmd(vec![vec![Expr::Literal(Value::String("foo = 1".to_owned()))]]),
+        Stmt::Cmd(Cmd::Atom(vec![
+            vec![Expr::Literal(Value::String("foo".to_owned()))],
+            vec![Expr::Literal(Value::String("=".to_owned()))],
+            vec![Expr::Literal(Value::String("1".to_owned()))],
+        ])),
     ]);
 }
 
