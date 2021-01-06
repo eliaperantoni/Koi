@@ -68,6 +68,12 @@ pub enum Expr {
 pub enum Stmt {
     Expr(Expr),
     Cmd(Cmd),
+
+    Let {
+        is_exp: bool,
+        name: String,
+        init: Option<Expr>,
+    }
 }
 
 #[derive(Clone, Debug)]

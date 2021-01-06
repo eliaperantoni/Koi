@@ -7,17 +7,29 @@ use super::Parser;
 
 impl Parser {
     pub fn parse_stmt(&mut self) -> Stmt {
-        if matches!(self.lexer.peek(), Some(Token {kind: TokenKind::Dollar, ..})) {
-            self.lexer.next();
-            Stmt::Cmd(self.parse_cmd(0))
-        } else if !self.is_expr_next() {
-            Stmt::Cmd(self.parse_cmd(0))
-        } else {
-            let expr = self.parse_expression(0);
-            if !matches!(expr, Expr::Set(..) | Expr::SetField {..} | Expr::Call {..}) {
-                panic!("only assignment and call expressions are allowed as statements");
+        match self.lexer.peek() {
+            Some(Token {kind: TokenKind::Let, ..}) |
+            Some(Token {kind: TokenKind::Exp, ..}) => self.parse_let_stmt(),
+
+            Some(Token{kind: TokenKind::If, ..}) => self.parse_if_stmt(),
+            Some(Token{kind: TokenKind::For, ..}) => self.parse_for_stmt(),
+            Some(Token{kind: TokenKind::While, ..}) => self.parse_while_stmt(),
+            Some(Token{kind: TokenKind::Fn, ..}) => self.parse_fn_stmt(),
+
+            _ => {
+                if matches!(self.lexer.peek(), Some(Token {kind: TokenKind::Dollar, ..})) {
+                    self.lexer.next();
+                    Stmt::Cmd(self.parse_cmd(0))
+                } else if !self.is_expr_next() {
+                    Stmt::Cmd(self.parse_cmd(0))
+                } else {
+                    let expr = self.parse_expression(0);
+                    if !matches!(expr, Expr::Set(..) | Expr::SetField {..} | Expr::Call {..}) {
+                        panic!("only assignment and call expressions are allowed as statements");
+                    }
+                    Stmt::Expr(expr)
+                }
             }
-            Stmt::Expr(expr)
         }
     }
 
@@ -58,5 +70,61 @@ impl Parser {
         }
 
         return false;
+    }
+
+    fn parse_let_stmt(&mut self) -> Stmt {
+        let is_exp = self.lexer.peek().unwrap().kind == TokenKind::Exp;
+
+        if is_exp {
+            self.lexer.next();
+            self.lexer.consume_whitespace();
+        }
+
+        // Only meaningful if there was an `exp`. Otherwise this has already been checked by `parse_stmt`
+        if !matches!(self.lexer.next(), Some(Token{kind: TokenKind::Let, ..})) {
+            panic!("expected let");
+        }
+
+        self.lexer.consume_whitespace();
+
+        let name = if let Some(Token {kind: TokenKind::Identifier(name), ..}) = self.lexer.peek() {
+            name.clone()
+        } else {
+            panic!("expected identifier");
+        };
+
+        self.lexer.consume_whitespace();
+
+        if matches!(self.lexer.peek(), Some(Token{kind: TokenKind::Equal, ..})) {
+            self.lexer.next();
+            self.lexer.consume_whitespace();
+            Stmt::Let {
+                is_exp,
+                name,
+                init: Some(self.parse_expression(0)),
+            }
+        } else {
+            Stmt::Let {
+                is_exp,
+                name,
+                init: None,
+            }
+        }
+    }
+
+    fn parse_if_stmt(&mut self) -> Stmt {
+        todo!()
+    }
+
+    fn parse_for_stmt(&mut self) -> Stmt {
+        todo!()
+    }
+
+    fn parse_while_stmt(&mut self) -> Stmt {
+        todo!()
+    }
+
+    fn parse_fn_stmt(&mut self) -> Stmt {
+        todo!()
     }
 }
