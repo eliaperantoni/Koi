@@ -75,6 +75,16 @@ impl Parser {
                 expr
             }
 
+            Some(Token {kind: TokenKind::DollarLeftParen, ..}) => {
+                let cmd = self.parse_cmd(0);
+
+                if !matches!(self.lexer.next(), Some(Token { kind: TokenKind::RightParen, .. })) {
+                    panic!("expected right parenthesis");
+                }
+
+                Expr::Cmd(cmd)
+            }
+
             _ => panic!("bad token"),
         };
 

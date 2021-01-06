@@ -70,6 +70,7 @@ pub enum TokenKind {
     Colon,
 
     Dollar,
+    DollarLeftParen,
 
     // Commands related stuff ...
 

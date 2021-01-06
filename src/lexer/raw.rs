@@ -48,7 +48,11 @@ impl RawLexer {
             ':' => (TokenKind::Colon, 1),
             ';' => (TokenKind::Semicolon, 1),
 
-            '$' => (TokenKind::Dollar, 1),
+            '$' => if let Some('(') = self.char_at(1) {
+                (TokenKind::DollarLeftParen, 2)
+            } else {
+                (TokenKind::Dollar, 1)
+            }
 
             ' ' => {
                 let mut length = 1;

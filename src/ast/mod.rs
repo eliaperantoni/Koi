@@ -62,6 +62,8 @@ pub enum Expr {
         func: Box<Expr>,
         args: Vec<Expr>,
     },
+
+    Cmd(Cmd),
 }
 
 #[derive(Clone, Debug, PartialEq)]
