@@ -15,8 +15,8 @@ pub struct RawLexer {
 }
 
 impl RawLexer {
-    pub fn new(source: String) -> Lexer {
-        Lexer {
+    pub fn new(source: String) -> RawLexer {
+        RawLexer {
             source: source.chars().collect(),
             cursor: 0,
 
@@ -26,16 +26,6 @@ impl RawLexer {
             buffer: Vec::new(),
 
             is_new_line: true,
-        }
-    }
-
-    pub fn consume_whitespace(&mut self) {
-        loop {
-            match self.char_at(0) {
-                Some(Token { kind: TokenKind::Newline, .. }) |
-                Some(Token { kind: TokenKind::Space, .. }) => { self.next(); }
-                _ => break,
-            }
         }
     }
 
@@ -257,7 +247,7 @@ impl RawLexer {
                     },
                 });
 
-                let lexer = &mut Lexer {
+                let lexer = &mut RawLexer {
                     source: self.source.clone(),
                     cursor: self.cursor,
 

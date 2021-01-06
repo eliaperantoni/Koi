@@ -9,7 +9,7 @@ mod parser;
 fn main() -> Result<(), Box<dyn Error>> {
     let source = fs::read_to_string("./prog.amp")?;
 
-    let lexer = lexer::Lexer::new(source);
+    let lexer = lexer::new(source);
 
     if false {
         println!("{:?}", lexer.collect::<Vec<token::Token>>());

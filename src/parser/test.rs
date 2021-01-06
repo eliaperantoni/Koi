@@ -1,9 +1,10 @@
 use crate::ast::{BinaryOp, Expr, UnaryOp, Value};
+use crate::lexer::new as new_lexer;
 
 use super::*;
 
 fn make_parser(source: &str) -> Parser {
-    let lexer = Lexer::new(source.to_owned());
+    let lexer = new_lexer(source.to_owned());
     Parser::new(lexer)
 }
 
