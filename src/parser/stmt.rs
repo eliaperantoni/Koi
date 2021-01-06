@@ -85,8 +85,8 @@ impl Parser {
 
         self.lexer.consume_whitespace();
 
-        let name = if let Some(Token {kind: TokenKind::Identifier(name), ..}) = self.lexer.peek() {
-            name.clone()
+        let name = if let Some(Token {kind: TokenKind::Identifier(name), ..}) = self.lexer.next() {
+            name
         } else {
             panic!("expected identifier");
         };

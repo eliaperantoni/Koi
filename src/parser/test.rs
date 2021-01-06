@@ -235,3 +235,30 @@ fn parses_explicit_cmd_stmt() {
 fn panics_instead_of_cmd_fallback() {
     parse("my_fn(\n    \"foo\",\n    \"bar\",\n)");
 }
+
+#[test]
+fn parses_var_decl() {
+    assert_eq!(parse("let foo"), vec![
+        Stmt::Let {
+            init: None,
+            is_exp: false,
+            name: "foo".to_owned()
+        }
+    ]);
+
+    assert_eq!(parse("let foo = 1"), vec![
+        Stmt::Let {
+            init: Some(Expr::Literal(Value::Num(1.0))),
+            is_exp: false,
+            name: "foo".to_owned()
+        }
+    ]);
+
+    assert_eq!(parse("exp let foo"), vec![
+        Stmt::Let {
+            init: None,
+            is_exp: true,
+            name: "foo".to_owned()
+        }
+    ]);
+}
