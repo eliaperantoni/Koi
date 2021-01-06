@@ -68,8 +68,6 @@ impl Parser {
                 return true;
             }
         }
-
-        return false;
     }
 
     fn parse_let_stmt(&mut self) -> Stmt {
