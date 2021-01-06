@@ -18,7 +18,7 @@ impl Parser {
 
                     if {
                         let t = self.lexer.peek().unwrap();
-                        binding_power(&t.kind).is_some() || [TokenKind::Space, TokenKind::Newline].contains(&t.kind)
+                        t.is_cmd_op() || [TokenKind::Space, TokenKind::Newline].contains(&t.kind)
                     } {
                         break;
                     }
@@ -47,8 +47,7 @@ impl Parser {
 
                 segments.push(exprs);
 
-
-                if self.lexer.peek().unwrap().kind == TokenKind::Space {
+                if let Some(Token{kind: TokenKind::Space, ..}) = self.lexer.peek() {
                     self.lexer.next();
                 } else {
                     break;
@@ -60,26 +59,24 @@ impl Parser {
 
         loop {
             let op = match self.lexer.peek() {
-                Some(Token { kind, .. }) if kind != &TokenKind::Newline => kind,
-
-                // Should only match if none or newline
+                Some(t @ Token {..}) if t.is_cmd_op() => &t.kind,
                 _ => break
             };
 
-            // Should be safe to do because previous step consume all tokens that are not valid ops
+            // Should be safe to do because we would've broken out of the loop by now if the token wasn't a valid operator
             let (l_bp, r_bp) = binding_power(op).unwrap();
             if l_bp < min_bp {
                 break;
             }
 
-            self.lexer.next();
+            let op = self.lexer.next().unwrap().kind;
             let rhs = self.parse_cmd(r_bp);
 
             lhs = Cmd::Op(
                 Box::new(lhs),
                 match op {
-                    TokenKind::PipePipe => CmdOp::And,
-                    TokenKind::AmperAmper => CmdOp::Or,
+                    TokenKind::PipePipe => CmdOp::Or,
+                    TokenKind::AmperAmper => CmdOp::And,
 
                     TokenKind::Pipe => CmdOp::OutPipe,
                     TokenKind::StarPipe => CmdOp::ErrPipe,
@@ -117,4 +114,10 @@ fn binding_power(op: &TokenKind) -> Option<(u8, u8)> {
         _ => return None,
     };
     Some(bp)
+}
+
+impl Token {
+    fn is_cmd_op(&self) -> bool {
+        binding_power(&self.kind).is_some()
+    }
 }
