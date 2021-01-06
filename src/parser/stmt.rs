@@ -9,7 +9,6 @@ impl Parser {
     pub fn parse_stmt(&mut self) -> Stmt {
         if matches!(self.lexer.peek(), Some(Token {kind: TokenKind::Dollar, ..})) {
             self.lexer.next();
-            self.lexer.consume_whitespace();
             Stmt::Cmd(self.parse_cmd(0))
         } else if !self.is_expr_next() {
             Stmt::Cmd(self.parse_cmd(0))
