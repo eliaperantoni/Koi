@@ -6,13 +6,12 @@ use crate::token::{Token, TokenKind};
 use super::Parser;
 
 impl Parser {
-    pub fn parse_expression(&mut self, min_bp: u8) -> Expr {
-        let mut lhs = match self.lexer.next() {
-            Some(Token { kind: TokenKind::Num(num), .. }) => Expr::Literal(Value::Num(num)),
-            Some(Token { kind: TokenKind::Identifier(name), .. }) => Expr::Get(name),
-
-            Some(Token { kind: TokenKind::String { value, does_interp: false }, .. }) => Expr::Literal(Value::String(value)),
-            Some(Token { kind: TokenKind::String { value, does_interp: true }, .. }) => {
+    pub fn continue_parse_string_expr(&mut self, t: Token) -> Expr {
+        match t {
+            Token { kind: TokenKind::String { value, does_interp: false }, .. } => {
+                Expr::Literal(Value::String(value))
+            }
+            Token { kind: TokenKind::String { value, does_interp: true }, .. } => {
                 let mut strings = Vec::new();
                 let mut exprs = Vec::new();
 
@@ -35,7 +34,17 @@ impl Parser {
                 }
 
                 Expr::Interp { strings, exprs }
-            }
+            },
+            _ => panic!("bad token")
+        }
+    }
+
+    pub fn parse_expression(&mut self, min_bp: u8) -> Expr {
+        let mut lhs = match self.lexer.next() {
+            Some(Token { kind: TokenKind::Num(num), .. }) => Expr::Literal(Value::Num(num)),
+            Some(Token { kind: TokenKind::Identifier(name), .. }) => Expr::Get(name),
+
+            Some(t @ Token {kind: TokenKind::String {..}, ..}) => self.continue_parse_string_expr(t),
 
             Some(Token { kind: TokenKind::True, .. }) => Expr::Literal(Value::Bool(true)),
             Some(Token { kind: TokenKind::False, .. }) => Expr::Literal(Value::Bool(false)),
