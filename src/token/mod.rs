@@ -21,7 +21,7 @@ pub enum TokenKind {
     Return,
     Break,
     Continue,
-    Var,
+    Let,
     Exp,
 
     LeftParen,

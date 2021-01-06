@@ -179,7 +179,7 @@ impl RawLexer {
             "return" => Some(TokenKind::Return),
             "break" => Some(TokenKind::Break),
             "continue" => Some(TokenKind::Continue),
-            "var" => Some(TokenKind::Var),
+            "let" => Some(TokenKind::Let),
             "exp" => Some(TokenKind::Exp),
             "true" => Some(TokenKind::True),
             "false" => Some(TokenKind::False),
