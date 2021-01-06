@@ -515,3 +515,32 @@ I think these rules are pretty simple and easy to remember. This should allow fo
 is getting parsed as a command when unintended and correct it.
 
 I'll implement this and see how it goes!
+
+## 06/01/2021
+
+IT WORKS! IT F***ING WORKS!
+
+I've refactored the lexer module. It is now composed of 3 structs that build on top of another: RawLexer, RecordingLexer
+and PeekableLexer. I wrote a bunch of tests for them and then moved on to the parser.
+
+It goes like this: a program is just a bunch of statements with whitespace in between so we just need to parse statements
+until we get to the EOF. When parsing a statement we look for leading keywords. If there aren't any then we tell the lexer
+to start recording, we consume the whole line, stop recording and rewind the line. Then we analyze the list of tokens that
+we got and try finding a preamble. If a preamble is found then we tell the parser to parse an expression, otherwise we parse
+a command. Easy!
+
+I've written a bunch of tests for the parser as well and everything seems to be working fine. If you write something that
+clearly looks like a function but is only slightly off...
+
+```
+my_fn(
+    "foo",
+    "bar",
+)
+```
+
+...you get a proper error instead of having it treated as 4 commands.
+
+Now I shall add the option to start a line with `$` to explicitly tell the parser you intend that line to be a command.
+
+And then we're off to commands parsing!
