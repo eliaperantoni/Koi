@@ -523,14 +523,14 @@ IT WORKS! IT F***ING WORKS!
 I've refactored the lexer module. It is now composed of 3 structs that build on top of another: RawLexer, RecordingLexer
 and PeekableLexer. I wrote a bunch of tests for them and then moved on to the parser.
 
-It goes like this: a program is just a bunch of statements with whitespace in between so we just need to parse statements
-until we get to the EOF. When parsing a statement we look for leading keywords. If there aren't any then we tell the lexer
-to start recording, we consume the whole line, stop recording and rewind the line. Then we analyze the list of tokens that
-we got and try finding a preamble. If a preamble is found then we tell the parser to parse an expression, otherwise we parse
-a command. Easy!
+It goes like this: a program is just a bunch of statements with whitespace in between so we just need to parse
+statements until we get to the EOF. When parsing a statement we look for leading keywords. If there aren't any then we
+tell the lexer to start recording, we consume the whole line, stop recording and rewind the line. Then we analyze the
+list of tokens that we got and try finding a preamble. If a preamble is found then we tell the parser to parse an
+expression, otherwise we parse a command. Easy!
 
-I've written a bunch of tests for the parser as well and everything seems to be working fine. If you write something that
-clearly looks like a function but is only slightly off...
+I've written a bunch of tests for the parser as well and everything seems to be working fine. If you write something
+that clearly looks like a function but is only slightly off...
 
 ```
 my_fn(
@@ -541,6 +541,10 @@ my_fn(
 
 ...you get a proper error instead of having it treated as 4 commands.
 
-Now I shall add the option to start a line with `$` to explicitly tell the parser you intend that line to be a command.
+I also added the option to start a line with `$` to explicitly tell the parser you intend the line to be parsed as a
+command.
 
-And then we're off to commands parsing!
+Then I implemented some Pratt parsing for the commands and written some tests. This has been a very productive day!
+
+What's left to do, parsing-wise, is loops, conditionals and functions. I should also add command expressions. Hopefully
+it shouldn't be too hard.
