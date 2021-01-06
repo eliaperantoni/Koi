@@ -86,8 +86,6 @@ pub enum Value {
     },
 }
 
-pub type Cmd = Vec<Vec<Expr>>;
-
 impl PartialEq for Value {
     fn eq(&self, other: &Self) -> bool {
         use Value::*;
@@ -105,4 +103,29 @@ impl PartialEq for Value {
             _ => false,
         }
     }
+}
+
+#[derive(Copy, Clone, Eq, PartialEq, Debug)]
+pub enum CmdOp {
+    And,
+    Or,
+    Seq,
+
+    OutPipe,
+    ErrPipe,
+    AllPipe,
+
+    OutWrite,
+    ErrWrite,
+    AllWrite,
+
+    OutRead,
+    ErrRead,
+    AllRead,
+}
+
+#[derive(Clone, Debug, PartialEq)]
+pub enum Cmd {
+    Atom(Vec<Vec<Expr>>),
+    Op(Box<Cmd>, CmdOp, Box<Cmd>),
 }
