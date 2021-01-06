@@ -106,12 +106,13 @@ impl Parser {
 fn binding_power(op: &TokenKind) -> Option<(u8, u8)> {
     use TokenKind::*;
     let bp = match op {
-        PipePipe => (0, 0),
-        AmperAmper => (0, 0),
+        Great | StarGreat | AmperGreat => (7, 8),
+        Less | StarLess | AmperLess => (7, 8),
 
-        Pipe | StarPipe | AmperPipe => (0, 0),
-        Great | StarGreat | AmperGreat => (0, 0),
-        Less | StarLess | AmperLess => (0, 0),
+        Pipe | StarPipe | AmperPipe => (5, 6),
+
+        AmperAmper => (3, 4),
+        PipePipe => (1, 2),
 
         _ => return None,
     };
