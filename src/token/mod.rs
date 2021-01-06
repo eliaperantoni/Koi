@@ -69,6 +69,8 @@ pub enum TokenKind {
     Dot,
     Colon,
 
+    Dollar,
+
     // Commands related stuff ...
 
     Pipe,

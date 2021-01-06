@@ -204,3 +204,19 @@ fn parses_expr_stmt_continuation() {
         Stmt::Expr(Expr::Set("foo".to_owned(), Box::new(Expr::Literal(Value::Num(1.0))))),
     ]);
 }
+
+#[test]
+fn parses_explicit_cmd_stmt() {
+    assert_eq!(parse("foo = 1"), vec![
+        Stmt::Expr(Expr::Set("foo".to_owned(), Box::new(Expr::Literal(Value::Num(1.0))))),
+    ]);
+    assert_eq!(parse("$ foo = 1"), vec![
+        Stmt::Cmd(vec![vec![Expr::Literal(Value::String("foo = 1".to_owned()))]]),
+    ]);
+}
+
+#[test]
+#[should_panic]
+fn panics_instead_of_cmd_fallback() {
+    parse("my_fn(\n    \"foo\",\n    \"bar\",\n)");
+}

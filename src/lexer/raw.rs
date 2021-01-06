@@ -48,6 +48,8 @@ impl RawLexer {
             ':' => (TokenKind::Colon, 1),
             ';' => (TokenKind::Semicolon, 1),
 
+            '$' => (TokenKind::Dollar, 1),
+
             ' ' => {
                 let mut length = 1;
                 loop {
@@ -331,5 +333,5 @@ impl Iterator for RawLexer {
 }
 
 fn can_start_word(c: char) -> bool {
-    ['$', '_'].contains(&c) || c.is_ascii_alphabetic()
+    c == '_' || c.is_ascii_alphabetic()
 }

@@ -7,15 +7,18 @@ use super::Parser;
 
 impl Parser {
     pub fn parse_stmt(&mut self) -> Stmt {
-        if self.is_expr_next() {
+        if matches!(self.lexer.peek(), Some(Token {kind: TokenKind::Dollar, ..})) {
+            self.lexer.next();
+            self.lexer.consume_whitespace();
+            Stmt::Cmd(self.parse_cmd())
+        } else if !self.is_expr_next() {
+            Stmt::Cmd(self.parse_cmd())
+        } else {
             let expr = self.parse_expression(0);
             if !matches!(expr, Expr::Set(..) | Expr::SetField {..} | Expr::Call {..}) {
                 panic!("only assignment and call expressions are allowed as statements");
             }
             Stmt::Expr(expr)
-        } else {
-            let cmd = self.parse_cmd();
-            Stmt::Cmd(cmd)
         }
     }
 
