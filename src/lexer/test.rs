@@ -457,3 +457,31 @@ fn peeks_while_recording_nothing() {
     assert_eq!(lexer.next(), Some(Token{kind: TokenKind::Plus, lexeme: "+".to_owned()}));
     assert_eq!(lexer.next(), None);
 }
+
+#[test]
+fn consumes_whitespace() {
+    assert_eq!(scan(" \n \n   "), vec![
+        Token{kind: TokenKind::Space, lexeme: " ".to_owned()},
+        Token{kind: TokenKind::Newline, lexeme: "\n".to_owned()},
+        Token{kind: TokenKind::Space, lexeme: " ".to_owned()},
+        Token{kind: TokenKind::Newline, lexeme: "\n".to_owned()},
+        Token{kind: TokenKind::Space, lexeme: "   ".to_owned()},
+    ]);
+}
+
+#[test]
+fn consumes_whitespace_recording() {
+    let mut lexer = make_lexer(" \n \n   ");
+
+    lexer.start_recording();
+    lexer.by_ref().collect::<Vec<Token>>();
+    lexer.stop_recording(true);
+
+    assert_eq!(lexer.collect::<Vec<Token>>(), vec![
+        Token{kind: TokenKind::Space, lexeme: " ".to_owned()},
+        Token{kind: TokenKind::Newline, lexeme: "\n".to_owned()},
+        Token{kind: TokenKind::Space, lexeme: " ".to_owned()},
+        Token{kind: TokenKind::Newline, lexeme: "\n".to_owned()},
+        Token{kind: TokenKind::Space, lexeme: "   ".to_owned()},
+    ]);
+}

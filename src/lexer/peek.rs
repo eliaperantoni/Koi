@@ -34,7 +34,12 @@ impl PeekableLexer {
     }
 
     pub fn consume_whitespace(&mut self) {
-        todo!()
+        while matches!(self.peek(),
+            Some(Token {kind: TokenKind::Newline, ..}) |
+            Some(Token {kind: TokenKind::Space, ..})
+        ) {
+            self.next();
+        }
     }
 }
 
