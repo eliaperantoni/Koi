@@ -1,4 +1,4 @@
-use crate::ast::{BinaryOp, Expr, UnaryOp, Value, Cmd, CmdOp};
+use crate::ast::{BinaryOp, Cmd, CmdOp, Expr, UnaryOp, Value};
 use crate::lexer::new as new_lexer;
 
 use super::*;
@@ -242,7 +242,7 @@ fn parses_var_decl() {
         Stmt::Let {
             init: None,
             is_exp: false,
-            name: "foo".to_owned()
+            name: "foo".to_owned(),
         }
     ]);
 
@@ -250,7 +250,7 @@ fn parses_var_decl() {
         Stmt::Let {
             init: Some(Expr::Literal(Value::Num(1.0))),
             is_exp: false,
-            name: "foo".to_owned()
+            name: "foo".to_owned(),
         }
     ]);
 
@@ -258,7 +258,30 @@ fn parses_var_decl() {
         Stmt::Let {
             init: None,
             is_exp: true,
-            name: "foo".to_owned()
+            name: "foo".to_owned(),
         }
+    ]);
+}
+
+#[test]
+fn parses_cmd_expr() {
+    assert_eq!(
+        parse_expression("$(foo)"),
+        Expr::Cmd(Cmd::Atom(vec![vec![Expr::Literal(Value::String("foo".to_owned()))]])),
+    );
+}
+
+#[test]
+fn parses_parenthesized_cmd() {
+    assert_eq!(parse(" foo && ( bar || baz ) "), vec![
+        Stmt::Cmd(Cmd::Op(
+            Box::new(Cmd::Atom(vec![vec![Expr::Literal(Value::String("foo".to_owned()))]])),
+            CmdOp::And,
+            Box::new(Cmd::Op(
+                Box::new(Cmd::Atom(vec![vec![Expr::Literal(Value::String("bar".to_owned()))]])),
+                CmdOp::Or,
+                Box::new(Cmd::Atom(vec![vec![Expr::Literal(Value::String("baz".to_owned()))]])),
+            )),
+        ))
     ]);
 }
