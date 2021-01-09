@@ -132,7 +132,7 @@ impl Parser {
         }
     }
 
-    fn parse_block(&mut self) -> Stmt {
+    pub fn parse_block(&mut self) -> Stmt {
         self.lexer.next();
         let stmts = self.parse_stmts();
 
@@ -231,37 +231,12 @@ impl Parser {
 
         self.lexer.consume_whitespace(self.is_multiline);
 
-        let mut params = Vec::new();
-
-        if !matches!(self.lexer.next(), Some(Token{kind: TokenKind::LeftParen, ..})) {
-            panic!("expected left parenthesis");
-        }
-
-        self.lexer.consume_whitespace(self.is_multiline);
-        if matches!(self.lexer.peek(), Some(Token { kind: TokenKind::RightParen, .. })) {
-            self.lexer.next();
-        } else {
-            loop {
-                self.lexer.consume_whitespace(self.is_multiline);
-                params.push(self.must_identifier());
-                self.lexer.consume_whitespace(self.is_multiline);
-
-                match self.lexer.next() {
-                    Some(Token { kind: TokenKind::Comma, .. }) => (),
-                    Some(Token { kind: TokenKind::RightParen, .. }) => break,
-                    _ => panic!("expected comma or right parenthesis"),
-                }
-            }
-        }
-
-        self.lexer.consume_whitespace(self.is_multiline);
-        let body = self.parse_block();
-
-        Stmt::Func(Func {
+        let func = Func {
             name: Some(name),
-            params,
-            body: Box::new(body),
-        })
+            ..self.continue_parse_fn()
+        };
+
+        Stmt::Func(func)
     }
 
     fn parse_return(&mut self) -> Stmt {
@@ -274,13 +249,5 @@ impl Parser {
 
         let expr = self.parse_expr(0);
         Stmt::Return(Some(expr))
-    }
-
-    fn must_identifier(&mut self) -> String {
-        if let Some(Token{kind: TokenKind::Identifier(name), ..}) = self.lexer.next() {
-            name
-        } else {
-            panic!("expected identifier");
-        }
     }
 }

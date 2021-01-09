@@ -559,6 +559,6 @@ by `consume_whitespace`. This was necessary for a number of reasons, here's one:
 we call `self.parse_expr(0)` but inside that newlines are consumed! Now we can set `is_multiline` to false to prevent that.
 
 Also some minor additions: commands expressions are now allowed as statements, added a semicolon operator that works as a
-commands separator so you can run them in sequence.
+commands separator so you can run them in sequence, lambdas.
 
 On to the interpreter now!

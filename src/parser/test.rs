@@ -1,4 +1,4 @@
-use crate::ast::{BinaryOp, Cmd, CmdOp, Expr, Value, Func};
+use crate::ast::{BinaryOp, Cmd, CmdOp, Expr, Func, Value};
 use crate::lexer::new as new_lexer;
 
 use super::*;
@@ -452,7 +452,7 @@ fn parses_while() {
 #[test]
 fn parses_fn() {
     assert_eq!(parse("fn foo \n( x , y , z ) \n {}"), vec![
-        Stmt::Func(Func{
+        Stmt::Func(Func {
             name: Some("foo".to_owned()),
             params: vec!["x".to_owned(), "y".to_owned(), "z".to_owned()],
             body: Box::new(Stmt::Block(vec![])),
@@ -483,5 +483,21 @@ fn parses_cmd_semicolon() {
                 Expr::Literal(Value::String("cmd2".to_owned())),
             ]])),
         ))
+    ]);
+}
+
+#[test]
+fn parses_lambda() {
+    assert_eq!(parse("print(fn(){})"), vec![
+        Stmt::Expr(Expr::Call {
+            func: Box::new(Expr::Get("print".to_owned())),
+            args: vec![
+                Expr::Lambda(Func {
+                    name: None,
+                    params: vec![],
+                    body: Box::new(Stmt::Block(vec![])),
+                })
+            ],
+        })
     ]);
 }

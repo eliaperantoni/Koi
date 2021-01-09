@@ -11,7 +11,7 @@ impl Parser {
             Some(Token { kind: TokenKind::Num(num), .. }) => Expr::Literal(Value::Num(num)),
             Some(Token { kind: TokenKind::Identifier(name), .. }) => Expr::Get(name),
 
-            Some(t @ Token {kind: TokenKind::String {..}, ..}) => self.continue_parse_string_expr(t),
+            Some(t @ Token { kind: TokenKind::String { .. }, .. }) => self.continue_parse_string_expr(t),
 
             Some(Token { kind: TokenKind::True, .. }) => Expr::Literal(Value::Bool(true)),
             Some(Token { kind: TokenKind::False, .. }) => Expr::Literal(Value::Bool(false)),
@@ -21,7 +21,9 @@ impl Parser {
             Some(Token { kind: TokenKind::LeftBracket, .. }) => self.parse_vec_literal(),
             Some(Token { kind: TokenKind::LeftBrace, .. }) => self.parse_dict_literal(),
 
-            Some(t @ Token {..}) if t.is_prefix_op() => {
+            Some(Token { kind: TokenKind::Fn, .. }) => self.parse_fn_lambda(),
+
+            Some(t @ Token { .. }) if t.is_prefix_op() => {
                 let kind = t.kind;
                 let ((), r_bp) = prefix_binding_power(&kind).unwrap();
 
@@ -43,7 +45,7 @@ impl Parser {
                 expr
             }
 
-            Some(Token {kind: TokenKind::DollarLeftParen, ..}) => {
+            Some(Token { kind: TokenKind::DollarLeftParen, .. }) => {
                 let cmd = self.parse_cmd(0);
 
                 if !matches!(self.lexer.next(), Some(Token { kind: TokenKind::RightParen, .. })) {
@@ -222,6 +224,12 @@ impl Parser {
         Expr::Dict(dict)
     }
 
+    fn parse_fn_lambda(&mut self) -> Expr {
+        self.lexer.consume_whitespace(self.is_multiline);
+
+        Expr::Lambda(self.continue_parse_fn())
+    }
+
     pub fn continue_parse_string_expr(&mut self, t: Token) -> Expr {
         match t {
             Token { kind: TokenKind::String { value, does_interp: false }, .. } => {
@@ -250,7 +258,7 @@ impl Parser {
                 }
 
                 Expr::Interp { strings, exprs }
-            },
+            }
             _ => panic!("bad token")
         }
     }
