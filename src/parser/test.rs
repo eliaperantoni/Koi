@@ -470,3 +470,18 @@ fn parses_fn_no_params() {
         }
     ]);
 }
+
+#[test]
+fn parses_cmd_semicolon() {
+    assert_eq!(parse("cmd1 ; cmd2"), vec![
+        Stmt::Cmd(Cmd::Op(
+            Box::new(Cmd::Atom(vec![vec![
+                Expr::Literal(Value::String("cmd1".to_owned())),
+            ]])),
+            CmdOp::Seq,
+            Box::new(Cmd::Atom(vec![vec![
+                Expr::Literal(Value::String("cmd2".to_owned())),
+            ]])),
+        ))
+    ]);
+}
