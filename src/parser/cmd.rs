@@ -41,6 +41,7 @@ impl Parser {
                 match op {
                     TokenKind::PipePipe => CmdOp::Or,
                     TokenKind::AmperAmper => CmdOp::And,
+                    TokenKind::Semicolon => CmdOp::Seq,
 
                     TokenKind::Pipe => CmdOp::OutPipe,
                     TokenKind::StarPipe => CmdOp::ErrPipe,
@@ -123,13 +124,14 @@ impl Parser {
 fn binding_power(op: &TokenKind) -> Option<(u8, u8)> {
     use TokenKind::*;
     let bp = match op {
-        Great | StarGreat | AmperGreat => (7, 8),
-        Less | StarLess | AmperLess => (7, 8),
+        Great | StarGreat | AmperGreat => (9, 10),
+        Less | StarLess | AmperLess => (9, 10),
 
-        Pipe | StarPipe | AmperPipe => (5, 6),
+        Pipe | StarPipe | AmperPipe => (7, 8),
 
-        AmperAmper => (3, 4),
-        PipePipe => (1, 2),
+        AmperAmper => (5, 6),
+        PipePipe => (3, 4),
+        Semicolon => (1, 2),
 
         _ => return None,
     };
