@@ -171,7 +171,44 @@ impl Parser {
     }
 
     fn parse_for_stmt(&mut self) -> Stmt {
-        todo!()
+        self.lexer.next();
+
+        self.lexer.consume_whitespace(self.is_multiline);
+        let key_var = if let Some(Token{kind: TokenKind::Identifier(name), ..}) = self.lexer.next() {
+            name
+        } else {
+            panic!("expected identifier");
+        };
+
+        self.lexer.consume_whitespace(self.is_multiline);
+        if !matches!(self.lexer.next(), Some(Token{kind: TokenKind::Comma, ..})) {
+            panic!("expected comma");
+        }
+
+        self.lexer.consume_whitespace(self.is_multiline);
+        let val_var = if let Some(Token{kind: TokenKind::Identifier(name), ..}) = self.lexer.next() {
+            name
+        } else {
+            panic!("expected identifier");
+        };
+
+        self.lexer.consume_whitespace(self.is_multiline);
+        if !matches!(self.lexer.next(), Some(Token{kind: TokenKind::In, ..})) {
+            panic!("expected in");
+        }
+
+        self.lexer.consume_whitespace(self.is_multiline);
+        let iterated = self.parse_expr(0);
+
+        self.lexer.consume_whitespace(self.is_multiline);
+        let each_do = self.parse_block();
+
+        Stmt::For {
+            iterated,
+            each_do: Box::new(each_do),
+            key_var,
+            val_var,
+        }
     }
 
     fn parse_while_stmt(&mut self) -> Stmt {

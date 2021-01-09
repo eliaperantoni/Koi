@@ -80,6 +80,12 @@ pub enum Stmt {
         cond: Expr,
         then_do: Box<Stmt>,
         else_do: Option<Box<Stmt>>,
+    },
+    For {
+        key_var: String,
+        val_var: String,
+        iterated: Expr,
+        each_do: Box<Stmt>,
     }
 }
 

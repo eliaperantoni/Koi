@@ -176,6 +176,7 @@ impl RawLexer {
 
         let kw_kind = match word.as_ref() {
             "for" => Some(TokenKind::For),
+            "in" => Some(TokenKind::In),
             "while" => Some(TokenKind::While),
             "if" => Some(TokenKind::If),
             "else" => Some(TokenKind::Else),
