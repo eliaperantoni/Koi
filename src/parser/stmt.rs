@@ -1,4 +1,4 @@
-use crate::ast::{Expr, Stmt};
+use crate::ast::{Expr, Stmt, Func};
 use crate::token::{Token, TokenKind};
 
 use super::Parser;
@@ -257,11 +257,11 @@ impl Parser {
         self.lexer.consume_whitespace(self.is_multiline);
         let body = self.parse_block();
 
-        Stmt::Fn {
-            name,
+        Stmt::Func(Func {
+            name: Some(name),
             params,
             body: Box::new(body),
-        }
+        })
     }
 
     fn parse_return(&mut self) -> Stmt {

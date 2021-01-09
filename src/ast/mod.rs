@@ -91,16 +91,17 @@ pub enum Stmt {
         cond: Expr,
         then_do: Box<Stmt>,
     },
-    Fn {
-        name: String,
-        params: Vec<String>,
-        body: Box<Stmt>,
-    },
-
+    Func(Func),
     Continue,
     Break,
-
     Return(Option<Expr>),
+}
+
+#[derive(Clone, Debug, PartialEq)]
+pub struct Func {
+    pub name: Option<String>,
+    pub params: Vec<String>,
+    pub body: Box<Stmt>,
 }
 
 #[derive(Clone, Debug)]
@@ -113,26 +114,29 @@ pub enum Value {
     Vec(Vec<Value>),
     Dict(HashMap<Value, Value>),
 
-    Func {
-        args: Vec<String>,
-        stmts: Vec<Stmt>,
-    },
+    Func(Func),
 }
 
 impl PartialEq for Value {
     fn eq(&self, other: &Self) -> bool {
-        use Value::*;
         match (self, other) {
-            (Nil, Nil) => true,
-            (Num(this), Num(other)) => this == other,
-            (String(this), String(other)) => this == other,
-            (Bool(this), Bool(other)) => this == other,
-            (Vec(this), Vec(other)) => false,
-            (Dict(this), Dict(other)) => false,
-            (
-                Func { args: this_args, stmts: this_stmts },
-                Func { args: other_args, stmts: other_stmts },
-            ) => this_args == other_args && this_stmts == other_stmts,
+            (Value::Nil,Value:: Nil) => true,
+            (Value::Num(this), Value::Num(other)) => this == other,
+            (Value::String(this), Value::String(other)) => this == other,
+            (Value::Bool(this), Value::Bool(other)) => this == other,
+            (Value::Vec(this), Value::Vec(other)) => false,
+            (Value::Dict(this), Value::Dict(other)) => false,
+            (Value::Func(
+                Func {
+                    params: this_params,
+                    body: this_body, ..
+                },
+            ), Value::Func(
+                Func {
+                    params: other_params,
+                    body: other_body, ..
+                },
+            )) => this_params == other_params && this_body == other_body,
             _ => false,
         }
     }

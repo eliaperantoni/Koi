@@ -1,4 +1,4 @@
-use crate::ast::{BinaryOp, Cmd, CmdOp, Expr, Value};
+use crate::ast::{BinaryOp, Cmd, CmdOp, Expr, Value, Func};
 use crate::lexer::new as new_lexer;
 
 use super::*;
@@ -452,22 +452,22 @@ fn parses_while() {
 #[test]
 fn parses_fn() {
     assert_eq!(parse("fn foo \n( x , y , z ) \n {}"), vec![
-        Stmt::Fn {
-            name: "foo".to_owned(),
+        Stmt::Func(Func{
+            name: Some("foo".to_owned()),
             params: vec!["x".to_owned(), "y".to_owned(), "z".to_owned()],
             body: Box::new(Stmt::Block(vec![])),
-        }
+        })
     ]);
 }
 
 #[test]
 fn parses_fn_no_params() {
     assert_eq!(parse("fn foo \n() \n {}"), vec![
-        Stmt::Fn {
-            name: "foo".to_owned(),
+        Stmt::Func(Func {
+            name: Some("foo".to_owned()),
             params: vec![],
             body: Box::new(Stmt::Block(vec![])),
-        }
+        })
     ]);
 }
 
