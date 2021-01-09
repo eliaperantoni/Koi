@@ -1,5 +1,4 @@
 use crate::ast::{Cmd, CmdOp, Expr, Value};
-use crate::lexer::Lexer;
 use crate::token::{Token, TokenKind};
 
 use super::Parser;

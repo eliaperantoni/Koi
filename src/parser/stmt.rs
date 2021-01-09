@@ -1,6 +1,4 @@
-use itertools::Itertools;
-
-use crate::ast::{Expr, Stmt, Value};
+use crate::ast::{Expr, Stmt};
 use crate::token::{Token, TokenKind};
 
 use super::Parser;

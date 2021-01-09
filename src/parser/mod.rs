@@ -1,5 +1,3 @@
-use itertools::__std_iter::Peekable;
-
 use crate::lexer::Lexer;
 use crate::ast::Stmt;
 use crate::token::{Token, TokenKind};
@@ -14,7 +12,6 @@ mod test;
 pub struct Parser {
     lexer: Lexer,
     is_multiline: bool,
-    blocks: i64,
 }
 
 impl Parser {
@@ -22,7 +19,6 @@ impl Parser {
         Parser {
             lexer,
             is_multiline: true,
-            blocks: 0,
         }
     }
 

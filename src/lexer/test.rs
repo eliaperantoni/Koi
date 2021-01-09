@@ -474,7 +474,7 @@ fn consumes_whitespace_recording() {
     let mut lexer = make_lexer(" \n \n   ");
 
     lexer.start_recording();
-    lexer.by_ref().collect::<Vec<Token>>();
+    lexer.by_ref().for_each(drop);
     lexer.stop_recording(true);
 
     assert_eq!(lexer.collect::<Vec<Token>>(), vec![

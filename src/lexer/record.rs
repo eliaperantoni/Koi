@@ -1,4 +1,4 @@
-use crate::token::{Token, TokenKind};
+use crate::token::{Token};
 
 use super::raw::RawLexer;
 

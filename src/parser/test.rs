@@ -1,4 +1,4 @@
-use crate::ast::{BinaryOp, Cmd, CmdOp, Expr, UnaryOp, Value};
+use crate::ast::{BinaryOp, Cmd, CmdOp, Expr, Value};
 use crate::lexer::new as new_lexer;
 
 use super::*;

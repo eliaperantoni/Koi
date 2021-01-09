@@ -397,12 +397,4 @@ impl Token {
     fn is_prefix_op(&self) -> bool {
         prefix_binding_power(&self.kind).is_some()
     }
-
-    fn is_infix_op(&self) -> bool {
-        infix_binding_power(&self.kind).is_some()
-    }
-
-    fn is_postfix_op(&self) -> bool {
-        postfix_binding_power(&self.kind).is_some()
-    }
 }
