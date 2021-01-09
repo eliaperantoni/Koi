@@ -70,11 +70,16 @@ pub enum Expr {
 pub enum Stmt {
     Expr(Expr),
     Cmd(Cmd),
-
     Let {
         is_exp: bool,
         name: String,
         init: Option<Expr>,
+    },
+    Block(Vec<Stmt>),
+    If {
+        cond: Expr,
+        then_do: Box<Stmt>,
+        else_do: Option<Box<Stmt>>,
     }
 }
 

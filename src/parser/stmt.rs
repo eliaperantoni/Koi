@@ -36,7 +36,7 @@ impl Parser {
 
                     cmd
                 } else {
-                    let expr = self.parse_expression(0);
+                    let expr = self.parse_expr(0);
                     if !matches!(expr, Expr::Set(..) | Expr::SetField {..} | Expr::Call {..} | Expr::Cmd(..)) {
                         panic!("only assignment, call and command expressions are allowed as statements");
                     }
@@ -111,7 +111,7 @@ impl Parser {
         if matches!(self.lexer.peek(), Some(Token{kind: TokenKind::Equal, ..})) {
             self.lexer.next();
             self.lexer.consume_whitespace(self.is_multiline);
-            let init = Some(self.parse_expression(0));
+            let init = Some(self.parse_expr(0));
 
             Stmt::Let {
                 is_exp,
@@ -127,8 +127,47 @@ impl Parser {
         }
     }
 
+    fn parse_block(&mut self) -> Stmt {
+        self.lexer.next();
+        let stmts = self.parse_stmts();
+
+        if !matches!(self.lexer.next(), Some(Token {kind: TokenKind::RightBrace, ..})) {
+            panic!("expected right brace");
+        }
+
+        Stmt::Block(stmts)
+    }
+
     fn parse_if_stmt(&mut self) -> Stmt {
-        todo!()
+        self.lexer.next();
+
+        self.lexer.consume_whitespace(self.is_multiline);
+        let cond = self.parse_expr(0);
+
+        self.lexer.consume_whitespace(self.is_multiline);
+        let then_do = Box::new(self.parse_block());
+
+        self.lexer.consume_whitespace(self.is_multiline);
+        let else_do = if matches!(self.lexer.peek(), Some(Token{kind: TokenKind::Else, ..})) {
+            self.lexer.next();
+            self.lexer.consume_whitespace(self.is_multiline);
+
+            let else_do = if matches!(self.lexer.peek(), Some(Token{kind: TokenKind::If, ..})) {
+                self.parse_if_stmt()
+            } else {
+                self.parse_block()
+            };
+
+            Some(Box::new(else_do))
+        } else {
+            None
+        };
+
+        Stmt::If {
+            cond,
+            then_do,
+            else_do,
+        }
     }
 
     fn parse_for_stmt(&mut self) -> Stmt {

@@ -88,7 +88,7 @@ impl Parser {
                     t @ Token { kind: TokenKind::String { .. }, .. } => self.continue_parse_string_expr(t),
                     Token { kind: TokenKind::LeftBrace, .. } => {
                         self.lexer.consume_whitespace(self.is_multiline);
-                        let expr = self.parse_expression(0);
+                        let expr = self.parse_expr(0);
                         self.lexer.consume_whitespace(self.is_multiline);
 
                         if !matches!(self.lexer.next(), Some(Token { kind: TokenKind::RightBrace, .. })) {

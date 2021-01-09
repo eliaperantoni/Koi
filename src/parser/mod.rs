@@ -14,6 +14,7 @@ mod test;
 pub struct Parser {
     lexer: Lexer,
     is_multiline: bool,
+    blocks: i64,
 }
 
 impl Parser {
@@ -21,15 +22,26 @@ impl Parser {
         Parser {
             lexer,
             is_multiline: true,
+            blocks: 0,
         }
     }
 
     pub fn parse(&mut self) -> Vec<Stmt> {
+        self.parse_stmts()
+    }
+
+    fn parse_stmts(&mut self) -> Vec<Stmt> {
         let mut stmts = Vec::new();
 
         loop {
             self.lexer.consume_whitespace(self.is_multiline);
+
             if self.is_at_end() {
+                break;
+            }
+
+            if self.lexer.peek().unwrap().kind == TokenKind::RightBrace {
+                // The lexer should already catch the error where more blocks are closed than opened
                 break;
             }
 

@@ -9,7 +9,7 @@ fn make_parser(source: &str) -> Parser {
 }
 
 fn parse_expression(source: &str) -> Expr {
-    make_parser(source).parse_expression(0)
+    make_parser(source).parse_expr(0)
 }
 
 fn parse(source: &str) -> Vec<Stmt> {

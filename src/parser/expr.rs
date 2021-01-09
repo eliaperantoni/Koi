@@ -6,7 +6,7 @@ use crate::token::{Token, TokenKind};
 use super::Parser;
 
 impl Parser {
-    pub fn parse_expression(&mut self, min_bp: u8) -> Expr {
+    pub fn parse_expr(&mut self, min_bp: u8) -> Expr {
         let mut lhs = match self.lexer.next() {
             Some(Token { kind: TokenKind::Num(num), .. }) => Expr::Literal(Value::Num(num)),
             Some(Token { kind: TokenKind::Identifier(name), .. }) => Expr::Get(name),
@@ -26,14 +26,14 @@ impl Parser {
                 let ((), r_bp) = prefix_binding_power(&kind).unwrap();
 
                 self.lexer.consume_whitespace(self.is_multiline);
-                let rhs = self.parse_expression(r_bp);
+                let rhs = self.parse_expr(r_bp);
 
                 make_prefix_expr(&kind, rhs)
             }
 
             Some(Token { kind: TokenKind::LeftParen, .. }) => {
                 self.lexer.consume_whitespace(self.is_multiline);
-                let expr = self.parse_expression(0);
+                let expr = self.parse_expr(0);
                 self.lexer.consume_whitespace(self.is_multiline);
 
                 if !matches!(self.lexer.next(), Some(Token { kind: TokenKind::RightParen, .. })) {
@@ -75,7 +75,7 @@ impl Parser {
                 lhs = match op {
                     TokenKind::LeftBracket => {
                         self.lexer.consume_whitespace(self.is_multiline);
-                        let index = self.parse_expression(0);
+                        let index = self.parse_expr(0);
                         self.lexer.consume_whitespace(self.is_multiline);
 
                         if !matches!(self.lexer.next(), Some(Token { kind: TokenKind::RightBracket, .. })) {
@@ -114,7 +114,7 @@ impl Parser {
                 let op = self.lexer.next().unwrap().kind;
 
                 self.lexer.consume_whitespace(self.is_multiline);
-                let rhs = self.parse_expression(r_bp);
+                let rhs = self.parse_expr(r_bp);
 
                 lhs = make_infix_expr(lhs, &op, rhs);
 
@@ -143,7 +143,7 @@ impl Parser {
 
         loop {
             self.lexer.consume_whitespace(self.is_multiline);
-            args.push(self.parse_expression(0));
+            args.push(self.parse_expr(0));
             self.lexer.consume_whitespace(self.is_multiline);
 
             match self.lexer.next() {
@@ -170,7 +170,7 @@ impl Parser {
 
         loop {
             self.lexer.consume_whitespace(self.is_multiline);
-            vec.push(self.parse_expression(0));
+            vec.push(self.parse_expr(0));
             self.lexer.consume_whitespace(self.is_multiline);
 
             match self.lexer.next() {
@@ -207,7 +207,7 @@ impl Parser {
             }
 
             self.lexer.consume_whitespace(self.is_multiline);
-            let v = self.parse_expression(0);
+            let v = self.parse_expr(0);
 
             dict.insert(k, v);
 
@@ -235,7 +235,7 @@ impl Parser {
 
                 loop {
                     self.lexer.consume_whitespace(self.is_multiline);
-                    exprs.push(self.parse_expression(0));
+                    exprs.push(self.parse_expr(0));
                     self.lexer.consume_whitespace(self.is_multiline);
 
                     if let Some(Token { kind: TokenKind::String { value, does_interp }, .. }) = self.lexer.next() {
