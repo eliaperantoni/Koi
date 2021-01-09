@@ -548,3 +548,17 @@ Then I implemented some Pratt parsing for the commands and written some tests. T
 
 What's left to do, parsing-wise, is loops, conditionals and functions. I should also add command expressions. Hopefully
 it shouldn't be too hard.
+
+## 9/01/2021
+
+Howdy! Looks like the parser is 100% finished and working! I've written some tests and everything seems fine. If, While,
+For, Continue, Break and Return are done. But more importantly I've completed the commands.
+
+I had to rework the whole parser with an `is_multiline` instance variable that basically controls if newlines are consumed
+by `consume_whitespace`. This was necessary for a number of reasons, here's one: say you're interpolating in a command,
+we call `self.parse_expr(0)` but inside that newlines are consumed! Now we can set `is_multiline` to false to prevent that.
+
+Also some minor additions: commands expressions are now allowed as statements, added a semicolon operator that works as a
+commands separator so you can run them in sequence.
+
+On to the interpreter now!
