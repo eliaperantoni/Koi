@@ -16,8 +16,14 @@ impl Parser {
 
             Some(Token{kind: TokenKind::Return, ..}) => self.parse_return(),
 
-            Some(Token{kind: TokenKind::Continue, ..}) => Stmt::Continue,
-            Some(Token{kind: TokenKind::Break, ..}) => Stmt::Break,
+            Some(Token{kind: TokenKind::Continue, ..}) => {
+                self.lexer.next();
+                Stmt::Continue
+            },
+            Some(Token{kind: TokenKind::Break, ..}) => {
+                self.lexer.next();
+                Stmt::Break
+            },
 
             _ => {
                 let is_dollar_in_front = matches!(self.lexer.peek(), Some(Token {kind: TokenKind::Dollar, ..}));

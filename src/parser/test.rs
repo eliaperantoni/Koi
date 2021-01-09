@@ -285,3 +285,188 @@ fn parses_parenthesized_cmd() {
         ))
     ]);
 }
+
+#[test]
+fn parses_cmd_expr_stmt() {
+    assert_eq!(parse("$(\n    foo\n    bar\n)"), vec![
+        Stmt::Expr(Expr::Cmd(Cmd::Atom(vec![
+            vec![Expr::Literal(Value::String("foo".to_owned()))],
+            vec![Expr::Literal(Value::String("bar".to_owned()))],
+        ]))),
+    ]);
+}
+
+#[test]
+fn parses_cmd_with_interpolation() {
+    assert_eq!(parse("a{1}b a{1} {1}b"), vec![
+        Stmt::Cmd(Cmd::Atom(vec![
+            vec![
+                Expr::Literal(Value::String("a".to_owned())),
+                Expr::Literal(Value::Num(1.0)),
+                Expr::Literal(Value::String("b".to_owned())),
+            ],
+            vec![
+                Expr::Literal(Value::String("a".to_owned())),
+                Expr::Literal(Value::Num(1.0)),
+            ],
+            vec![
+                Expr::Literal(Value::Num(1.0)),
+                Expr::Literal(Value::String("b".to_owned())),
+            ],
+        ])),
+    ]);
+}
+
+#[test]
+fn parses_cmd_with_escaping() {
+    // a"b"c{"d"}e
+    assert_eq!(parse("a\"b\"c\"{\"d\"}\"e"), vec![
+        Stmt::Cmd(Cmd::Atom(vec![vec![
+            Expr::Literal(Value::String("a".to_owned())),
+            Expr::Literal(Value::String("b".to_owned())),
+            Expr::Literal(Value::String("c".to_owned())),
+            Expr::Interp {
+                strings: vec!["".to_owned(), "".to_owned()],
+                exprs: vec![Expr::Literal(Value::String("d".to_owned()))],
+            },
+            Expr::Literal(Value::String("e".to_owned()))
+        ]]))
+    ]);
+}
+
+#[test]
+fn parses_return() {
+    assert_eq!(parse("return"), vec![
+        Stmt::Return(None),
+    ]);
+
+    assert_eq!(parse("return 1"), vec![
+        Stmt::Return(Some(Expr::Literal(Value::Num(1.0)))),
+    ]);
+
+    assert_eq!(parse("return\n1"), vec![
+        Stmt::Return(None),
+        Stmt::Cmd(Cmd::Atom(vec![vec![
+            Expr::Literal(Value::String("1".to_owned())),
+        ]]))
+    ]);
+}
+
+#[test]
+fn parses_continue() {
+    assert_eq!(parse("continue"), vec![
+        Stmt::Continue,
+    ]);
+}
+
+#[test]
+fn parses_break() {
+    assert_eq!(parse("break"), vec![
+        Stmt::Break,
+    ]);
+}
+
+#[test]
+fn parses_if() {
+    assert_eq!(parse("if true {\ncmd_if_true\n}"), vec![
+        Stmt::If {
+            cond: Expr::Literal(Value::Bool(true)),
+            then_do: Box::new(Stmt::Block(vec![
+                Stmt::Cmd(Cmd::Atom(vec![vec![
+                    Expr::Literal(Value::String("cmd_if_true".to_owned())),
+                ]])),
+            ])),
+            else_do: None,
+        }
+    ]);
+}
+
+#[test]
+fn parses_if_with_else() {
+    assert_eq!(parse("if true {\ncmd_if_true\n} else {\ncmd_if_false\n}"), vec![
+        Stmt::If {
+            cond: Expr::Literal(Value::Bool(true)),
+            then_do: Box::new(Stmt::Block(vec![
+                Stmt::Cmd(Cmd::Atom(vec![vec![
+                    Expr::Literal(Value::String("cmd_if_true".to_owned())),
+                ]])),
+            ])),
+            else_do: Some(Box::new(Stmt::Block(vec![
+                Stmt::Cmd(Cmd::Atom(vec![vec![
+                    Expr::Literal(Value::String("cmd_if_false".to_owned())),
+                ]])),
+            ]))),
+        }
+    ]);
+}
+
+#[test]
+fn parses_if_with_else_and_else_if() {
+    assert_eq!(parse("if true {\ncmd_a\n} else if false {\ncmd_b\n} else {\ncmd_c\n}"), vec![
+        Stmt::If {
+            cond: Expr::Literal(Value::Bool(true)),
+            then_do: Box::new(Stmt::Block(vec![
+                Stmt::Cmd(Cmd::Atom(vec![vec![
+                    Expr::Literal(Value::String("cmd_a".to_owned())),
+                ]])),
+            ])),
+            else_do: Some(Box::new(Stmt::If {
+                cond: Expr::Literal(Value::Bool(false)),
+                then_do: Box::new(Stmt::Block(vec![
+                    Stmt::Cmd(Cmd::Atom(vec![vec![
+                        Expr::Literal(Value::String("cmd_b".to_owned())),
+                    ]])),
+                ])),
+                else_do: Some(Box::new(Stmt::Block(vec![
+                    Stmt::Cmd(Cmd::Atom(vec![vec![
+                        Expr::Literal(Value::String("cmd_c".to_owned())),
+                    ]])),
+                ]))),
+            })),
+        }
+    ]);
+}
+
+#[test]
+fn parses_for() {
+    assert_eq!(parse("for \n x \n , \n y \n in \n foo \n {}"), vec![
+        Stmt::For {
+            key_var: "x".to_owned(),
+            val_var: "y".to_owned(),
+            iterated: Expr::Get("foo".to_owned()),
+            each_do: Box::new(Stmt::Block(vec![])),
+        }
+    ]);
+}
+
+#[test]
+fn parses_while() {
+    assert_eq!(parse("while \n true \n { \n }"), vec![
+        Stmt::While {
+            cond: Expr::Literal(Value::Bool(true)),
+            then_do: Box::new(Stmt::Block(vec![])),
+        }
+    ]);
+}
+
+#[test]
+fn parses_fn() {
+    assert_eq!(parse("fn foo \n( x , y , z ) \n {}"), vec![
+        Stmt::Fn {
+            name: "foo".to_owned(),
+            params: vec!["x".to_owned(), "y".to_owned(), "z".to_owned()],
+            body: Box::new(Stmt::Block(vec![])),
+        }
+    ]);
+}
+
+#[test]
+fn parses_fn_no_params() {
+    assert_eq!(parse("fn foo \n() \n {}"), vec![
+        Stmt::Fn {
+            name: "foo".to_owned(),
+            params: vec![],
+            body: Box::new(Stmt::Block(vec![])),
+        }
+    ]);
+}

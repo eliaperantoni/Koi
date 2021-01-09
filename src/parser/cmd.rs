@@ -95,10 +95,7 @@ impl Parser {
                             panic!("expected right brace");
                         }
 
-                        Expr::Interp {
-                            exprs: vec![expr],
-                            strings: vec!["".to_owned(), "".to_owned()],
-                        }
+                        expr
                     }
                     t => Expr::Literal(Value::String(t.lexeme)),
                 };
