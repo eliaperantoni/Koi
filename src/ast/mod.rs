@@ -90,6 +90,11 @@ pub enum Stmt {
     While {
         cond: Expr,
         then_do: Box<Stmt>,
+    },
+    Fn {
+        name: String,
+        params: Vec<String>,
+        body: Box<Stmt>,
     }
 }
 
