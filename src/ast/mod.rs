@@ -95,7 +95,12 @@ pub enum Stmt {
         name: String,
         params: Vec<String>,
         body: Box<Stmt>,
-    }
+    },
+
+    Continue,
+    Break,
+
+    Return(Option<Expr>),
 }
 
 #[derive(Clone, Debug)]

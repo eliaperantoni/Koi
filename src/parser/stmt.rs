@@ -16,6 +16,11 @@ impl Parser {
             Some(Token{kind: TokenKind::While, ..}) => self.parse_while_stmt(),
             Some(Token{kind: TokenKind::Fn, ..}) => self.parse_fn_stmt(),
 
+            Some(Token{kind: TokenKind::Return, ..}) => self.parse_return(),
+
+            Some(Token{kind: TokenKind::Continue, ..}) => Stmt::Continue,
+            Some(Token{kind: TokenKind::Break, ..}) => Stmt::Break,
+
             _ => {
                 let is_dollar_in_front = matches!(self.lexer.peek(), Some(Token {kind: TokenKind::Dollar, ..}));
                 if !self.is_expr_next() || is_dollar_in_front {
@@ -253,6 +258,18 @@ impl Parser {
             params,
             body: Box::new(body),
         }
+    }
+
+    fn parse_return(&mut self) -> Stmt {
+        self.lexer.next();
+
+        self.lexer.consume_whitespace(false);
+        if matches!(self.lexer.peek(), None | Some(Token {kind: TokenKind::Newline, ..})) {
+            return Stmt::Return(None);
+        }
+
+        let expr = self.parse_expr(0);
+        Stmt::Return(Some(expr))
     }
 
     fn must_identifier(&mut self) -> String {
