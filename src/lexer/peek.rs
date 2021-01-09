@@ -33,11 +33,12 @@ impl PeekableLexer {
         self.peeked.as_ref()
     }
 
-    pub fn consume_whitespace(&mut self) {
-        while matches!(self.peek(),
-            Some(Token {kind: TokenKind::Newline, ..}) |
-            Some(Token {kind: TokenKind::Space, ..})
-        ) {
+    pub fn consume_whitespace(&mut self, newlines: bool) {
+        while match self.peek() {
+            Some(Token{kind: TokenKind::Space, ..}) => true,
+            Some(Token{kind: TokenKind::Newline, ..}) if newlines => true,
+            _ => false,
+        } {
             self.next();
         }
     }

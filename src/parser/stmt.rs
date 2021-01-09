@@ -17,15 +17,27 @@ impl Parser {
             Some(Token{kind: TokenKind::Fn, ..}) => self.parse_fn_stmt(),
 
             _ => {
-                if matches!(self.lexer.peek(), Some(Token {kind: TokenKind::Dollar, ..})) {
-                    self.lexer.next();
-                    Stmt::Cmd(self.parse_cmd(0))
-                } else if !self.is_expr_next() {
-                    Stmt::Cmd(self.parse_cmd(0))
+                let is_dollar_in_front = matches!(self.lexer.peek(), Some(Token {kind: TokenKind::Dollar, ..}));
+                if !self.is_expr_next() || is_dollar_in_front {
+                    if is_dollar_in_front {
+                        // Consume the dollar
+                        self.lexer.next();
+                    }
+
+                    let was_multiline = self.is_multiline;
+                    self.is_multiline = false;
+                    let cmd = Stmt::Cmd(self.parse_cmd(0));
+                    self.is_multiline = was_multiline;
+
+                    if !matches!(self.lexer.peek(), Some(Token{kind: TokenKind::Newline, ..})) {
+                        panic!("expected newline");
+                    }
+
+                    cmd
                 } else {
                     let expr = self.parse_expression(0);
                     if !matches!(expr, Expr::Set(..) | Expr::SetField {..} | Expr::Call {..}) {
-                        panic!("only assignment and call expressions are allowed as statements");
+                        panic!("only assignment, call and command expressions are allowed as statements");
                     }
                     Stmt::Expr(expr)
                 }
@@ -43,7 +55,7 @@ impl Parser {
         let line_tokens = self.lexer
             .by_ref()
             .take_while(|t| t.kind != TokenKind::Newline)
-            .filter(|t| ![TokenKind::Space, TokenKind::Newline].contains(&t.kind))
+            .filter(|t| t.kind != TokenKind::Space)
             .collect::<Vec<Token>>();
 
         self.lexer.stop_recording(true);
@@ -60,13 +72,11 @@ impl Parser {
                 continue;
             }
 
-            if matches!(line_tokens_iter.next(),
+            return matches!(line_tokens_iter.next(),
                 Some(Token {kind: TokenKind::LeftParen, ..}) |
                 Some(Token {kind: TokenKind::LeftBracket, ..}) |
                 Some(Token {kind: TokenKind::Equal, ..})
-            ) {
-                return true;
-            }
+            );
         }
     }
 
@@ -75,7 +85,7 @@ impl Parser {
 
         if is_exp {
             self.lexer.next();
-            self.lexer.consume_whitespace();
+            self.lexer.consume_whitespace(self.is_multiline);
         }
 
         // Only meaningful if there was an `exp`. Otherwise this has already been checked by `parse_stmt`
@@ -83,7 +93,7 @@ impl Parser {
             panic!("expected let");
         }
 
-        self.lexer.consume_whitespace();
+        self.lexer.consume_whitespace(self.is_multiline);
 
         let name = if let Some(Token {kind: TokenKind::Identifier(name), ..}) = self.lexer.next() {
             name
@@ -91,15 +101,17 @@ impl Parser {
             panic!("expected identifier");
         };
 
-        self.lexer.consume_whitespace();
+        self.lexer.consume_whitespace(self.is_multiline);
 
         if matches!(self.lexer.peek(), Some(Token{kind: TokenKind::Equal, ..})) {
             self.lexer.next();
-            self.lexer.consume_whitespace();
+            self.lexer.consume_whitespace(self.is_multiline);
+            let init = Some(self.parse_expression(0));
+
             Stmt::Let {
                 is_exp,
                 name,
-                init: Some(self.parse_expression(0)),
+                init,
             }
         } else {
             Stmt::Let {

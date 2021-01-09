@@ -1,12 +1,12 @@
 use crate::ast::{Cmd, CmdOp, Expr, Value};
+use crate::lexer::Lexer;
 use crate::token::{Token, TokenKind};
 
 use super::Parser;
-use crate::lexer::Lexer;
 
 impl Parser {
     pub fn parse_cmd(&mut self, min_bp: u8) -> Cmd {
-        self.consume_spaces();
+        self.lexer.consume_whitespace(self.is_multiline);
 
         let mut lhs = if let Some(Token { kind: TokenKind::LeftParen, .. }) = self.lexer.peek() {
             self.lexer.next();
@@ -16,12 +16,12 @@ impl Parser {
                 panic!("expected right parenthesis");
             }
 
-            self.consume_spaces();
-
             cmd
         } else {
             self.parse_cmd_atom()
         };
+
+        self.lexer.consume_whitespace(self.is_multiline);
 
         loop {
             let op = match self.lexer.peek() {
@@ -29,7 +29,6 @@ impl Parser {
                 _ => break
             };
 
-            // Should be safe to do because we would've broken out of the loop by now if the token wasn't a valid operator
             let (l_bp, r_bp) = binding_power(op).unwrap();
             if l_bp < min_bp {
                 break;
@@ -86,9 +85,9 @@ impl Parser {
                 let expr = match self.lexer.next().unwrap() {
                     t @ Token { kind: TokenKind::String { .. }, .. } => self.continue_parse_string_expr(t),
                     Token { kind: TokenKind::LeftBrace, .. } => {
-                        self.consume_spaces();
+                        self.lexer.consume_whitespace(self.is_multiline);
                         let expr = self.parse_expression(0);
-                        self.consume_spaces();
+                        self.lexer.consume_whitespace(self.is_multiline);
 
                         if !matches!(self.lexer.next(), Some(Token { kind: TokenKind::RightBrace, .. })) {
                             panic!("expected right brace");
@@ -105,24 +104,16 @@ impl Parser {
                 exprs.push(expr);
             }
 
+            self.lexer.consume_whitespace(self.is_multiline);
+
             if exprs.len() > 0 {
                 segments.push(exprs);
-            }
-
-            if let Some(Token { kind: TokenKind::Space, .. }) = self.lexer.peek() {
-                self.lexer.next();
             } else {
                 break;
             }
         }
 
         Cmd::Atom(segments)
-    }
-
-    fn consume_spaces(&mut self) {
-        while matches!(self.lexer.peek(), Some(Token {kind: TokenKind::Space, ..})) {
-            self.lexer.next();
-        }
     }
 }
 
