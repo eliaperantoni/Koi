@@ -70,6 +70,8 @@ impl Parser {
         loop {
             let mut exprs = Vec::new();
 
+            self.lexer.consume_whitespace(self.is_multiline);
+
             loop {
                 if self.lexer.peek().is_none() {
                     break;
@@ -104,13 +106,15 @@ impl Parser {
                 exprs.push(expr);
             }
 
-            self.lexer.consume_whitespace(self.is_multiline);
-
             if exprs.len() > 0 {
                 segments.push(exprs);
             } else {
                 break;
             }
+        }
+
+        if segments.len() == 0 {
+            panic!("empty command");
         }
 
         Cmd::Atom(segments)

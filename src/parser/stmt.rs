@@ -37,7 +37,7 @@ impl Parser {
                     cmd
                 } else {
                     let expr = self.parse_expression(0);
-                    if !matches!(expr, Expr::Set(..) | Expr::SetField {..} | Expr::Call {..}) {
+                    if !matches!(expr, Expr::Set(..) | Expr::SetField {..} | Expr::Call {..} | Expr::Cmd(..)) {
                         panic!("only assignment, call and command expressions are allowed as statements");
                     }
                     Stmt::Expr(expr)
@@ -48,6 +48,10 @@ impl Parser {
 
     fn is_expr_next(&mut self) -> bool {
         if !self.lexer.is_new_line {
+            return true;
+        }
+
+        if matches!(self.lexer.peek(), Some(Token{kind: TokenKind::DollarLeftParen, ..})) {
             return true;
         }
 
