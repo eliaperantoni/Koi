@@ -27,11 +27,12 @@ impl Parser {
                     let was_multiline = self.is_multiline;
                     self.is_multiline = false;
                     let cmd = Stmt::Cmd(self.parse_cmd(0));
-                    self.is_multiline = was_multiline;
 
-                    if !matches!(self.lexer.peek(), Some(Token{kind: TokenKind::Newline, ..})) {
-                        panic!("expected newline");
+                    if !self.is_at_end() {
+                        panic!("expected newline or EOF");
                     }
+
+                    self.is_multiline = was_multiline;
 
                     cmd
                 } else {
