@@ -86,6 +86,10 @@ pub enum Stmt {
         val_var: String,
         iterated: Expr,
         each_do: Box<Stmt>,
+    },
+    While {
+        cond: Expr,
+        then_do: Box<Stmt>,
     }
 }
 

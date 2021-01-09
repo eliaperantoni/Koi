@@ -100,11 +100,7 @@ impl Parser {
 
         self.lexer.consume_whitespace(self.is_multiline);
 
-        let name = if let Some(Token {kind: TokenKind::Identifier(name), ..}) = self.lexer.next() {
-            name
-        } else {
-            panic!("expected identifier");
-        };
+        let name = self.must_identifier();
 
         self.lexer.consume_whitespace(self.is_multiline);
 
@@ -174,11 +170,7 @@ impl Parser {
         self.lexer.next();
 
         self.lexer.consume_whitespace(self.is_multiline);
-        let key_var = if let Some(Token{kind: TokenKind::Identifier(name), ..}) = self.lexer.next() {
-            name
-        } else {
-            panic!("expected identifier");
-        };
+        let key_var = self.must_identifier();
 
         self.lexer.consume_whitespace(self.is_multiline);
         if !matches!(self.lexer.next(), Some(Token{kind: TokenKind::Comma, ..})) {
@@ -186,11 +178,7 @@ impl Parser {
         }
 
         self.lexer.consume_whitespace(self.is_multiline);
-        let val_var = if let Some(Token{kind: TokenKind::Identifier(name), ..}) = self.lexer.next() {
-            name
-        } else {
-            panic!("expected identifier");
-        };
+        let val_var = self.must_identifier();
 
         self.lexer.consume_whitespace(self.is_multiline);
         if !matches!(self.lexer.next(), Some(Token{kind: TokenKind::In, ..})) {
@@ -212,10 +200,29 @@ impl Parser {
     }
 
     fn parse_while_stmt(&mut self) -> Stmt {
-        todo!()
+        self.lexer.next();
+
+        self.lexer.consume_whitespace(self.is_multiline);
+        let cond = self.parse_expr(0);
+
+        self.lexer.consume_whitespace(self.is_multiline);
+        let then_do = self.parse_block();
+
+        Stmt::While {
+            cond,
+            then_do: Box::new(then_do),
+        }
     }
 
     fn parse_fn_stmt(&mut self) -> Stmt {
         todo!()
+    }
+
+    fn must_identifier(&mut self) -> String {
+        if let Some(Token{kind: TokenKind::Identifier(name), ..}) = self.lexer.next() {
+            name
+        } else {
+            panic!("expected identifier");
+        }
     }
 }
