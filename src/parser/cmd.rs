@@ -1,5 +1,6 @@
-use crate::ast::{Cmd, CmdOp, Expr, Value};
+use crate::ast::{Cmd, CmdOp, Expr};
 use crate::token::{Token, TokenKind};
+use crate::interp::Value;
 
 use super::Parser;
 

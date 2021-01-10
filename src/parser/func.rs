@@ -1,6 +1,6 @@
 use super::Parser;
 
-use crate::ast::Func;
+use crate::interp::Func;
 use crate::token::{Token, TokenKind};
 
 impl Parser {

@@ -1,5 +1,6 @@
-use crate::ast::{BinaryOp, Cmd, CmdOp, Expr, Func, Value};
+use crate::ast::{BinaryOp, Cmd, CmdOp, Expr};
 use crate::lexer::new as new_lexer;
+use crate::interp::{Func, Value};
 
 use super::*;
 

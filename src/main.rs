@@ -5,6 +5,7 @@ mod token;
 mod lexer;
 mod ast;
 mod parser;
+mod interp;
 
 fn main() -> Result<(), Box<dyn Error>> {
     let source = fs::read_to_string("./prog.amp")?;

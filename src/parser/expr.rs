@@ -1,6 +1,7 @@
 use std::collections::HashMap;
 
-use crate::ast::{BinaryOp, Expr, UnaryOp, Value};
+use crate::interp::{Value};
+use crate::ast::{BinaryOp, Expr, UnaryOp};
 use crate::token::{Token, TokenKind};
 
 use super::Parser;
