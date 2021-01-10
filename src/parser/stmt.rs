@@ -232,9 +232,15 @@ impl Parser {
 
         self.lexer.consume_whitespace(self.is_multiline);
 
-        let func = Func {
+        let (params, body) = match self.continue_parse_fn() {
+            Func::User {params, body, ..} => (params, body),
+            _ => unreachable!(),
+        };
+
+        let func = Func::User {
             name: Some(name),
-            ..self.continue_parse_fn()
+            params,
+            body,
         };
 
         Stmt::Func(func)

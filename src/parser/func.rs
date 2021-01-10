@@ -31,7 +31,7 @@ impl Parser {
         self.lexer.consume_whitespace(self.is_multiline);
         let body = self.parse_block();
 
-        Func {
+        Func::User {
             name: None,
             params,
             body: Box::new(body),

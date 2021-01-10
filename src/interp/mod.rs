@@ -9,10 +9,16 @@ use itertools::Itertools;
 mod test;
 
 #[derive(Clone, Debug, PartialEq)]
-pub struct Func {
-    pub name: Option<String>,
-    pub params: Vec<String>,
-    pub body: Box<Stmt>,
+pub enum Func {
+    User {
+        name: Option<String>,
+        params: Vec<String>,
+        body: Box<Stmt>,
+    },
+    Native {
+        name: String,
+        body: fn(Vec<Value>) -> Value,
+    }
 }
 
 #[derive(Clone, Debug, PartialEq)]
@@ -41,9 +47,12 @@ impl Display for Value {
             Value::Dict(dict) => {
                 write!(f, "{{{}}}", dict.iter().map(|(k,v)| format!("{}: {}", k, v.to_string_quoted())).join(", "))
             },
-            Value::Func(func) => match &func.name {
-                Some(name) => write!(f, "<func {}>", name),
-                None => write!(f, "<lambda func>"),
+            Value::Func(func) => match func {
+                Func::User{name, ..} => match name {
+                    Some(name) => write!(f, "<func {}>", name),
+                    None => write!(f, "<lambda func>"),
+                },
+                Func::Native {name, ..} => write!(f, "<native func {}>", name),
             },
         }
     }

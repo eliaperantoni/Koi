@@ -453,7 +453,7 @@ fn parses_while() {
 #[test]
 fn parses_fn() {
     assert_eq!(parse("fn foo \n( x , y , z ) \n {}"), vec![
-        Stmt::Func(Func {
+        Stmt::Func(Func::User {
             name: Some("foo".to_owned()),
             params: vec!["x".to_owned(), "y".to_owned(), "z".to_owned()],
             body: Box::new(Stmt::Block(vec![])),
@@ -464,7 +464,7 @@ fn parses_fn() {
 #[test]
 fn parses_fn_no_params() {
     assert_eq!(parse("fn foo \n() \n {}"), vec![
-        Stmt::Func(Func {
+        Stmt::Func(Func::User {
             name: Some("foo".to_owned()),
             params: vec![],
             body: Box::new(Stmt::Block(vec![])),
@@ -493,7 +493,7 @@ fn parses_lambda() {
         Stmt::Expr(Expr::Call {
             func: Box::new(Expr::Get("print".to_owned())),
             args: vec![
-                Expr::Lambda(Func {
+                Expr::Lambda(Func::User {
                     name: None,
                     params: vec![],
                     body: Box::new(Stmt::Block(vec![])),
