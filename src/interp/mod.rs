@@ -1,6 +1,9 @@
 use std::collections::HashMap;
 
 use crate::ast::Stmt;
+use std::ops::Deref;
+use std::fmt::{Display, Formatter};
+use itertools::Itertools;
 
 #[cfg(test)]
 mod test;
@@ -12,7 +15,7 @@ pub struct Func {
     pub body: Box<Stmt>,
 }
 
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, PartialEq)]
 pub enum Value {
     Nil,
     Num(f64),
@@ -25,19 +28,41 @@ pub enum Value {
     Func(Func),
 }
 
-impl PartialEq for Value {
-    fn eq(&self, other: &Self) -> bool {
-        match (self, other) {
-            (Value::Nil,Value:: Nil) => true,
+impl Display for Value {
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+        match self {
+            Value::Nil => write!(f, "nil"),
+            Value::Num(num) => write!(f, "{}", num),
+            Value::String(string) => write!(f, "{}", string),
+            Value::Bool(bool) => write!(f, "{}", bool),
+            Value::Vec(vec) => {
+                write!(f, "[{}]", vec.iter().map(|v| v.to_string_quoted()).join(", "))
+            },
+            Value::Dict(dict) => {
+                write!(f, "{{{}}}", dict.iter().map(|(k,v)| format!("{}: {}", k, v.to_string_quoted())).join(", "))
+            },
+            Value::Func(func) => match &func.name {
+                Some(name) => write!(f, "<func {}>", name),
+                None => write!(f, "<lambda func>"),
+            },
+        }
+    }
+}
 
-            (Value::Num(this), Value::Num(other)) => this == other,
-            (Value::String(this), Value::String(other)) => this == other,
-            (Value::Bool(this), Value::Bool(other)) => this == other,
+impl Value {
+    pub fn is_truthy(&self) -> bool {
+        match self {
+            Value::Nil => false,
+            Value::Bool(false) => false,
+            _ => true,
+        }
+    }
 
-            (Value::Vec(this), Value::Vec(other)) => this == other,
-            (Value::Dict(this), Value::Dict(other)) => this == other,
-
-            _ => false,
+    pub fn to_string_quoted(&self) -> String {
+        if !matches!(self, Value::String(..)) {
+            self.to_string()
+        } else {
+            format!("\'{}\'", self.to_string())
         }
     }
 }
