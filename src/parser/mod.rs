@@ -1,5 +1,5 @@
 use crate::lexer::Lexer;
-use crate::ast::Stmt;
+use crate::ast::{Stmt, Prog};
 use crate::token::{Token, TokenKind};
 
 mod expr;
@@ -23,7 +23,7 @@ impl Parser {
         }
     }
 
-    pub fn parse(&mut self) -> Vec<Stmt> {
+    pub fn parse(&mut self) -> Prog {
         self.parse_stmts()
     }
 

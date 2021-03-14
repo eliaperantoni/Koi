@@ -2,6 +2,8 @@ use std::collections::HashMap;
 
 use crate::interp::{Func, Value};
 
+pub type Prog = Vec<Stmt>;
+
 #[derive(Copy, Clone, Eq, PartialEq, Debug)]
 pub enum UnaryOp {
     Neg,

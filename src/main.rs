@@ -12,11 +12,22 @@ fn main() -> Result<(), Box<dyn Error>> {
 
     let lexer = lexer::new(source);
 
-    if false {
-        println!("{:?}", lexer.collect::<Vec<token::Token>>());
-    } else {
-        let mut parser = parser::Parser::new(lexer);
-        println!("{:?}", parser.parse());
+    match 3 {
+        1 => {
+            println!("{:?}", lexer.collect::<Vec<token::Token>>());
+        }
+        2 => {
+            let mut parser = parser::Parser::new(lexer);
+            println!("{:?}", parser.parse());
+        }
+        3 => {
+            let mut parser = parser::Parser::new(lexer);
+            let prog = parser.parse();
+
+            let mut interpreter = interp::Interpreter::new();
+            interpreter.run(prog);
+        }
+        _ => unreachable!()
     }
 
     Ok(())
