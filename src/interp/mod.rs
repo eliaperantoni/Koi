@@ -3,9 +3,11 @@ use std::fmt::{Display, Formatter};
 use std::io::Read;
 use std::process::{Child, ChildStderr, ChildStdin, ChildStdout, Command, ExitStatus, Stdio};
 use std::rc::Rc;
+use std::thread;
+use std::thread::JoinHandle;
 
 use itertools::Itertools;
-use os_pipe::{pipe, PipeWriter, PipeReader};
+use os_pipe::{pipe, PipeReader, PipeWriter};
 
 use crate::ast::{Cmd, CmdOp, Expr, Prog, Stmt};
 
@@ -20,6 +22,40 @@ enum Process {
         lhs: Box<Process>,
         rhs: Box<Process>,
     },
+    And {
+        lhs: Box<Process>,
+        t: JoinHandle<ExitStatus>,
+    },
+}
+
+enum Stream {
+    Inherit,
+    Null,
+    PipeReader(PipeReader),
+    PipeWriter(PipeWriter),
+}
+
+impl Clone for Stream {
+    fn clone(&self) -> Self {
+        match self {
+            Stream::Inherit => Stream::Inherit,
+            Stream::Null => Stream::Null,
+            Stream::PipeReader(r) => Stream::PipeReader(r.try_clone().unwrap()),
+            Stream::PipeWriter(w) => Stream::PipeWriter(w.try_clone().unwrap()),
+            _ => panic!("unexpected stream"),
+        }
+    }
+}
+
+impl Into<Stdio> for Stream {
+    fn into(self) -> Stdio {
+        match self {
+            Stream::Inherit => Stdio::inherit(),
+            Stream::Null => Stdio::null(),
+            Stream::PipeReader(pipe_reader) => pipe_reader.into(),
+            Stream::PipeWriter(pipe_writer) => pipe_writer.into(),
+        }
+    }
 }
 
 impl Process {
@@ -29,6 +65,9 @@ impl Process {
             Process::Pipe { lhs, rhs } => {
                 lhs.wait();
                 rhs.wait()
+            }
+            Process::And { lhs, t } => {
+                t.join().unwrap()
             }
             _ => todo!()
         }
@@ -49,20 +88,14 @@ impl Interpreter {
     fn run_stmt(&mut self, stmt: Stmt) {
         match stmt {
             Stmt::Cmd(cmd) => {
-                let mut cmd = self.run_cmd::<Stdio,Stdio,Stdio>(
-                    cmd,
-                    None,
-                    Some(Stdio::inherit()),
-                    Some(Stdio::inherit()),
-                );
+                let mut cmd = self.run_cmd(cmd, Stream::Null, Stream::Inherit, Stream::Inherit);
                 cmd.wait();
             }
             _ => todo!(),
         };
     }
 
-    fn run_cmd<T, U, V>(&mut self, cmd: Cmd, stdin: Option<T>, stdout: Option<U>, stderr: Option<V>) -> Process
-        where T: Into<Stdio>, U: Into<Stdio>, V: Into<Stdio> {
+    fn run_cmd(&mut self, cmd: Cmd, stdin: Stream, stdout: Stream, stderr: Stream) -> Process {
         match cmd {
             Cmd::Atom(segments) => {
                 let mut segments = segments.into_iter().map(
@@ -74,23 +107,9 @@ impl Interpreter {
                 let mut cmd = Command::new(segments.remove(0));
                 cmd.args(segments);
 
-                if let Some(stdin) = stdin {
-                    cmd.stdin(stdin);
-                } else {
-                    cmd.stdin(Stdio::null());
-                }
-
-                if let Some(stdout) = stdout {
-                    cmd.stdout(stdout);
-                } else {
-                    cmd.stdout(Stdio::null());
-                }
-
-                if let Some(stderr) = stderr {
-                    cmd.stderr(stderr);
-                } else {
-                    cmd.stderr(Stdio::null());
-                }
+                cmd.stdin(stdin);
+                cmd.stdout(stdout);
+                cmd.stderr(stderr);
 
                 let child = cmd.spawn().unwrap();
 
@@ -101,12 +120,34 @@ impl Interpreter {
             Cmd::Op(lhs, CmdOp::OutPipe, rhs) => {
                 let (r, w) = pipe().unwrap();
 
-                let lhs = self.run_cmd::<T, PipeWriter, V>(*lhs, stdin, Some(w), None);
-                let rhs = self.run_cmd::<PipeReader, U, V>(*rhs, Some(r), stdout, stderr);
+                let lhs = self.run_cmd(*lhs, stdin, Stream::PipeWriter(w), Stream::Null);
+                let rhs = self.run_cmd(*rhs, Stream::PipeReader(r), stdout, stderr);
 
                 Process::Pipe {
                     lhs: Box::new(lhs),
                     rhs: Box::new(rhs),
+                }
+            }
+            Cmd::Op(lhs, CmdOp::And, rhs) => {
+                let (in_1, in_2) = (stdin.clone(), stdin);
+                let (out_1, out_2) = (stdout.clone(), stdout);
+                let (err_1, err_2) = (stderr.clone(), stderr);
+
+                let mut lhs = self.run_cmd(*lhs, in_1, out_1, err_1);
+
+                let t = thread::spawn(|| {
+                    let exit_code = lhs.wait();
+                    if exit_code.success() {
+                        let mut rhs = self.run_cmd(*rhs, in_2, out_2, err_2);
+                        rhs.wait()
+                    } else {
+                        exit_code
+                    }
+                });
+
+                Process::And {
+                    lhs: Box::new(lhs),
+                    t,
                 }
             }
             _ => todo!()
