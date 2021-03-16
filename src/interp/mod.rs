@@ -31,7 +31,10 @@ impl Interpreter {
             Stmt::Expr(expr) => {
                 match expr {
                     Expr::Cmd(cmd) => self.run_cmd_pipe(cmd),
-                    _ => unreachable!() // Only commands can ever be parsed as expression statements
+                    Expr::Call {..} => todo!(),
+                    Expr::Set(..) => todo!(),
+                    Expr::SetField {..} => todo!(),
+                    _ => unreachable!()
                 }
             }
             _ => todo!(),
