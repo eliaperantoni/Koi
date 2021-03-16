@@ -554,11 +554,30 @@ it shouldn't be too hard.
 Howdy! Looks like the parser is 100% finished and working! I've written some tests and everything seems fine. If, While,
 For, Continue, Break and Return are done. But more importantly I've completed the commands.
 
-I had to rework the whole parser with an `is_multiline` instance variable that basically controls if newlines are consumed
-by `consume_whitespace`. This was necessary for a number of reasons, here's one: say you're interpolating in a command,
-we call `self.parse_expr(0)` but inside that newlines are consumed! Now we can set `is_multiline` to false to prevent that.
+I had to rework the whole parser with an `is_multiline` instance variable that basically controls if newlines are
+consumed by `consume_whitespace`. This was necessary for a number of reasons, here's one: say you're interpolating in a
+command, we call `self.parse_expr(0)` but inside that newlines are consumed! Now we can set `is_multiline` to false to
+prevent that.
 
-Also some minor additions: commands expressions are now allowed as statements, added a semicolon operator that works as a
-commands separator so you can run them in sequence, lambdas.
+Also some minor additions: commands expressions are now allowed as statements, added a semicolon operator that works as
+a commands separator so you can run them in sequence, lambdas.
 
 On to the interpreter now!
+
+## 16/03/2021
+
+Hey! It's been a while I know, but it feels good to be back. Damn you, exam session.
+
+I started working on the interpreter. I had to brush up my Rust book and review the ownership model, concurrency, etc..
+because I didn't remember those things very well :(  
+On a side note: how cool is the cover?
+
+![](https://images-na.ssl-images-amazon.com/images/I/81IruC7bMPL.jpg)
+
+I too want a little mascot for my language!
+
+Anyways, the part of the interpreter that handles commands is pretty much done as I'm writing. There's a couple of
+things left to do such as computing the outer product of the values, when part of a segment evaluates to an array.
+
+Thank god I found a nice little crate for creating pipes (https://docs.rs/os_pipe/0.9.2/os_pipe/) which made
+implementing the thing much easier.
