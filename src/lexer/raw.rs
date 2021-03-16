@@ -114,7 +114,6 @@ impl RawLexer {
             '*' => match self.char_at(1) {
                 Some('=') => (TokenKind::StarEqual, 2),
                 Some('>') => (TokenKind::StarGreat, 2),
-                Some('<') => (TokenKind::StarLess, 2),
                 Some('|') => (TokenKind::StarPipe, 2),
                 _ => (TokenKind::Star, 1),
             },
@@ -127,7 +126,6 @@ impl RawLexer {
             '&' => match self.char_at(1) {
                 Some('&') => (TokenKind::AmperAmper, 2),
                 Some('>') => (TokenKind::AmperGreat, 2),
-                Some('<') => (TokenKind::AmperLess, 2),
                 Some('|') => (TokenKind::AmperPipe, 2),
                 _ => panic!("unexpected character"),
             },

@@ -44,7 +44,6 @@ impl Clone for Stream {
             Stream::Null => Stream::Null,
             Stream::PipeReader(r) => Stream::PipeReader(r.try_clone().unwrap()),
             Stream::PipeWriter(w) => Stream::PipeWriter(w.try_clone().unwrap()),
-            _ => panic!("unexpected stream"),
         }
     }
 }
@@ -188,6 +187,9 @@ impl Interpreter {
                     procs: Some(Box::new((lhs, rhs))),
                     handle: None,
                 }
+            }
+            Cmd::Op(lhs, CmdOp::OutWrite, rhs) => {
+                todo!()
             }
             _ => todo!()
         }

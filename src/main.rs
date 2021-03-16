@@ -14,7 +14,7 @@ fn main() -> Result<(), Box<dyn Error>> {
 
     let lexer = lexer::new(source);
 
-    match 3 {
+    match 2 {
         1 => {
             println!("{:?}", lexer.collect::<Vec<token::Token>>());
         }

@@ -52,9 +52,7 @@ impl Parser {
                     TokenKind::StarGreat => CmdOp::ErrWrite,
                     TokenKind::AmperGreat => CmdOp::AllWrite,
 
-                    TokenKind::Less => CmdOp::OutRead,
-                    TokenKind::StarLess => CmdOp::ErrRead,
-                    TokenKind::AmperLess => CmdOp::AllRead,
+                    TokenKind::Less => CmdOp::Read,
 
                     _ => unreachable!()
                 },
@@ -123,7 +121,7 @@ fn binding_power(op: &TokenKind) -> Option<(u8, u8)> {
     use TokenKind::*;
     let bp = match op {
         Great | StarGreat | AmperGreat => (9, 10),
-        Less | StarLess | AmperLess => (9, 10),
+        Less => (9, 10),
 
         Pipe | StarPipe | AmperPipe => (7, 8),
 

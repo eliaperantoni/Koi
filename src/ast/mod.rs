@@ -117,9 +117,7 @@ pub enum CmdOp {
     ErrWrite,
     AllWrite,
 
-    OutRead,
-    ErrRead,
-    AllRead,
+    Read,
 }
 
 #[derive(Clone, Debug, PartialEq)]
