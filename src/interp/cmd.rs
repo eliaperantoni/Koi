@@ -6,9 +6,10 @@ use std::thread::JoinHandle;
 use either::Either;
 use os_pipe::{pipe, PipeReader, PipeWriter};
 
-use crate::ast::{Cmd, CmdOp};
+use crate::ast::{Cmd, CmdOp, Expr};
 
 use super::Interpreter;
+use std::io::Read;
 
 enum Process {
     Std(Either<Command, Child>),
@@ -118,22 +119,29 @@ impl Into<Stdio> for Stream {
 }
 
 impl Interpreter {
-    pub fn run_cmd(&mut self, cmd: Cmd) -> String {
+    pub fn run_cmd_pipe(&mut self, cmd: Cmd) {
         let mut cmd = self.build_cmd(cmd, Stream::Null, Stream::Inherit, Stream::Inherit);
         cmd.spawn();
         cmd.wait();
+    }
 
-        String::new()
+    pub fn run_cmd_capture(&mut self, cmd: Cmd) -> String {
+        let (mut r, w) = pipe().unwrap();
+
+        let mut cmd = self.build_cmd(cmd, Stream::Null, Stream::PipeWriter(w), Stream::Inherit);
+        cmd.spawn();
+        cmd.wait();
+
+        let mut out = String::new();
+        r.read_to_string(&mut out);
+
+        out
     }
 
     fn build_cmd(&mut self, cmd: Cmd, mut stdin: Stream, mut stdout: Stream, mut stderr: Stream) -> Process {
         match cmd {
             Cmd::Atom(segments) => {
-                let mut segments = segments.into_iter().map(
-                    |exprs| exprs.into_iter().map(
-                        |expr| self.eval(expr).to_string()
-                    ).collect::<Vec<String>>().concat()
-                ).collect::<Vec<String>>();
+                let mut segments = self.raster_segments(segments);
 
                 let mut cmd = Command::new(segments.remove(0));
                 cmd.args(segments);
@@ -208,17 +216,36 @@ impl Interpreter {
         }
     }
 
-    fn cmd_to_path(&mut self, cmd: Cmd) -> String {
-        if let Cmd::Atom(mut segments) = cmd {
-            if segments.len() != 1 {
-                panic!("expected 1 segment");
+    fn raster_segments(&mut self, segments: Vec<Vec<Expr>>) -> Vec<String> {
+        let mut out = Vec::new();
+
+        for segment in segments {
+            let mut tmp = String::new();
+
+            for expr in segment {
+                let val = self.eval(expr);
+                tmp.push_str(&val.to_string());
             }
 
-            segments.remove(0).into_iter().map(
-                |expr| self.eval(expr).to_string()
-            ).collect::<Vec<String>>().concat()
+            out.push(tmp);
+        }
+
+        out
+    }
+
+    fn cmd_to_path(&mut self, cmd: Cmd) -> String {
+        let segments = if let Cmd::Atom(segments) = cmd {
+            segments
         } else {
             panic!("expected atom command");
+        };
+
+        let mut segments = self.raster_segments(segments);
+
+        if segments.len() != 1 {
+            panic!("expected one segment");
         }
+
+        segments.remove(0)
     }
 }
