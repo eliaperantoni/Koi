@@ -26,7 +26,7 @@ impl Interpreter {
     fn run_stmt(&mut self, stmt: Stmt) {
         match stmt {
             Stmt::Cmd(cmd) => {
-                self.run_cmd(cmd);
+                self.run_cmd_pipe(cmd);
             }
             _ => todo!(),
         };
@@ -43,6 +43,7 @@ impl Interpreter {
                 let dict = dict.into_iter().map(|(key, expr)| (key, self.eval(expr))).collect::<HashMap<String, Value>>();
                 Value::Dict(dict)
             }
+            Expr::Cmd(cmd) => Value::String(self.run_cmd_capture(cmd)),
             _ => todo!()
         }
     }
