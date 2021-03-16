@@ -6,6 +6,7 @@ version = 3
 name = "ampere"
 version = "0.1.0"
 dependencies = [
+ "either",
  "itertools",
  "os_pipe",
 ]

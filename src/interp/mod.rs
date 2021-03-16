@@ -6,6 +6,7 @@ use std::rc::Rc;
 use std::thread;
 use std::thread::JoinHandle;
 
+use either::Either;
 use itertools::Itertools;
 use os_pipe::{pipe, PipeReader, PipeWriter};
 
@@ -17,15 +18,16 @@ mod test;
 pub struct Interpreter {}
 
 enum Process {
-    Std(Child),
+    Std(Either<Command, Child>),
     Pipe {
         lhs: Box<Process>,
         rhs: Box<Process>,
     },
-    And {
-        lhs: Box<Process>,
-        t: JoinHandle<ExitStatus>,
-    },
+    Cond {
+        op: CmdOp,
+        procs: Option<Box<(Process, Process)>>,
+        handle: Option<JoinHandle<ExitStatus>>,
+    }
 }
 
 enum Stream {
@@ -61,13 +63,61 @@ impl Into<Stdio> for Stream {
 impl Process {
     fn wait(&mut self) -> ExitStatus {
         match self {
-            Process::Std(child) => child.wait().unwrap(),
+            Process::Std(either) => {
+                match either {
+                    Either::Left(_) => panic!("process not spawned"),
+                    Either::Right(child) => child.wait().unwrap(),
+                }
+            },
             Process::Pipe { lhs, rhs } => {
                 lhs.wait();
                 rhs.wait()
             }
-            Process::And { lhs, t } => {
-                t.join().unwrap()
+            Process::Cond {handle , ..} => {
+                handle.take().unwrap().join().unwrap()
+            }
+            _ => todo!()
+        }
+    }
+
+    fn spawn(&mut self) {
+        match self {
+            Process::Std(either) => {
+                match either {
+                    Either::Left(cmd) => {
+                        let child = cmd.spawn().unwrap();
+                        *either = Either::Right(child);
+                    },
+                    Either::Right(_) => panic!("process already spawned"),
+                }
+            },
+            Process::Pipe { lhs, rhs } => {
+                lhs.spawn();
+                rhs.spawn();
+            }
+            Process::Cond {procs, handle, op} => {
+                let op = *op;
+                let (mut lhs, mut rhs) = *procs.take().unwrap();
+
+                lhs.spawn();
+
+                *handle = Some(thread::spawn(move || {
+                    let lhs_exit = lhs.wait();
+
+                    let spawn_rhs = match op {
+                        CmdOp::Seq => true,
+                        CmdOp::Or if !lhs_exit.success() => true,
+                        CmdOp::And if lhs_exit.success() => true,
+                        _ => false,
+                    };
+
+                    if spawn_rhs {
+                        rhs.spawn();
+                        rhs.wait()
+                    } else {
+                        lhs_exit
+                    }
+                }));
             }
             _ => todo!()
         }
@@ -89,6 +139,7 @@ impl Interpreter {
         match stmt {
             Stmt::Cmd(cmd) => {
                 let mut cmd = self.run_cmd(cmd, Stream::Null, Stream::Inherit, Stream::Inherit);
+                cmd.spawn();
                 cmd.wait();
             }
             _ => todo!(),
@@ -111,11 +162,7 @@ impl Interpreter {
                 cmd.stdout(stdout);
                 cmd.stderr(stderr);
 
-                let child = cmd.spawn().unwrap();
-
-                drop(cmd);
-
-                Process::Std(child)
+                Process::Std(Either::Left(cmd))
             }
             Cmd::Op(lhs, CmdOp::OutPipe, rhs) => {
                 let (r, w) = pipe().unwrap();
@@ -128,26 +175,18 @@ impl Interpreter {
                     rhs: Box::new(rhs),
                 }
             }
-            Cmd::Op(lhs, CmdOp::And, rhs) => {
+            Cmd::Op(lhs, op @ CmdOp::And | op @ CmdOp::Or | op @ CmdOp::Seq, rhs) => {
                 let (in_1, in_2) = (stdin.clone(), stdin);
                 let (out_1, out_2) = (stdout.clone(), stdout);
                 let (err_1, err_2) = (stderr.clone(), stderr);
 
                 let mut lhs = self.run_cmd(*lhs, in_1, out_1, err_1);
+                let mut rhs = self.run_cmd(*rhs, in_2, out_2, err_2);
 
-                let t = thread::spawn(|| {
-                    let exit_code = lhs.wait();
-                    if exit_code.success() {
-                        let mut rhs = self.run_cmd(*rhs, in_2, out_2, err_2);
-                        rhs.wait()
-                    } else {
-                        exit_code
-                    }
-                });
-
-                Process::And {
-                    lhs: Box::new(lhs),
-                    t,
+                Process::Cond {
+                    op,
+                    procs: Some(Box::new((lhs, rhs))),
+                    handle: None,
                 }
             }
             _ => todo!()

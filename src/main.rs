@@ -1,3 +1,5 @@
+#![feature(or_patterns)]
+
 use std::fs;
 use std::error::Error;
 
