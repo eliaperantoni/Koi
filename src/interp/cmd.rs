@@ -1,4 +1,5 @@
 use std::fs::File;
+use std::io::Read;
 use std::process::{Child, Command, ExitStatus, Stdio};
 use std::thread;
 use std::thread::JoinHandle;
@@ -9,7 +10,7 @@ use os_pipe::{pipe, PipeReader, PipeWriter};
 use crate::ast::{Cmd, CmdOp, Expr};
 
 use super::Interpreter;
-use std::io::Read;
+use super::Value;
 
 enum Process {
     Std(Either<Command, Child>),
@@ -220,14 +221,8 @@ impl Interpreter {
         let mut out = Vec::new();
 
         for segment in segments {
-            let mut tmp = String::new();
-
-            for expr in segment {
-                let val = self.eval(expr);
-                tmp.push_str(&val.to_string());
-            }
-
-            out.push(tmp);
+            let vals: Vec<Value> = segment.into_iter().map(|expr| self.eval(expr)).collect();
+            out.append(&mut cross_product(vals));
         }
 
         out
@@ -248,4 +243,36 @@ impl Interpreter {
 
         segments.remove(0)
     }
+}
+
+fn cross_product(mut vals: Vec<Value>) -> Vec<String> {
+    let mut out = vec![String::from("")];
+
+    vals.reverse();
+
+    for val in vals {
+        match val {
+            Value::Vec(prefixes) => {
+                let mut out_tmp = Vec::new();
+
+                for prefix in prefixes {
+                    let prefix = prefix.to_string();
+
+                    for s in &out {
+                        out_tmp.push(format!("{}{}", &prefix, s));
+                    }
+                }
+
+                out = out_tmp;
+            }
+            _ => {
+                let prefix = val.to_string();
+                for s in &mut out {
+                    s.insert_str(0, &prefix);
+                }
+            }
+        }
+    }
+
+    out
 }
