@@ -28,6 +28,12 @@ impl Interpreter {
             Stmt::Cmd(cmd) => {
                 self.run_cmd_pipe(cmd);
             }
+            Stmt::Expr(expr) => {
+                match expr {
+                    Expr::Cmd(cmd) => self.run_cmd_pipe(cmd),
+                    _ => unreachable!() // Only commands can ever be parsed as expression statements
+                }
+            }
             _ => todo!(),
         };
     }
