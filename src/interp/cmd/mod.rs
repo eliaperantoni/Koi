@@ -12,6 +12,9 @@ use crate::ast::{Cmd, CmdOp, Expr};
 use super::Interpreter;
 use super::Value;
 
+#[cfg(test)]
+mod test;
+
 enum Process {
     Std(Either<Command, Child>),
     Pipe {
