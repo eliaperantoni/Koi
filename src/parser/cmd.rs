@@ -1,6 +1,6 @@
 use crate::ast::{Cmd, CmdOp, Expr};
-use crate::token::{Token, TokenKind};
 use crate::interp::Value;
+use crate::token::{Token, TokenKind};
 
 use super::Parser;
 
@@ -51,6 +51,10 @@ impl Parser {
                     TokenKind::Great => CmdOp::OutWrite,
                     TokenKind::StarGreat => CmdOp::ErrWrite,
                     TokenKind::AmperGreat => CmdOp::AllWrite,
+
+                    TokenKind::GreatGreat => CmdOp::OutAppend,
+                    TokenKind::StarGreatGreat => CmdOp::ErrAppend,
+                    TokenKind::AmperGreatGreat => CmdOp::AllAppend,
 
                     TokenKind::Less => CmdOp::Read,
 
@@ -121,6 +125,7 @@ fn binding_power(op: &TokenKind) -> Option<(u8, u8)> {
     use TokenKind::*;
     let bp = match op {
         Great | StarGreat | AmperGreat => (9, 10),
+        GreatGreat | StarGreatGreat | AmperGreatGreat => (9, 10),
         Less => (9, 10),
 
         Pipe | StarPipe | AmperPipe => (7, 8),

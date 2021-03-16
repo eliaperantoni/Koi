@@ -81,14 +81,13 @@ impl RawLexer {
             }
 
             // Chars that may only appear by themselves or followed by an equals sign
-            '!' | '=' | '/' | '^' | '%' | '>' | '<' => {
+            '!' | '=' | '/' | '^' | '%' | '<' => {
                 let (kind, equal_kind) = match self.char_at(0).unwrap() {
                     '!' => (TokenKind::Bang, TokenKind::BangEqual),
                     '=' => (TokenKind::Equal, TokenKind::EqualEqual),
                     '/' => (TokenKind::Slash, TokenKind::SlashEqual),
                     '^' => (TokenKind::Caret, TokenKind::CaretEqual),
                     '%' => (TokenKind::Perc, TokenKind::PercEqual),
-                    '>' => (TokenKind::Great, TokenKind::GreatEqual),
                     '<' => (TokenKind::Less, TokenKind::LessEqual),
                     _ => unreachable!(),
                 };
@@ -97,6 +96,14 @@ impl RawLexer {
                     (equal_kind, 2)
                 } else {
                     (kind, 1)
+                }
+            }
+
+            '>' => {
+                match self.char_at(1) {
+                    Some('>') => (TokenKind::GreatGreat, 2),
+                    Some('=') => (TokenKind::GreatEqual, 2),
+                    _ => (TokenKind::Great, 1)
                 }
             }
 
@@ -113,7 +120,10 @@ impl RawLexer {
 
             '*' => match self.char_at(1) {
                 Some('=') => (TokenKind::StarEqual, 2),
-                Some('>') => (TokenKind::StarGreat, 2),
+                Some('>') => match self.char_at(2) {
+                    Some('>') => (TokenKind::StarGreatGreat, 3),
+                    _ => (TokenKind::StarGreat, 2)
+                },
                 Some('|') => (TokenKind::StarPipe, 2),
                 _ => (TokenKind::Star, 1),
             },
@@ -125,7 +135,10 @@ impl RawLexer {
 
             '&' => match self.char_at(1) {
                 Some('&') => (TokenKind::AmperAmper, 2),
-                Some('>') => (TokenKind::AmperGreat, 2),
+                Some('>') => match self.char_at(2) {
+                    Some('>') => (TokenKind::AmperGreatGreat, 3),
+                    _ => (TokenKind::AmperGreat, 2),
+                },
                 Some('|') => (TokenKind::AmperPipe, 2),
                 _ => panic!("unexpected character"),
             },
