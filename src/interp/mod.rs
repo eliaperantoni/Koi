@@ -5,12 +5,14 @@ use std::process::{Child, ChildStderr, ChildStdin, ChildStdout, Command, ExitSta
 use std::rc::Rc;
 use std::thread;
 use std::thread::JoinHandle;
+use std::fs::File;
 
 use either::Either;
 use itertools::Itertools;
 use os_pipe::{pipe, PipeReader, PipeWriter};
 
 use crate::ast::{Cmd, CmdOp, Expr, Prog, Stmt};
+use std::panic::panic_any;
 
 #[cfg(test)]
 mod test;
@@ -33,6 +35,7 @@ enum Process {
 enum Stream {
     Inherit,
     Null,
+    File(File),
     PipeReader(PipeReader),
     PipeWriter(PipeWriter),
 }
@@ -42,6 +45,7 @@ impl Clone for Stream {
         match self {
             Stream::Inherit => Stream::Inherit,
             Stream::Null => Stream::Null,
+            Stream::File(_) => panic!("clone file"),
             Stream::PipeReader(r) => Stream::PipeReader(r.try_clone().unwrap()),
             Stream::PipeWriter(w) => Stream::PipeWriter(w.try_clone().unwrap()),
         }
@@ -53,6 +57,7 @@ impl Into<Stdio> for Stream {
         match self {
             Stream::Inherit => Stdio::inherit(),
             Stream::Null => Stdio::null(),
+            Stream::File(file) => Stdio::from(file),
             Stream::PipeReader(pipe_reader) => pipe_reader.into(),
             Stream::PipeWriter(pipe_writer) => pipe_writer.into(),
         }
@@ -189,9 +194,22 @@ impl Interpreter {
                 }
             }
             Cmd::Op(lhs, CmdOp::OutWrite, rhs) => {
-                todo!()
+                let path = self.cmd_to_path(*rhs);
+                let file = File::with_options().create(true).write(true).open(path).unwrap();
+
+                self.run_cmd(*lhs, stdin, Stream::File(file), stderr)
             }
             _ => todo!()
+        }
+    }
+
+    fn cmd_to_path(&mut self, cmd: Cmd) -> String {
+        if let Cmd::Atom(mut segments) = cmd {
+            segments.remove(0).into_iter().map(
+                |expr| self.eval(expr).to_string()
+            ).collect::<Vec<String>>().concat()
+        } else {
+            panic!("expected atom command");
         }
     }
 

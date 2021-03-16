@@ -82,6 +82,10 @@ pub enum TokenKind {
     StarGreat,
     AmperGreat,
 
+    GreatGreat,
+    StarGreatGreat,
+    AmperGreatGreat,
+
     Semicolon,
 
     // ... until here

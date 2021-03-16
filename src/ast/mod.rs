@@ -117,6 +117,10 @@ pub enum CmdOp {
     ErrWrite,
     AllWrite,
 
+    OutAppend,
+    ErrAppend,
+    AllAppend,
+
     Read,
 }
 
