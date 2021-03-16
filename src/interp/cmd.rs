@@ -39,7 +39,6 @@ impl Process {
             Process::Cond { handle, .. } => {
                 handle.take().unwrap().join().unwrap()
             }
-            _ => todo!()
         }
     }
 
@@ -82,7 +81,6 @@ impl Process {
                     }
                 }));
             }
-            _ => todo!()
         }
     }
 }
@@ -169,8 +167,8 @@ impl Interpreter {
                 let (out_1, out_2) = (stdout.clone(), stdout);
                 let (err_1, err_2) = (stderr.clone(), stderr);
 
-                let mut lhs = self.build_cmd(*lhs, in_1, out_1, err_1);
-                let mut rhs = self.build_cmd(*rhs, in_2, out_2, err_2);
+                let lhs = self.build_cmd(*lhs, in_1, out_1, err_1);
+                let rhs = self.build_cmd(*rhs, in_2, out_2, err_2);
 
                 Process::Cond {
                     op,
