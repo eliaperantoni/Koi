@@ -128,7 +128,7 @@ impl Interpreter {
         String::new()
     }
 
-    fn build_cmd(&mut self, cmd: Cmd, stdin: Stream, stdout: Stream, stderr: Stream) -> Process {
+    fn build_cmd(&mut self, cmd: Cmd, mut stdin: Stream, mut stdout: Stream, mut stderr: Stream) -> Process {
         match cmd {
             Cmd::Atom(segments) => {
                 let mut segments = segments.into_iter().map(
@@ -146,10 +146,17 @@ impl Interpreter {
 
                 Process::Std(Either::Left(cmd))
             }
-            Cmd::Op(lhs, CmdOp::OutPipe, rhs) => {
+            Cmd::Op(lhs, op, rhs) if [CmdOp::OutPipe, CmdOp::ErrPipe, CmdOp::AllPipe].contains(&op) => {
                 let (r, w) = pipe().unwrap();
 
-                let lhs = self.build_cmd(*lhs, stdin, Stream::PipeWriter(w), Stream::Null);
+                let (out, err) = match op {
+                    CmdOp::OutPipe => (Stream::PipeWriter(w), Stream::Null),
+                    CmdOp::ErrPipe => (Stream::Null, Stream::PipeWriter(w)),
+                    CmdOp::AllPipe => (Stream::PipeWriter(w.try_clone().unwrap()), Stream::PipeWriter(w)),
+                    _ => unreachable!()
+                };
+
+                let lhs = self.build_cmd(*lhs, stdin, out, err);
                 let rhs = self.build_cmd(*rhs, Stream::PipeReader(r), stdout, stderr);
 
                 Process::Pipe {
@@ -157,7 +164,7 @@ impl Interpreter {
                     rhs: Box::new(rhs),
                 }
             }
-            Cmd::Op(lhs, op @ CmdOp::And | op @ CmdOp::Or | op @ CmdOp::Seq, rhs) => {
+            Cmd::Op(lhs, op, rhs) if [CmdOp::And, CmdOp::Or, CmdOp::Seq].contains(&op) => {
                 let (in_1, in_2) = (stdin.clone(), stdin);
                 let (out_1, out_2) = (stdout.clone(), stdout);
                 let (err_1, err_2) = (stderr.clone(), stderr);
@@ -171,18 +178,44 @@ impl Interpreter {
                     handle: None,
                 }
             }
-            Cmd::Op(lhs, CmdOp::OutWrite, rhs) => {
+            Cmd::Op(lhs, op, rhs) if [CmdOp::OutWrite, CmdOp::ErrWrite, CmdOp::AllWrite, CmdOp::OutAppend, CmdOp::ErrAppend, CmdOp::AllAppend, CmdOp::Read].contains(&op) => {
                 let path = self.cmd_to_path(*rhs);
-                let file = File::with_options().create(true).write(true).open(path).unwrap();
 
-                self.build_cmd(*lhs, stdin, Stream::File(file), stderr)
+                let mut file = File::with_options();
+
+                let file = match op {
+                    CmdOp::OutWrite | CmdOp::ErrWrite | CmdOp::AllWrite => file.create(true).write(true).truncate(true),
+                    CmdOp::OutAppend | CmdOp::ErrAppend | CmdOp::AllAppend => file.create(true).append(true),
+                    CmdOp::Read => file.read(true),
+                    _ => unreachable!(),
+                };
+
+                let file = file.open(&path).unwrap();
+
+                match op {
+                    CmdOp::Read => stdin = Stream::File(file),
+                    CmdOp::OutWrite | CmdOp::OutAppend => stdout = Stream::File(file),
+                    CmdOp::ErrWrite | CmdOp::ErrAppend => stderr = Stream::File(file),
+                    CmdOp::AllWrite | CmdOp::AllAppend => {
+                        let file_cloned = file.try_clone().unwrap();
+                        stdout = Stream::File(file);
+                        stderr = Stream::File(file_cloned);
+                    }
+                    _ => unreachable!()
+                }
+
+                self.build_cmd(*lhs, stdin, stdout, stderr)
             }
-            _ => todo!()
+            _ => unreachable!()
         }
     }
 
     fn cmd_to_path(&mut self, cmd: Cmd) -> String {
         if let Cmd::Atom(mut segments) = cmd {
+            if segments.len() != 1 {
+                panic!("expected 1 segment");
+            }
+
             segments.remove(0).into_iter().map(
                 |expr| self.eval(expr).to_string()
             ).collect::<Vec<String>>().concat()
