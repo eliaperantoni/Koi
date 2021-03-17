@@ -7,6 +7,7 @@ use itertools::Itertools;
 use crate::ast::{BinaryOp, Expr, Prog, Stmt, UnaryOp};
 use crate::ast::Expr::Interp;
 use crate::interp::stack::Stack;
+use std::panic::panic_any;
 
 mod cmd;
 
@@ -181,7 +182,7 @@ impl Interpreter {
                 match (self.eval(*lhs), self.eval(*rhs)) {
                     (Value::Num(lhs), Value::Num(rhs)) => Value::Num(lhs + rhs),
                     (Value::String(lhs), Value::String(rhs)) => Value::String(lhs + &rhs),
-                    _ => panic!("invalid operand types for op {:?}", BinaryOp::Sum),
+                    _ => panic!("invalid operands types for op {:?}", BinaryOp::Sum),
                 }
             }
             Expr::Binary(lhs, op, rhs) if [
@@ -190,7 +191,7 @@ impl Interpreter {
             ].contains(&op) => {
                 let (lhs, rhs) = match (self.eval(*lhs), self.eval(*rhs)) {
                     (Value::Num(lhs), Value::Num(rhs)) => (lhs, rhs),
-                    _ => panic!("invalid operand types for op {:?}", op),
+                    _ => panic!("invalid operands types for op {:?}", op),
                 };
 
                 match op {
@@ -222,6 +223,22 @@ impl Interpreter {
             }
             Expr::Binary(lhs, BinaryOp::Equal, rhs) => Value::Bool(self.eval(*lhs) == self.eval(*rhs)),
             Expr::Unary(UnaryOp::Not, expr) => Value::Bool(!self.eval(*expr).is_truthy()),
+            Expr::Unary(UnaryOp::Neg, expr) => {
+                let num = if let Value::Num(num) = self.eval(*expr) {
+                    num
+                } else {
+                    panic!("invalid operand type for op {:?}", UnaryOp::Neg);
+                };
+
+                Value::Num(-num)
+            }
+            Expr::Comma(mut exprs) => {
+                let last = exprs.remove(exprs.len() - 1);
+                for expr in exprs {
+                    self.eval(expr);
+                }
+                self.eval(last)
+            }
             _ => todo!()
         }
     }

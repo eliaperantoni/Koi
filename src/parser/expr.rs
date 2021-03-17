@@ -1,7 +1,7 @@
 use std::collections::HashMap;
 
-use crate::interp::{Value};
 use crate::ast::{BinaryOp, Expr, UnaryOp};
+use crate::interp::Value;
 use crate::token::{Token, TokenKind};
 
 use super::Parser;
@@ -84,7 +84,7 @@ impl Parser {
                     l: Box::new(lhs),
                     r: Box::new(rhs),
                     inclusive,
-                }
+                };
             }
 
             let op = &self.lexer.peek().unwrap().kind;
@@ -288,8 +288,31 @@ impl Parser {
 
 fn make_postfix_expr(lhs: Expr, op: &TokenKind) -> Expr {
     match *op {
-        TokenKind::PlusPlus => Expr::Unary(UnaryOp::PostInc, Box::new(lhs)),
-        TokenKind::MinusMinus => Expr::Unary(UnaryOp::PostDec, Box::new(lhs)),
+        TokenKind::PlusPlus | TokenKind::MinusMinus => {
+            let getter = Box::new(lhs.clone());
+
+            let op = match *op {
+                TokenKind::PlusPlus => BinaryOp::Sum,
+                TokenKind::MinusMinus => BinaryOp::Sub,
+                _ => unreachable!(),
+            };
+
+            let reverser_op = match op {
+                BinaryOp::Sum => BinaryOp::Sub,
+                BinaryOp::Sub => BinaryOp::Sum,
+                _ => unreachable!(),
+            };
+
+            let inc = Box::new(Expr::Binary(Box::new(lhs.clone()), op, Box::new(Expr::Literal(Value::Num(1.0)))));
+
+            let assigner = match lhs {
+                Expr::Get(name) => Expr::Set(name, inc),
+                Expr::GetField { base, index } => Expr::SetField { base, index, value: inc },
+                _ => panic!("bad target")
+            };
+
+            Expr::Comma(vec![assigner, Expr::Binary(getter, reverser_op, Box::new(Expr::Literal(Value::Num(1.0))))])
+        }
         _ => unreachable!()
     }
 }
@@ -300,8 +323,21 @@ fn make_prefix_expr(op: &TokenKind, rhs: Expr) -> Expr {
         TokenKind::Minus => Expr::Unary(UnaryOp::Neg, Box::new(rhs)),
         TokenKind::Bang => Expr::Unary(UnaryOp::Not, Box::new(rhs)),
 
-        TokenKind::PlusPlus => Expr::Unary(UnaryOp::PreInc, Box::new(rhs)),
-        TokenKind::MinusMinus => Expr::Unary(UnaryOp::PreDec, Box::new(rhs)),
+        TokenKind::PlusPlus | TokenKind::MinusMinus => {
+            let op = match *op {
+                TokenKind::PlusPlus => BinaryOp::Sum,
+                TokenKind::MinusMinus => BinaryOp::Sub,
+                _ => unreachable!(),
+            };
+
+            let inc = Box::new(Expr::Binary(Box::new(rhs.clone()), op, Box::new(Expr::Literal(Value::Num(1.0)))));
+
+            match rhs {
+                Expr::Get(name) => Expr::Set(name, inc),
+                Expr::GetField { base, index } => Expr::SetField { base, index, value: inc },
+                _ => panic!("bad target")
+            }
+        }
 
         _ => unreachable!()
     }

@@ -8,12 +8,6 @@ pub type Prog = Vec<Stmt>;
 pub enum UnaryOp {
     Neg,
     Not,
-
-    PreDec,
-    PreInc,
-
-    PostDec,
-    PostInc,
 }
 
 #[derive(Copy, Clone, Eq, PartialEq, Debug)]
@@ -76,6 +70,8 @@ pub enum Expr {
     Cmd(Cmd),
 
     Lambda(Func),
+
+    Comma(Vec<Expr>),
 }
 
 #[derive(Clone, Debug, PartialEq)]
