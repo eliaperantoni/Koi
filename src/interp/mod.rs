@@ -106,6 +106,24 @@ impl Interpreter {
                 }
                 self.stack.pop();
             }
+            Stmt::For {lvar,rvar,iterated,each_do} => {
+                let iterated = self.eval(iterated);
+
+                match iterated {
+                    Value::Range(l, r) => {
+                        assert!(rvar.is_none(), "for loop with range does not need a second variable");
+
+                        self.stack.push();
+                        self.stack.set(lvar.clone(), Value::Num(l as f64));
+                        for i in l..r {
+                            self.stack.update(&lvar, Value::Num(i as f64));
+                            self.run_stmt(*each_do.clone());
+                        }
+                        self.stack.pop();
+                    },
+                    _ => todo!()
+                }
+            }
             _ => todo!(),
         };
     }
@@ -139,6 +157,18 @@ impl Interpreter {
                 }
 
                 Value::String(out)
+            }
+            Expr::Range {l,r,inclusive} => {
+                let l = self.eval(*l);
+                let r = self.eval(*r);
+
+                match (l, r) {
+                    // The x.trunc() == x part is to check that the numbers are integers
+                    (Value::Num(l), Value::Num(r)) if l.trunc() == l && r.trunc() == r => {
+                        Value::Range(l as i32, r as i32 + if inclusive {1} else {0})
+                    },
+                    _ => panic!("range must evaluate to integers")
+                }
             }
             _ => todo!()
         }
