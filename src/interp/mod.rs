@@ -177,8 +177,15 @@ impl Interpreter {
                     _ => panic!("range must evaluate to integers")
                 }
             }
+            Expr::Binary(lhs, BinaryOp::Sum, rhs) => {
+                match (self.eval(*lhs), self.eval(*rhs)) {
+                    (Value::Num(lhs), Value::Num(rhs)) => Value::Num(lhs + rhs),
+                    (Value::String(lhs), Value::String(rhs)) => Value::String(lhs + &rhs),
+                    _ => panic!("invalid operand types for op {:?}", BinaryOp::Sum),
+                }
+            }
             Expr::Binary(lhs, op, rhs) if [
-                BinaryOp::Sum, BinaryOp::Sub, BinaryOp::Mul, BinaryOp::Div,
+                BinaryOp::Sub, BinaryOp::Mul, BinaryOp::Div,
                 BinaryOp::Mod, BinaryOp::Pow, BinaryOp::Less, BinaryOp::Great
             ].contains(&op) => {
                 let (lhs, rhs) = match (self.eval(*lhs), self.eval(*rhs)) {
@@ -187,7 +194,6 @@ impl Interpreter {
                 };
 
                 match op {
-                    BinaryOp::Sum => Value::Num(lhs + rhs),
                     BinaryOp::Sub => Value::Num(lhs - rhs),
                     BinaryOp::Mul => Value::Num(lhs * rhs),
                     BinaryOp::Div => Value::Num(lhs / rhs),
