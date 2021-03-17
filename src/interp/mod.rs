@@ -4,20 +4,23 @@ use std::fmt::{Display, Formatter};
 use itertools::Itertools;
 
 use crate::ast::{Expr, Prog, Stmt};
+use crate::interp::stack::Stack;
 
 mod cmd;
+
+mod stack;
 
 #[cfg(test)]
 mod test;
 
 pub struct Interpreter {
-    globals: HashMap<String, Value>
+    stack: Stack,
 }
 
 impl Interpreter {
     pub fn new() -> Interpreter {
         let mut interpreter = Interpreter {
-            globals: HashMap::new(),
+            stack: Stack::new(),
         };
         interpreter.init_native_funcs();
         interpreter
@@ -30,7 +33,7 @@ impl Interpreter {
     }
 
     fn init_native_funcs(&mut self) {
-        self.globals.insert("print".to_string(), Value::Func(Func::Native {
+        self.stack.globals().insert("print".to_string(), Value::Func(Func::Native {
             name: "print".to_string(),
             func: |args: Vec<Value>| -> Value {
                 for val in args {
@@ -46,33 +49,40 @@ impl Interpreter {
             Stmt::Cmd(cmd) => {
                 self.run_cmd_pipe(cmd);
             }
-            Stmt::Let {name, init, ..} => {
+            Stmt::Let { name, init, .. } => {
                 let val = match init {
                     Some(expr) => self.eval(expr),
                     _ => Value::Nil,
                 };
 
-                self.globals.insert(name, val);
+                self.stack.globals().insert(name, val);
             }
             Stmt::Expr(expr) => {
                 match expr {
                     Expr::Cmd(cmd) => self.run_cmd_pipe(cmd),
-                    Expr::Call {func, args} => {
+                    Expr::Call { func, args } => {
                         let func = self.eval(*func);
 
                         let args = args.into_iter().map(|expr| self.eval(expr)).collect();
 
                         match func {
-                            Value::Func(Func::Native {func, ..}) => {
+                            Value::Func(Func::Native { func, .. }) => {
                                 func(args);
                             }
                             _ => panic!("attempt to call non-function")
                         }
-                    },
+                    }
                     Expr::Set(..) => todo!(),
-                    Expr::SetField {..} => todo!(),
+                    Expr::SetField { .. } => todo!(),
                     _ => unreachable!()
                 }
+            }
+            Stmt::Block(stmts) => {
+                self.stack.push();
+                for stmt in stmts {
+                    self.run_stmt(stmt);
+                }
+                self.stack.pop();
             }
             _ => todo!(),
         };
@@ -90,9 +100,7 @@ impl Interpreter {
                 Value::Dict(dict)
             }
             Expr::Cmd(cmd) => Value::String(self.run_cmd_capture(cmd)),
-            Expr::Get(name) => {
-                self.globals.get(&name).cloned().unwrap_or(Value::Nil)
-            }
+            Expr::Get(name) => self.stack.lookup(&name),
             _ => todo!()
         }
     }

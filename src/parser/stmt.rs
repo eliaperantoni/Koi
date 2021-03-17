@@ -7,6 +7,8 @@ use super::Parser;
 impl Parser {
     pub fn parse_stmt(&mut self) -> Stmt {
         match self.lexer.peek() {
+            Some(Token {kind: TokenKind::LeftBrace, ..}) => self.parse_block(),
+
             Some(Token {kind: TokenKind::Let, ..}) |
             Some(Token {kind: TokenKind::Exp, ..}) => self.parse_let_stmt(),
 
