@@ -214,9 +214,7 @@ impl Interpreter {
                     self.eval(*rhs)
                 }
             }
-            Expr::Binary(lhs, BinaryOp::Equal, rhs) => {
-                todo!()
-            }
+            Expr::Binary(lhs, BinaryOp::Equal, rhs) => Value::Bool(self.eval(*lhs) == self.eval(*rhs)),
             _ => todo!()
         }
     }
