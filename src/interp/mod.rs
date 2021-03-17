@@ -91,7 +91,10 @@ impl Interpreter {
                             _ => panic!("attempt to call non-function")
                         }
                     }
-                    Expr::Set(..) => todo!(),
+                    Expr::Set(name, expr) => {
+                        let new_value = self.eval(*expr);
+                        self.stack.update(&name, new_value);
+                    },
                     Expr::SetField { .. } => todo!(),
                     _ => unreachable!()
                 }
@@ -119,7 +122,7 @@ impl Interpreter {
                 Value::Dict(dict)
             }
             Expr::Cmd(cmd) => Value::String(self.run_cmd_capture(cmd)),
-            Expr::Get(name) => self.stack.lookup(&name),
+            Expr::Get(name) => self.stack.get(&name),
             _ => todo!()
         }
     }
