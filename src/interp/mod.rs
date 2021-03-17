@@ -61,7 +61,12 @@ impl Interpreter {
     fn run_stmt(&mut self, stmt: Stmt) {
         match stmt {
             Stmt::Cmd(cmd) => {
-                self.run_cmd_pipe(cmd);
+                if self.collector.is_some() {
+                    let output = self.run_cmd_capture(cmd);
+                    self.collector.as_mut().unwrap().push_str(&output);
+                } else {
+                    self.run_cmd_pipe(cmd);
+                }
             }
             Stmt::Let { name, init, .. } => {
                 let val = match init {

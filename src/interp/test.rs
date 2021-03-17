@@ -68,3 +68,8 @@ fn global_variables() {
 fn scopes() {
     assert_eq!(output("let name = 'ampere' print(name) {let name = 'thomas the dank engine' print(name)} print(name)"), "ampere\nthomas the dank engine\nampere\n".to_string());
 }
+
+#[test]
+fn basic_output() {
+    assert_eq!(output("echo xyz > /tmp/ampere ; cat /tmp/ampere"), "xyz\n".to_string());
+}
