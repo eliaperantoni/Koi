@@ -4,7 +4,7 @@ use std::fmt::{Debug, Display, Formatter};
 
 use itertools::Itertools;
 
-use crate::ast::{Expr, Prog, Stmt};
+use crate::ast::{BinaryOp, Expr, Prog, Stmt};
 use crate::ast::Expr::Interp;
 use crate::interp::stack::Stack;
 
@@ -94,7 +94,7 @@ impl Interpreter {
                     Expr::Set(name, expr) => {
                         let new_value = self.eval(*expr);
                         self.stack.update(&name, new_value);
-                    },
+                    }
                     Expr::SetField { .. } => todo!(),
                     _ => unreachable!()
                 }
@@ -106,7 +106,7 @@ impl Interpreter {
                 }
                 self.stack.pop();
             }
-            Stmt::For {lvar,rvar,iterated,each_do} => {
+            Stmt::For { lvar, rvar, iterated, each_do } => {
                 let iterated = self.eval(iterated);
 
                 match iterated {
@@ -120,9 +120,16 @@ impl Interpreter {
                             self.run_stmt(*each_do.clone());
                         }
                         self.stack.pop();
-                    },
+                    }
                     _ => todo!()
                 }
+            }
+            Stmt::While { cond, then_do } => {
+                self.stack.push();
+                while self.eval(cond.clone()).is_truthy() {
+                    self.run_stmt(*then_do.clone());
+                }
+                self.stack.pop();
             }
             _ => todo!(),
         };
@@ -145,7 +152,7 @@ impl Interpreter {
                 let new_value = self.eval(*expr);
                 self.stack.update(&name, new_value)
             }
-            Expr::Interp {mut strings, exprs} => {
+            Expr::Interp { mut strings, exprs } => {
                 let mut out = String::new();
 
                 out += &strings.remove(0);
@@ -158,17 +165,57 @@ impl Interpreter {
 
                 Value::String(out)
             }
-            Expr::Range {l,r,inclusive} => {
+            Expr::Range { l, r, inclusive } => {
                 let l = self.eval(*l);
                 let r = self.eval(*r);
 
                 match (l, r) {
                     // The x.trunc() == x part is to check that the numbers are integers
                     (Value::Num(l), Value::Num(r)) if l.trunc() == l && r.trunc() == r => {
-                        Value::Range(l as i32, r as i32 + if inclusive {1} else {0})
-                    },
+                        Value::Range(l as i32, r as i32 + if inclusive { 1 } else { 0 })
+                    }
                     _ => panic!("range must evaluate to integers")
                 }
+            }
+            Expr::Binary(lhs, op, rhs) if [
+                BinaryOp::Sum, BinaryOp::Sub, BinaryOp::Mul, BinaryOp::Div,
+                BinaryOp::Mod, BinaryOp::Pow, BinaryOp::Less, BinaryOp::Great
+            ].contains(&op) => {
+                let (lhs, rhs) = match (self.eval(*lhs), self.eval(*rhs)) {
+                    (Value::Num(lhs), Value::Num(rhs)) => (lhs, rhs),
+                    _ => panic!("invalid operand types for op {:?}", op),
+                };
+
+                match op {
+                    BinaryOp::Sum => Value::Num(lhs + rhs),
+                    BinaryOp::Sub => Value::Num(lhs - rhs),
+                    BinaryOp::Mul => Value::Num(lhs * rhs),
+                    BinaryOp::Div => Value::Num(lhs / rhs),
+                    BinaryOp::Mod => Value::Num(lhs % rhs),
+                    BinaryOp::Pow => Value::Num(lhs.powf(rhs)),
+                    BinaryOp::Less => Value::Bool(lhs < rhs),
+                    BinaryOp::Great => Value::Bool(lhs > rhs),
+                    _ => unreachable!(),
+                }
+            }
+            Expr::Binary(lhs, BinaryOp::And, rhs) => {
+                let lhs = self.eval(*lhs);
+                if lhs.is_truthy() {
+                    self.eval(*rhs)
+                } else {
+                    lhs
+                }
+            }
+            Expr::Binary(lhs, BinaryOp::Or, rhs) => {
+                let lhs = self.eval(*lhs);
+                if lhs.is_truthy() {
+                    lhs
+                } else {
+                    self.eval(*rhs)
+                }
+            }
+            Expr::Binary(lhs, BinaryOp::Equal, rhs) => {
+                todo!()
             }
             _ => todo!()
         }
