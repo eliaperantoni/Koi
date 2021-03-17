@@ -528,3 +528,50 @@ fn parses_block() {
         ])
     ]);
 }
+
+#[test]
+fn parses_range() {
+    assert_eq!(parse_expression("0..5"), Expr::Range {
+        l: Box::new(Expr::Literal(Value::Num(0.0))),
+        r: Box::new(Expr::Literal(Value::Num(5.0))),
+        inclusive: false,
+    });
+}
+
+#[test]
+fn parses_range_inclusive() {
+    assert_eq!(parse_expression("0..=5"), Expr::Range {
+        l: Box::new(Expr::Literal(Value::Num(0.0))),
+        r: Box::new(Expr::Literal(Value::Num(5.0))),
+        inclusive: true,
+    });
+}
+
+#[test]
+fn parses_range_complex_exprs() {
+    assert_eq!(parse_expression("v.len()..=[1,2,3].len()+1"), Expr::Range {
+        l: Box::new(Expr::Call {
+            func: Box::new(Expr::GetField {
+                base: Box::new(Expr::Get("v".to_string())),
+                index: Box::new(Expr::Literal(Value::String("len".to_string()))),
+            }),
+            args: vec![],
+        }),
+        r: Box::new(Expr::Binary(
+            Box::new(Expr::Call {
+                func: Box::new(Expr::GetField {
+                    base: Box::new(Expr::Vec(vec![
+                        Expr::Literal(Value::Num(1.0)),
+                        Expr::Literal(Value::Num(2.0)),
+                        Expr::Literal(Value::Num(3.0)),
+                    ])),
+                    index: Box::new(Expr::Literal(Value::String("len".to_string()))),
+                }),
+                args: vec![],
+            }),
+            BinaryOp::Sum,
+            Box::new(Expr::Literal(Value::Num(1.0))),
+        )),
+        inclusive: true,
+    });
+}
