@@ -127,6 +127,19 @@ impl Interpreter {
                 let new_value = self.eval(*expr);
                 self.stack.update(&name, new_value)
             }
+            Expr::Interp {mut strings, exprs} => {
+                let mut out = String::new();
+
+                out += &strings.remove(0);
+
+                for expr in exprs {
+                    let str = self.eval(expr).to_string();
+                    out += &str;
+                    out += &strings.remove(0);
+                }
+
+                Value::String(out)
+            }
             _ => todo!()
         }
     }

@@ -83,3 +83,10 @@ fn assignment() {
 fn assignment_expr() {
     assert_eq!(output("let x print(x = \"xyz\")"), "xyz\n".to_string());
 }
+
+#[test]
+fn interp() {
+    assert_eq!(output("let name = \"ampere\" print(\"x{name}x\")"), "xamperex\n".to_string());
+    assert_eq!(output("let name = \"ampere\" print(\"{name}\")"), "ampere\n".to_string());
+    assert_eq!(output("let name = \"ampere\" print(\"X{name}Y{name}Z\")"), "XampereYampereZ\n".to_string());
+}
