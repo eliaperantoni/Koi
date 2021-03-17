@@ -73,3 +73,13 @@ fn scopes() {
 fn basic_output() {
     assert_eq!(output("echo xyz > /tmp/ampere ; cat /tmp/ampere"), "xyz\n".to_string());
 }
+
+#[test]
+fn assignment() {
+    assert_eq!(output("let x = \"ampere\" x = \"xyz\" print(x)"), "xyz\n".to_string());
+}
+
+#[test]
+fn assignment_expr() {
+    assert_eq!(output("let x print(x = \"xyz\")"), "xyz\n".to_string());
+}
