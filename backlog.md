@@ -581,3 +581,27 @@ things left to do such as computing the outer product of the values, when part o
 
 Thank god I found a nice little crate for creating pipes (https://docs.rs/os_pipe/0.9.2/os_pipe/) which made
 implementing the thing much easier.
+
+## 17/03/2021
+
+Dear Diary,  
+we did lots of things today!  
+Here's a quick list:
+
++ Variables
++ Block parsing
++ Stack of scopes
++ Native functions execution
++ `print` native function
++ Comma expressions
++ Evaluation of binary and unary expressions
++ Evaluation of interpolation expressions
++ Ranges lexing
++ Ranges parsing
++ Ranges evaluation
++ For loops with ranges
++ Evaluation of assignments
++ Removed pre/post inc/dec and parsed them as expression we already know how to evaluate
++ Capture output for testing purposes
++ Tests for all the above
++ Tests for commands
