@@ -24,6 +24,10 @@ impl Stack {
         Value::Nil
     }
 
+    pub fn set(&mut self, name: String, value: Value) {
+        self.0.last_mut().unwrap().insert(name, value);
+    }
+
     pub fn push(&mut self) {
         self.0.push(HashMap::new())
     }

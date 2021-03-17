@@ -1,9 +1,11 @@
+use core::fmt;
 use std::collections::HashMap;
-use std::fmt::{Display, Formatter};
+use std::fmt::{Debug, Display, Formatter};
 
 use itertools::Itertools;
 
 use crate::ast::{Expr, Prog, Stmt};
+use crate::ast::Expr::Interp;
 use crate::interp::stack::Stack;
 
 mod cmd;
@@ -15,12 +17,25 @@ mod test;
 
 pub struct Interpreter {
     stack: Stack,
+    collector: Option<String>,
+}
+
+fn print(int: &mut Interpreter, args: Vec<Value>) -> Value {
+    for val in args {
+        if let Some(str) = &mut int.collector {
+            str.push_str(&mut (val.to_string() + "\n"));
+        } else {
+            println!("{}", val);
+        }
+    }
+    Value::Nil
 }
 
 impl Interpreter {
     pub fn new() -> Interpreter {
         let mut interpreter = Interpreter {
             stack: Stack::new(),
+            collector: None,
         };
         interpreter.init_native_funcs();
         interpreter
@@ -32,15 +47,14 @@ impl Interpreter {
         }
     }
 
+    pub fn do_collect(&mut self) {
+        self.collector = Some(String::new());
+    }
+
     fn init_native_funcs(&mut self) {
         self.stack.globals().insert("print".to_string(), Value::Func(Func::Native {
             name: "print".to_string(),
-            func: |args: Vec<Value>| -> Value {
-                for val in args {
-                    println!("{}", val);
-                }
-                Value::Nil
-            },
+            func: print,
         }));
     }
 
@@ -55,7 +69,7 @@ impl Interpreter {
                     _ => Value::Nil,
                 };
 
-                self.stack.globals().insert(name, val);
+                self.stack.set(name, val);
             }
             Stmt::Expr(expr) => {
                 match expr {
@@ -67,7 +81,7 @@ impl Interpreter {
 
                         match func {
                             Value::Func(Func::Native { func, .. }) => {
-                                func(args);
+                                func(self, args);
                             }
                             _ => panic!("attempt to call non-function")
                         }
@@ -106,7 +120,7 @@ impl Interpreter {
     }
 }
 
-#[derive(Clone, Debug, PartialEq)]
+#[derive(Clone)]
 pub enum Func {
     User {
         name: Option<String>,
@@ -115,8 +129,29 @@ pub enum Func {
     },
     Native {
         name: String,
-        func: fn(Vec<Value>) -> Value,
+        func: fn(&mut Interpreter, Vec<Value>) -> Value,
     },
+}
+
+impl Debug for Func {
+    fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
+        match self {
+            Func::User { name, .. } => match name {
+                Some(name) => write!(f, "<func {}>", name),
+                None => write!(f, "<lambda func>"),
+            },
+            Func::Native { name, .. } => write!(f, "<native func {}>", name),
+        }
+    }
+}
+
+impl PartialEq for Func {
+    fn eq(&self, other: &Self) -> bool {
+        match (self, other) {
+            (Func::User { name, .. }, Func::User { name: name_other, .. }) => name == name_other,
+            _ => false,
+        }
+    }
 }
 
 #[derive(Clone, Debug, PartialEq)]
@@ -145,13 +180,7 @@ impl Display for Value {
             Value::Dict(dict) => {
                 write!(f, "{{{}}}", dict.iter().map(|(k, v)| format!("{}: {}", k, v.to_string_quoted())).join(", "))
             }
-            Value::Func(func) => match func {
-                Func::User { name, .. } => match name {
-                    Some(name) => write!(f, "<func {}>", name),
-                    None => write!(f, "<lambda func>"),
-                },
-                Func::Native { name, .. } => write!(f, "<native func {}>", name),
-            },
+            Value::Func(func) => write!(f, "{:?}", func),
         }
     }
 }

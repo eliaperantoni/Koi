@@ -9,7 +9,7 @@ mod raw;
 #[cfg(test)]
 mod test;
 
-pub(crate) fn new(source: String) -> Lexer {
+pub fn new(source: String) -> Lexer {
     Lexer::new(
         RecordingLexer::new(
             RawLexer::new(source)

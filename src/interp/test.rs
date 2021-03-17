@@ -1,4 +1,19 @@
 use super::*;
+use crate::parser::Parser;
+use crate::lexer::new as new_lexer;
+
+fn output(source: &str) -> String {
+    let lexer = new_lexer(source.to_owned());
+    let mut parser = Parser::new(lexer);
+    let prog = parser.parse();
+
+    let mut interpreter = Interpreter::new();
+    interpreter.do_collect();
+
+    interpreter.run(prog);
+
+    interpreter.collector.take().unwrap()
+}
 
 #[test]
 fn vec_equality() {
@@ -37,4 +52,19 @@ fn to_string_dict() {
         dict.insert("bar".to_owned(), Value::String("baz".to_owned()));
     }
     assert!(["{foo: true, bar: 'baz'}", "{bar: 'baz', foo: true}"].contains(&&dict.to_string()[..]));
+}
+
+#[test]
+fn print() {
+    assert_eq!(output("print('ampere')"), "ampere\n".to_string());
+}
+
+#[test]
+fn global_variables() {
+    assert_eq!(output("let name = 'ampere' print(name)"), "ampere\n".to_string());
+}
+
+#[test]
+fn scopes() {
+    assert_eq!(output("let name = 'ampere' print(name) {let name = 'thomas the dank engine' print(name)} print(name)"), "ampere\nthomas the dank engine\nampere\n".to_string());
 }
