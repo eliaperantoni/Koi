@@ -502,3 +502,17 @@ fn parses_lambda() {
         })
     ]);
 }
+
+#[test]
+fn parses_block() {
+    assert_eq!(parse("{nop()}"), vec![
+        Stmt::Block(vec![
+            Stmt::Expr(
+                Expr::Call {
+                    func: Box::new(Expr::Get("nop".to_owned())),
+                    args: vec![],
+                }
+            )
+        ])
+    ]);
+}
