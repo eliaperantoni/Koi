@@ -10,11 +10,17 @@ mod cmd;
 #[cfg(test)]
 mod test;
 
-pub struct Interpreter {}
+pub struct Interpreter {
+    globals: HashMap<String, Value>
+}
 
 impl Interpreter {
     pub fn new() -> Interpreter {
-        Interpreter {}
+        let mut interpreter = Interpreter {
+            globals: HashMap::new(),
+        };
+        interpreter.init_native_funcs();
+        interpreter
     }
 
     pub fn run(&mut self, prog: Prog) {
@@ -23,15 +29,46 @@ impl Interpreter {
         }
     }
 
+    fn init_native_funcs(&mut self) {
+        self.globals.insert("print".to_string(), Value::Func(Func::Native {
+            name: "print".to_string(),
+            func: |args: Vec<Value>| -> Value {
+                for val in args {
+                    println!("{}", val);
+                }
+                Value::Nil
+            },
+        }));
+    }
+
     fn run_stmt(&mut self, stmt: Stmt) {
         match stmt {
             Stmt::Cmd(cmd) => {
                 self.run_cmd_pipe(cmd);
             }
+            Stmt::Let {name, init, ..} => {
+                let val = match init {
+                    Some(expr) => self.eval(expr),
+                    _ => Value::Nil,
+                };
+
+                self.globals.insert(name, val);
+            }
             Stmt::Expr(expr) => {
                 match expr {
                     Expr::Cmd(cmd) => self.run_cmd_pipe(cmd),
-                    Expr::Call {..} => todo!(),
+                    Expr::Call {func, args} => {
+                        let func = self.eval(*func);
+
+                        let args = args.into_iter().map(|expr| self.eval(expr)).collect();
+
+                        match func {
+                            Value::Func(Func::Native {func, ..}) => {
+                                func(args);
+                            }
+                            _ => panic!("attempt to call non-function")
+                        }
+                    },
                     Expr::Set(..) => todo!(),
                     Expr::SetField {..} => todo!(),
                     _ => unreachable!()
@@ -53,6 +90,9 @@ impl Interpreter {
                 Value::Dict(dict)
             }
             Expr::Cmd(cmd) => Value::String(self.run_cmd_capture(cmd)),
+            Expr::Get(name) => {
+                self.globals.get(&name).cloned().unwrap_or(Value::Nil)
+            }
             _ => todo!()
         }
     }
@@ -67,7 +107,7 @@ pub enum Func {
     },
     Native {
         name: String,
-        body: fn(Vec<Value>) -> Value,
+        func: fn(Vec<Value>) -> Value,
     },
 }
 
