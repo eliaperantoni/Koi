@@ -430,10 +430,22 @@ fn parses_if_with_else_and_else_if() {
 
 #[test]
 fn parses_for() {
+    assert_eq!(parse("for \n i \n \n in \n foo \n {}"), vec![
+        Stmt::For {
+            lvar: "i".to_owned(),
+            rvar: None,
+            iterated: Expr::Get("foo".to_owned()),
+            each_do: Box::new(Stmt::Block(vec![])),
+        }
+    ]);
+}
+
+#[test]
+fn parses_foreach() {
     assert_eq!(parse("for \n x \n , \n y \n in \n foo \n {}"), vec![
         Stmt::For {
-            key_var: "x".to_owned(),
-            val_var: "y".to_owned(),
+            lvar: "x".to_owned(),
+            rvar: Some("y".to_owned()),
             iterated: Expr::Get("foo".to_owned()),
             each_do: Box::new(Stmt::Block(vec![])),
         }

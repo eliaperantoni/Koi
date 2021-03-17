@@ -1,5 +1,6 @@
 #![feature(or_patterns)]
 #![feature(with_options)]
+#![feature(option_insert)]
 
 use std::fs;
 use std::error::Error;
@@ -15,7 +16,7 @@ fn main() -> Result<(), Box<dyn Error>> {
 
     let lexer = lexer::new(source);
 
-    match 3 {
+    match 2 {
         1 => {
             println!("{:?}", lexer.collect::<Vec<token::Token>>());
         }

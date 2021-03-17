@@ -88,8 +88,8 @@ pub enum Stmt {
         else_do: Option<Box<Stmt>>,
     },
     For {
-        key_var: String,
-        val_var: String,
+        lvar: String,
+        rvar: Option<String>,
         iterated: Expr,
         each_do: Box<Stmt>,
     },

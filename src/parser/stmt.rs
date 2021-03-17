@@ -182,15 +182,17 @@ impl Parser {
         self.lexer.next();
 
         self.lexer.consume_whitespace(self.is_multiline);
-        let key_var = self.must_identifier();
+        let lvar = self.must_identifier();
 
         self.lexer.consume_whitespace(self.is_multiline);
-        if !matches!(self.lexer.next(), Some(Token{kind: TokenKind::Comma, ..})) {
-            panic!("expected comma");
+
+        let mut rvar = None;
+
+        if matches!(self.lexer.peek(), Some(Token{kind: TokenKind::Comma, ..})) {
+            self.lexer.next();
+            self.lexer.consume_whitespace(self.is_multiline);
+            rvar.insert(self.must_identifier());
         }
-
-        self.lexer.consume_whitespace(self.is_multiline);
-        let val_var = self.must_identifier();
 
         self.lexer.consume_whitespace(self.is_multiline);
         if !matches!(self.lexer.next(), Some(Token{kind: TokenKind::In, ..})) {
@@ -204,10 +206,10 @@ impl Parser {
         let each_do = self.parse_block();
 
         Stmt::For {
+            lvar,
+            rvar,
             iterated,
             each_do: Box::new(each_do),
-            key_var,
-            val_var,
         }
     }
 
