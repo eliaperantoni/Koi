@@ -169,6 +169,8 @@ pub enum Value {
     Vec(Vec<Value>),
     Dict(HashMap<String, Value>),
 
+    Range(i32, i32),
+
     Func(Func),
 }
 
@@ -186,6 +188,7 @@ impl Display for Value {
                 write!(f, "{{{}}}", dict.iter().map(|(k, v)| format!("{}: {}", k, v.to_string_quoted())).join(", "))
             }
             Value::Func(func) => write!(f, "{:?}", func),
+            Value::Range(l, r) => write!(f, "{}..{}", l, r),
         }
     }
 }

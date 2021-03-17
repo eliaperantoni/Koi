@@ -41,6 +41,12 @@ pub enum Expr {
     Vec(Vec<Expr>),
     Dict(HashMap<String, Expr>),
 
+    Range {
+        l: Box<Expr>,
+        r: Box<Expr>,
+        inclusive: bool,
+    },
+
     Interp {
         strings: Vec<String>,
         exprs: Vec<Expr>,

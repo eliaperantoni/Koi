@@ -66,6 +66,27 @@ impl Parser {
                 break;
             }
 
+            if matches!(self.lexer.peek(), Some(Token{kind: TokenKind::DotDot, ..})) {
+                self.lexer.next().unwrap();
+
+                self.lexer.consume_whitespace(self.is_multiline);
+                let inclusive = if matches!(self.lexer.peek(), Some(Token{kind: TokenKind::Equal, ..})) {
+                    self.lexer.next().unwrap();
+                    true
+                } else {
+                    false
+                };
+
+                self.lexer.consume_whitespace(self.is_multiline);
+                let rhs = self.parse_expr(0);
+
+                return Expr::Range {
+                    l: Box::new(lhs),
+                    r: Box::new(rhs),
+                    inclusive,
+                }
+            }
+
             let op = &self.lexer.peek().unwrap().kind;
 
             if let Some((l_bp, ())) = postfix_binding_power(op) {

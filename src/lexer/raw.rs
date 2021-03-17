@@ -44,7 +44,12 @@ impl RawLexer {
     fn scan_symbol(&mut self) -> Token {
         let (kind, length) = match self.char_at(0).unwrap() {
             ',' => (TokenKind::Comma, 1),
-            '.' => (TokenKind::Dot, 1),
+
+            '.' => match self.char_at(1) {
+                Some('.') => (TokenKind::DotDot, 2),
+                _ => (TokenKind::Dot, 1),
+            },
+
             ':' => (TokenKind::Colon, 1),
             ';' => (TokenKind::Semicolon, 1),
 
@@ -99,12 +104,10 @@ impl RawLexer {
                 }
             }
 
-            '>' => {
-                match self.char_at(1) {
-                    Some('>') => (TokenKind::GreatGreat, 2),
-                    Some('=') => (TokenKind::GreatEqual, 2),
-                    _ => (TokenKind::Great, 1)
-                }
+            '>' => match self.char_at(1) {
+                Some('>') => (TokenKind::GreatGreat, 2),
+                Some('=') => (TokenKind::GreatEqual, 2),
+                _ => (TokenKind::Great, 1)
             }
 
             '+' => match self.char_at(1) {
@@ -157,14 +160,13 @@ impl RawLexer {
     }
 
     fn scan_number(&mut self) -> Token {
-        let mut iter = self.source[self.cursor..].iter();
+        let mut iter = self.source[self.cursor..].iter().peekable();
 
         let int_part: String = iter.take_while_ref(|&c| c.is_ascii_digit()).collect();
 
-        let dec_part: Option<String> = match iter.next() {
-            Some('.') => {
-                Some(iter.take_while_ref(|&c| c.is_ascii_digit()).collect())
-            }
+        let dec_part: Option<String> = match (iter.next(), iter.peek()) {
+            (Some('.'), Some('.')) => None,
+            (Some('.'), _) => Some(iter.take_while_ref(|&c| c.is_ascii_digit()).collect()),
             _ => None,
         };
 

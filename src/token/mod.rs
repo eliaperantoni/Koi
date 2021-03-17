@@ -67,6 +67,7 @@ pub enum TokenKind {
     PipePipe,
 
     Comma,
+    DotDot,
     Dot,
     Colon,
 

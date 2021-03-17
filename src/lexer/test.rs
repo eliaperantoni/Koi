@@ -286,7 +286,7 @@ fn scans_interpolated_string_dict() {
 fn scans_lexemes() {
     let source = "for.while:\nret\nurn  cc    whine&&!==++--break,continue;(){}[]exp+=-=*=/=\
     %=^=^%*/-+true:h;\n\nfalse!nilvar/if else;fn::==  \n =for  \"abc{222{a:2,\nc:3}}ccc{}\"\"\n\"\
-    \"while\"";
+    \"while\"..";
     let source_materialized: String = scan(source)
         .into_iter()
         .map(|tok| tok.lexeme)
