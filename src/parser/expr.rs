@@ -391,7 +391,7 @@ fn make_infix_expr(lhs: Expr, op: &TokenKind, rhs: Expr) -> Expr {
 fn prefix_binding_power(op: &TokenKind) -> Option<((), u8)> {
     use TokenKind::*;
     let bp = match op {
-        Plus | Minus | PlusPlus | MinusMinus => ((), 17),
+        Bang | Plus | Minus | PlusPlus | MinusMinus => ((), 17),
         _ => return None,
     };
     Some(bp)

@@ -4,7 +4,7 @@ use std::fmt::{Debug, Display, Formatter};
 
 use itertools::Itertools;
 
-use crate::ast::{BinaryOp, Expr, Prog, Stmt};
+use crate::ast::{BinaryOp, Expr, Prog, Stmt, UnaryOp};
 use crate::ast::Expr::Interp;
 use crate::interp::stack::Stack;
 
@@ -221,6 +221,7 @@ impl Interpreter {
                 }
             }
             Expr::Binary(lhs, BinaryOp::Equal, rhs) => Value::Bool(self.eval(*lhs) == self.eval(*rhs)),
+            Expr::Unary(UnaryOp::Not, expr) => Value::Bool(!self.eval(*expr).is_truthy()),
             _ => todo!()
         }
     }
