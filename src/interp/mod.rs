@@ -123,6 +123,10 @@ impl Interpreter {
             }
             Expr::Cmd(cmd) => Value::String(self.run_cmd_capture(cmd)),
             Expr::Get(name) => self.stack.get(&name),
+            Expr::Set(name, expr) => {
+                let new_value = self.eval(*expr);
+                self.stack.update(&name, new_value)
+            }
             _ => todo!()
         }
     }
