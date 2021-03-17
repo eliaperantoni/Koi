@@ -90,3 +90,31 @@ fn interp() {
     assert_eq!(output("let name = \"ampere\" print(\"{name}\")"), "ampere\n".to_string());
     assert_eq!(output("let name = \"ampere\" print(\"X{name}Y{name}Z\")"), "XampereYampereZ\n".to_string());
 }
+
+#[test]
+fn pre_post_inc_dec() {
+    assert_eq!(output("let x = 5 print(x++) print(x)"), "5\n6\n".to_string());
+    assert_eq!(output("let x = 5 print(x--) print(x)"), "5\n4\n".to_string());
+    assert_eq!(output("let x = 5 print(++x) print(x)"), "6\n6\n".to_string());
+    assert_eq!(output("let x = 5 print(--x) print(x)"), "4\n4\n".to_string());
+}
+
+#[test]
+fn arithmetic() {
+    assert_eq!(output("print(22+5)"), "27\n".to_string());
+    assert_eq!(output("print(22-5)"), "17\n".to_string());
+    assert_eq!(output("print(3*2)"), "6\n".to_string());
+    assert_eq!(output("print(8/2)"), "4\n".to_string());
+    assert_eq!(output("print(11%5)"), "1\n".to_string());
+    assert_eq!(output("print(2^4)"), "16\n".to_string());
+}
+
+#[test]
+fn arithmetic_assignment() {
+    assert_eq!(output("let x = 17 x += 3 print(x)"), "20\n".to_string());
+    assert_eq!(output("let x = 17 x -= 2 print(x)"), "15\n".to_string());
+    assert_eq!(output("let x = 15 x *= 2 print(x)"), "30\n".to_string());
+    assert_eq!(output("let x = 6 x /= 2 print(x)"), "3\n".to_string());
+    assert_eq!(output("let x = 6 x %= 2 print(x)"), "0\n".to_string());
+    assert_eq!(output("let x = 6 x ^= 2 print(x)"), "36\n".to_string());
+}
