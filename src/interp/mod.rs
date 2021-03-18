@@ -135,6 +135,30 @@ impl Interpreter {
             }
             Expr::Cmd(cmd) => Value::String(self.run_cmd_capture(cmd)),
             Expr::Get(name) => self.stack.get(&name).clone(),
+            Expr::GetField {base, index} => {
+                let base = self.eval(*base);
+                let index = self.eval(*index);
+
+                match base {
+                    Value::Vec(vec) => {
+                        let index = match index {
+                            Value::Num(num) if num.trunc() == num => num as usize,
+                            _ => panic!("bad index, want integer"),
+                        };
+
+                        RefCell::borrow(&vec)[index].clone()
+                    }
+                    Value::Dict(dict) => {
+                        let index = match index {
+                            Value::String(str) => str,
+                            _ => panic!("bad index, want string"),
+                        };
+
+                        RefCell::borrow(&dict).get(&index).cloned().unwrap()
+                    },
+                    _ => panic!("bad get target"),
+                }
+            }
             Expr::Set(name, expr) => {
                 let value = self.eval(*expr);
                 *self.stack.get_mut(&name) = value.clone();
@@ -154,7 +178,14 @@ impl Interpreter {
 
                         vec.borrow_mut()[index] = value.clone();
                     }
-                    Value::Dict(..) => todo!(),
+                    Value::Dict(dict) => {
+                        let index = match index {
+                            Value::String(str) => str,
+                            _ => panic!("bad index, want string"),
+                        };
+
+                        dict.borrow_mut().insert(index, value.clone());
+                    },
                     _ => panic!("bad assignment target"),
                 };
 
