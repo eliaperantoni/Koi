@@ -116,7 +116,7 @@ impl Interpreter {
                 }
                 self.stack.pop();
             }
-            _ => todo!(),
+            _ => todo!()
         };
     }
 
@@ -289,7 +289,8 @@ impl Interpreter {
                     _ => panic!("attempt to call non-function")
                 }
             }
-            _ => todo!()
+            Expr::Lambda(_) => todo!(),
+            _ => unreachable!()
         }
     }
 }
