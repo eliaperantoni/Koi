@@ -1,5 +1,7 @@
 use super::cross_product;
 use super::super::Value;
+use std::cell::RefCell;
+use std::rc::Rc;
 
 #[test]
 fn test_cross_product() {
@@ -13,11 +15,11 @@ fn test_cross_product() {
 
     assert_eq!(cross_product(vec![
         Value::String(String::from("x")),
-        Value::Vec(vec![
+        Value::Vec(Rc::new(RefCell::new(vec![
             Value::Num(1.0),
             Value::Num(2.0),
             Value::Num(3.0),
-        ]),
+        ]))),
         Value::String(String::from("y")),
     ]), vec![
         String::from("x1y"),
@@ -27,17 +29,21 @@ fn test_cross_product() {
 
     assert_eq!(cross_product(vec![
         Value::String(String::from("x")),
-        Value::Vec(vec![
-            Value::Num(1.0),
-            Value::Num(2.0),
-            Value::Num(3.0),
-        ]),
+        Value::Vec(Rc::new(RefCell::new(
+            vec![
+                Value::Num(1.0),
+                Value::Num(2.0),
+                Value::Num(3.0),
+            ]
+        ))),
         Value::String(String::from("y")),
-        Value::Vec(vec![
-            Value::Num(1.0),
-            Value::Num(2.0),
-            Value::Num(3.0),
-        ]),
+        Value::Vec(Rc::new(RefCell::new(
+            vec![
+                Value::Num(1.0),
+                Value::Num(2.0),
+                Value::Num(3.0),
+            ]
+        ))),
         Value::String(String::from("z")),
     ]), vec![
         String::from("x1y1z"),
