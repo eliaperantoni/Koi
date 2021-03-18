@@ -124,3 +124,8 @@ fn arithmetic_assignment() {
 fn vecs_are_refs() {
     assert_eq!(output("let x = [1, 2, 3] let y = x y[0] = 99 print(x)"), "[99, 2, 3]\n".to_string());
 }
+
+#[test]
+fn dicts_are_refs() {
+    assert_eq!(output("let x = {a: 1, b: 2, c: 3} let y = x y['a'] = 99 y.b=55 print(x)"), "{a: 99, b: 55, c: 3}\n".to_string());
+}
