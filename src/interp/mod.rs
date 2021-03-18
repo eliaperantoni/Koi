@@ -1,13 +1,13 @@
 use core::fmt;
 use std::collections::HashMap;
 use std::fmt::{Debug, Display, Formatter};
+use std::panic::panic_any;
 
 use itertools::Itertools;
 
 use crate::ast::{BinaryOp, Expr, Prog, Stmt, UnaryOp};
 use crate::ast::Expr::Interp;
 use crate::interp::stack::Stack;
-use std::panic::panic_any;
 
 mod cmd;
 
@@ -131,8 +131,8 @@ impl Interpreter {
             Expr::Get(name) => self.stack.get(&name).clone(),
             Expr::Set(name, expr) => {
                 let value = self.eval(*expr);
-                *self.stack.get_mut(&name) = value;
-                self.stack.get(&name).clone()
+                *self.stack.get_mut(&name) = value.clone();
+                value
             }
             Expr::Interp { mut strings, exprs } => {
                 let mut out = String::new();
