@@ -298,7 +298,7 @@ fn make_bumper_from_getter(expr: Expr, op: TokenKind) -> Expr {
 
     match expr {
         Expr::Get(name) => Expr::Set(name, inc),
-        Expr::GetField { base, index } => Expr::SetField { base, index, value: inc },
+        Expr::GetField { base, index } => Expr::SetField { base, index, expr: inc },
         _ => panic!("bad target")
     }
 }
@@ -414,7 +414,7 @@ fn make_infix_expr(lhs: Expr, op: &TokenKind, rhs: Expr) -> Expr {
 
             match *lhs {
                 Expr::Get(name) => Expr::Set(name, rhs),
-                Expr::GetField { base, index } => Expr::SetField { base, index, value: rhs },
+                Expr::GetField { base, index } => Expr::SetField { base, index, expr: rhs },
                 _ => panic!("bad assignment target")
             }
         }

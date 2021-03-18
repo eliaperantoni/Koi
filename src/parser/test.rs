@@ -71,17 +71,17 @@ fn parses_assignments() {
         ("foo.bar=5", Expr::SetField {
             base: Box::new(Expr::Get("foo".to_owned())),
             index: Box::new(Expr::Literal(Value::String("bar".to_owned()))),
-            value: Box::new(Expr::Literal(Value::Num(5.0))),
+            expr: Box::new(Expr::Literal(Value::Num(5.0))),
         }),
         ("foo[\"bar\"]=5", Expr::SetField {
             base: Box::new(Expr::Get("foo".to_owned())),
             index: Box::new(Expr::Literal(Value::String("bar".to_owned()))),
-            value: Box::new(Expr::Literal(Value::Num(5.0))),
+            expr: Box::new(Expr::Literal(Value::Num(5.0))),
         }),
         ("foo[1]=5", Expr::SetField {
             base: Box::new(Expr::Get("foo".to_owned())),
             index: Box::new(Expr::Literal(Value::Num(1.0))),
-            value: Box::new(Expr::Literal(Value::Num(5.0))),
+            expr: Box::new(Expr::Literal(Value::Num(5.0))),
         }),
         ("foo.bar[\"baz\"].egg[\"beam\"]=5", Expr::SetField {
             base: Box::new(Expr::GetField {
@@ -95,7 +95,7 @@ fn parses_assignments() {
                 index: Box::new(Expr::Literal(Value::String("egg".to_owned()))),
             }),
             index: Box::new(Expr::Literal(Value::String("beam".to_owned()))),
-            value: Box::new(Expr::Literal(Value::Num(5.0))),
+            expr: Box::new(Expr::Literal(Value::Num(5.0))),
         }),
     ] {
         assert_eq!(parse_expression(source), *want);
@@ -173,7 +173,7 @@ fn parses_assignment_stmt_with_dots() {
         Stmt::Expr(Expr::SetField {
             base: Box::new(Expr::Get("x".to_owned())),
             index: Box::new(Expr::Literal(Value::String("foo".to_owned()))),
-            value: Box::new(Expr::Literal(Value::Num(1.0))),
+            expr: Box::new(Expr::Literal(Value::Num(1.0))),
         }),
     ]);
 }

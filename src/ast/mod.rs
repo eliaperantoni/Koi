@@ -59,7 +59,7 @@ pub enum Expr {
     SetField {
         base: Box<Expr>,
         index: Box<Expr>,
-        value: Box<Expr>,
+        expr: Box<Expr>,
     },
 
     Call {

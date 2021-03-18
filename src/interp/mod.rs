@@ -70,35 +70,15 @@ impl Interpreter {
                 }
             }
             Stmt::Let { name, init, .. } => {
-                let val = match init {
+                let value = match init {
                     Some(expr) => self.eval(expr),
                     _ => Value::Nil,
                 };
 
-                self.stack.set(name, val);
+                self.stack.def(name, value);
             }
             Stmt::Expr(expr) => {
-                match expr {
-                    Expr::Cmd(cmd) => self.run_cmd_pipe(cmd),
-                    Expr::Call { func, args } => {
-                        let func = self.eval(*func);
-
-                        let args = args.into_iter().map(|expr| self.eval(expr)).collect();
-
-                        match func {
-                            Value::Func(Func::Native { func, .. }) => {
-                                func(self, args);
-                            }
-                            _ => panic!("attempt to call non-function")
-                        }
-                    }
-                    Expr::Set(name, expr) => {
-                        let new_value = self.eval(*expr);
-                        self.stack.update(&name, new_value);
-                    }
-                    Expr::SetField { .. } => todo!(),
-                    _ => unreachable!()
-                }
+                self.eval(expr);
             }
             Stmt::Block(stmts) => {
                 self.stack.push();
@@ -115,9 +95,9 @@ impl Interpreter {
                         assert!(rvar.is_none(), "for loop with range does not need a second variable");
 
                         self.stack.push();
-                        self.stack.set(lvar.clone(), Value::Num(l as f64));
+                        self.stack.def(lvar.clone(), Value::Num(l as f64));
                         for i in l..r {
-                            self.stack.update(&lvar, Value::Num(i as f64));
+                            *self.stack.get_mut(&lvar) = Value::Num(i as f64);
                             self.run_stmt(*each_do.clone());
                         }
                         self.stack.pop();
@@ -148,10 +128,11 @@ impl Interpreter {
                 Value::Dict(dict)
             }
             Expr::Cmd(cmd) => Value::String(self.run_cmd_capture(cmd)),
-            Expr::Get(name) => self.stack.get(&name),
+            Expr::Get(name) => self.stack.get(&name).clone(),
             Expr::Set(name, expr) => {
-                let new_value = self.eval(*expr);
-                self.stack.update(&name, new_value)
+                let value = self.eval(*expr);
+                *self.stack.get_mut(&name) = value;
+                self.stack.get(&name).clone()
             }
             Expr::Interp { mut strings, exprs } => {
                 let mut out = String::new();
@@ -238,6 +219,18 @@ impl Interpreter {
                     self.eval(expr);
                 }
                 self.eval(last)
+            }
+            Expr::Call { func, args } => {
+                let func = self.eval(*func);
+
+                let args = args.into_iter().map(|expr| self.eval(expr)).collect();
+
+                match func {
+                    Value::Func(Func::Native { func, .. }) => {
+                        func(self, args)
+                    }
+                    _ => panic!("attempt to call non-function")
+                }
             }
             _ => todo!()
         }
