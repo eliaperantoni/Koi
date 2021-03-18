@@ -53,7 +53,7 @@ impl Interpreter {
     }
 
     fn init_native_funcs(&mut self) {
-        self.stack.globals().insert("print".to_string(), Value::Func(Func::Native {
+        self.stack.def("print".to_string(), Value::Func(Func::Native {
             name: "print".to_string(),
             func: print,
         }));

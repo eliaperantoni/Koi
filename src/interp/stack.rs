@@ -10,10 +10,6 @@ impl Stack {
         Stack(vec![HashMap::new()])
     }
 
-    pub fn globals(&mut self) -> &mut Env {
-        self.0.first_mut().unwrap()
-    }
-
     pub fn get(&self, name: &str) -> &Value {
         for env in self.0.iter().rev() {
             match env.get(name) {
