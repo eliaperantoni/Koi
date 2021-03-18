@@ -11,6 +11,7 @@ use crate::ast::{Cmd, CmdOp, Expr};
 
 use super::Interpreter;
 use super::Value;
+use std::cell::RefCell;
 
 #[cfg(test)]
 mod test;
@@ -258,7 +259,7 @@ fn cross_product(mut vals: Vec<Value>) -> Vec<String> {
             Value::Vec(prefixes) => {
                 let mut out_tmp = Vec::new();
 
-                for prefix in prefixes {
+                for prefix in RefCell::borrow(&prefixes).iter() {
                     let prefix = prefix.to_string();
 
                     for s in &out {

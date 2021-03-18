@@ -8,6 +8,10 @@ use itertools::Itertools;
 use crate::ast::{BinaryOp, Expr, Prog, Stmt, UnaryOp};
 use crate::ast::Expr::Interp;
 use crate::interp::stack::Stack;
+use std::cell::{RefCell, Ref, RefMut};
+use std::rc::Rc;
+use std::borrow::Borrow;
+use std::ops::Deref;
 
 mod cmd;
 
@@ -121,10 +125,12 @@ impl Interpreter {
             Expr::Literal(value) => value,
             Expr::Vec(vec) => {
                 let vec = vec.into_iter().map(|expr| self.eval(expr)).collect::<Vec<Value>>();
+                let vec = Rc::new(RefCell::new(vec));
                 Value::Vec(vec)
             }
             Expr::Dict(dict) => {
                 let dict = dict.into_iter().map(|(key, expr)| (key, self.eval(expr))).collect::<HashMap<String, Value>>();
+                let dict = Rc::new(RefCell::new(dict));
                 Value::Dict(dict)
             }
             Expr::Cmd(cmd) => Value::String(self.run_cmd_capture(cmd)),
@@ -132,6 +138,26 @@ impl Interpreter {
             Expr::Set(name, expr) => {
                 let value = self.eval(*expr);
                 *self.stack.get_mut(&name) = value.clone();
+                value
+            }
+            Expr::SetField {base, index, expr} => {
+                let base = self.eval(*base);
+                let index = self.eval(*index);
+                let value = self.eval(*expr);
+
+                match base {
+                    Value::Vec(vec) => {
+                        let index = match index {
+                            Value::Num(num) if num.trunc() == num => num as usize,
+                            _ => panic!("bad index, want integer"),
+                        };
+
+                        vec.borrow_mut()[index] = value.clone();
+                    }
+                    Value::Dict(..) => todo!(),
+                    _ => panic!("bad assignment target"),
+                };
+
                 value
             }
             Expr::Interp { mut strings, exprs } => {
@@ -278,8 +304,8 @@ pub enum Value {
     String(String),
     Bool(bool),
 
-    Vec(Vec<Value>),
-    Dict(HashMap<String, Value>),
+    Vec(Rc<RefCell<Vec<Value>>>),
+    Dict(Rc<RefCell<HashMap<String, Value>>>),
 
     Range(i32, i32),
 
@@ -294,9 +320,11 @@ impl Display for Value {
             Value::String(string) => write!(f, "{}", string),
             Value::Bool(bool) => write!(f, "{}", bool),
             Value::Vec(vec) => {
+                let vec = RefCell::borrow(vec);
                 write!(f, "[{}]", vec.iter().map(|v| v.to_string_quoted()).join(", "))
             }
             Value::Dict(dict) => {
+                let dict = RefCell::borrow(dict);
                 write!(f, "{{{}}}", dict.iter().map(|(k, v)| format!("{}: {}", k, v.to_string_quoted())).join(", "))
             }
             Value::Func(func) => write!(f, "{:?}", func),
