@@ -1,17 +1,17 @@
 use core::fmt;
+use std::borrow::Borrow;
+use std::cell::{Ref, RefCell, RefMut};
 use std::collections::HashMap;
 use std::fmt::{Debug, Display, Formatter};
+use std::ops::Deref;
 use std::panic::panic_any;
+use std::rc::Rc;
 
 use itertools::Itertools;
 
 use crate::ast::{BinaryOp, Expr, Prog, Stmt, UnaryOp};
 use crate::ast::Expr::Interp;
 use crate::interp::stack::Stack;
-use std::cell::{RefCell, Ref, RefMut};
-use std::rc::Rc;
-use std::borrow::Borrow;
-use std::ops::Deref;
 
 mod cmd;
 
@@ -71,9 +71,7 @@ impl Interpreter {
                 if self.collector.is_some() {
                     let output = self.run_cmd_capture(cmd);
                     self.collector.as_mut().unwrap().push_str(&output);
-                } else {
-                    self.run_cmd_pipe(cmd);
-                }
+                } else { self.run_cmd_pipe(cmd); }
             }
             Stmt::Let { name, init, .. } => {
                 let value = match init {
@@ -102,13 +100,48 @@ impl Interpreter {
 
                         self.stack.push();
                         self.stack.def(lvar.clone(), Value::Num(l as f64));
+
                         for i in l..r {
                             *self.stack.get_mut(&lvar) = Value::Num(i as f64);
+
                             self.run_stmt(*each_do.clone());
                         }
+
                         self.stack.pop();
                     }
-                    _ => todo!()
+                    Value::Vec(vec) => {
+                        let rvar = rvar.expect("for loop with vec does need a second variable");
+
+                        self.stack.push();
+                        self.stack.def(lvar.clone(), Value::Nil);
+                        self.stack.def(rvar.clone(), Value::Nil);
+
+                        for (i, v) in RefCell::borrow(&vec).iter().enumerate() {
+                            *self.stack.get_mut(&lvar) = Value::Num(i as f64);
+                            *self.stack.get_mut(&rvar) = v.clone();
+
+                            self.run_stmt(*each_do.clone());
+                        }
+
+                        self.stack.pop();
+                    }
+                    Value::Dict(dict) => {
+                        let rvar = rvar.expect("for loop with vec does need a second variable");
+
+                        self.stack.push();
+                        self.stack.def(lvar.clone(), Value::Nil);
+                        self.stack.def(rvar.clone(), Value::Nil);
+
+                        for (k, v) in RefCell::borrow(&dict).iter() {
+                            *self.stack.get_mut(&lvar) = Value::String(k.clone());
+                            *self.stack.get_mut(&rvar) = v.clone();
+
+                            self.run_stmt(*each_do.clone());
+                        }
+
+                        self.stack.pop();
+                    }
+                    _ => unreachable!()
                 }
             }
             Stmt::While { cond, then_do } => {
@@ -166,7 +199,7 @@ impl Interpreter {
                 *self.stack.get_mut(&name) = value.clone();
                 value
             }
-            Expr::SetField {base, index, expr} => {
+            Expr::SetField { base, index, expr } => {
                 let base = self.eval(*base);
                 let index = self.eval(*index);
                 let value = self.eval(*expr);

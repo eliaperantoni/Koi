@@ -127,5 +127,5 @@ fn vecs_are_refs() {
 
 #[test]
 fn dicts_are_refs() {
-    assert_eq!(output("let x = {a: 1, b: 2, c: 3} let y = x y['a'] = 99 y.b=55 print(x)"), "{a: 99, b: 55, c: 3}\n".to_string());
+    assert_eq!(output("let x = {a: 1, b: 2, c: 3} let y = x y['a'] = 99 y.b=55 print(x.a, x.b, x.c)"), "99 55 3\n".to_string());
 }
