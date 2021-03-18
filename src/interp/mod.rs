@@ -26,13 +26,15 @@ pub struct Interpreter {
 }
 
 fn print(int: &mut Interpreter, args: Vec<Value>) -> Value {
-    for val in args {
-        if let Some(str) = &mut int.collector {
-            str.push_str(&mut (val.to_string() + "\n"));
-        } else {
-            println!("{}", val);
-        }
+    let mut res = args.iter().map(|arg| arg.to_string()).join(" ");
+
+    if let Some(str) = &mut int.collector {
+        str.push_str(&res);
+        str.push_str("\n");
+    } else {
+        println!("{}", res);
     }
+
     Value::Nil
 }
 
