@@ -61,9 +61,13 @@ fn scans_keywords() {
 }
 
 #[test]
-#[should_panic]
-fn panics_unexpected_symbol() {
-    scan("§");
+fn unexpected_symbol() {
+    assert_eq!(scan("~"), vec![
+        Token {
+            kind: TokenKind::UnknownChar('~'),
+            lexeme: "~".to_owned(),
+        }
+    ]);
 }
 
 #[test]
