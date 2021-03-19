@@ -6,6 +6,7 @@ use std::fmt::{Debug, Display, Formatter};
 use std::ops::Deref;
 use std::panic::panic_any;
 use std::rc::Rc;
+use std::env;
 
 use itertools::Itertools;
 
@@ -45,6 +46,7 @@ impl Interpreter {
             collector: None,
         };
         interpreter.init_native_funcs();
+        interpreter.import_os_env();
         interpreter
     }
 
@@ -63,6 +65,12 @@ impl Interpreter {
             name: "print".to_string(),
             func: print,
         }));
+    }
+
+    fn import_os_env(&mut self) {
+        for (k, v) in env::vars() {
+            self.stack.def(k, Value::String(v));
+        }
     }
 
     fn run_stmt(&mut self, stmt: Stmt) {
