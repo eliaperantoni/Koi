@@ -30,7 +30,7 @@ impl Parser {
 
             _ => {
                 let is_dollar_in_front = matches!(self.lexer.peek(), Some(Token {kind: TokenKind::Dollar, ..}));
-                if !self.is_expr_next() || is_dollar_in_front {
+                if is_dollar_in_front || !self.is_expr_next() {
                     if is_dollar_in_front {
                         // Consume the dollar
                         self.lexer.next();
@@ -49,10 +49,13 @@ impl Parser {
                     cmd
                 } else {
                     let expr = self.parse_expr(0);
-                    if !matches!(expr, Expr::Set(..) | Expr::SetField {..} | Expr::Call {..} | Expr::Cmd(..)) {
-                        panic!("only assignment, call and command expressions are allowed as statements");
+                    match expr {
+                        // If top level expression is a command, convert to a statement. Reason is we want the subprocess
+                        // to inherit the standard streams so that output is printed in realtime
+                        Expr::Cmd(cmd) => Stmt::Cmd(cmd),
+                        Expr::Set(..) | Expr::SetField {..} | Expr::Call {..} => Stmt::Expr(expr),
+                        _ => panic!("only assignment, call and command expressions are allowed as statements"),
                     }
-                    Stmt::Expr(expr)
                 }
             }
         }

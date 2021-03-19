@@ -290,10 +290,10 @@ fn parses_parenthesized_cmd() {
 #[test]
 fn parses_cmd_expr_stmt() {
     assert_eq!(parse("$(\n    foo\n    bar\n)"), vec![
-        Stmt::Expr(Expr::Cmd(Cmd::Atom(vec![
+        Stmt::Cmd(Cmd::Atom(vec![
             vec![Expr::Literal(Value::String("foo".to_owned()))],
             vec![Expr::Literal(Value::String("bar".to_owned()))],
-        ]))),
+        ])),
     ]);
 }
 

@@ -71,7 +71,9 @@ impl Interpreter {
                 if self.collector.is_some() {
                     let output = self.run_cmd_capture(cmd);
                     self.collector.as_mut().unwrap().push_str(&output);
-                } else { self.run_cmd_pipe(cmd); }
+                } else {
+                    self.run_cmd_pipe(cmd);
+                }
             }
             Stmt::Let { name, init, .. } => {
                 let value = match init {
