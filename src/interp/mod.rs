@@ -11,7 +11,7 @@ use itertools::Itertools;
 
 use crate::ast::{BinaryOp, Expr, Prog, Stmt, UnaryOp};
 use crate::ast::Expr::Interp;
-use crate::interp::stack::Stack;
+use crate::interp::stack::{Stack, Var};
 
 mod cmd;
 
@@ -68,20 +68,25 @@ impl Interpreter {
     fn run_stmt(&mut self, stmt: Stmt) {
         match stmt {
             Stmt::Cmd(cmd) => {
+                let env = self.stack.os_env();
+
                 if self.collector.is_some() {
-                    let output = self.run_cmd_capture(cmd);
+                    let output = self.run_cmd_capture(cmd, env);
                     self.collector.as_mut().unwrap().push_str(&output);
                 } else {
-                    self.run_cmd_pipe(cmd);
+                    self.run_cmd_pipe(cmd, env);
                 }
             }
-            Stmt::Let { name, init, .. } => {
-                let value = match init {
+            Stmt::Let { name, init, is_exp } => {
+                let val = match init {
                     Some(expr) => self.eval(expr),
                     _ => Value::Nil,
                 };
 
-                self.stack.def(name, value);
+                self.stack.def(name, Var {
+                    val,
+                    is_exp,
+                });
             }
             Stmt::Expr(expr) => {
                 self.eval(expr);
@@ -175,7 +180,7 @@ impl Interpreter {
                 let dict = Rc::new(RefCell::new(dict));
                 Value::Dict(dict)
             }
-            Expr::Cmd(cmd) => Value::String(self.run_cmd_capture(cmd)),
+            Expr::Cmd(cmd) => Value::String(self.run_cmd_capture(cmd, self.stack.os_env())),
             Expr::Get(name) => self.stack.get(&name).clone(),
             Expr::GetField {base, index} => {
                 let base = self.eval(*base);

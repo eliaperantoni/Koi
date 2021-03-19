@@ -12,9 +12,13 @@ use crate::ast::{Cmd, CmdOp, Expr};
 use super::Interpreter;
 use super::Value;
 use std::cell::RefCell;
+use std::borrow::BorrowMut;
+use std::ops::{Deref, DerefMut};
 
 #[cfg(test)]
 mod test;
+
+pub type OsEnv = Vec<(String, String)>;
 
 enum Process {
     Std(Either<Command, Child>),
@@ -44,6 +48,28 @@ impl Process {
             }
             Process::Cond { handle, .. } => {
                 handle.take().unwrap().join().unwrap()
+            }
+        }
+    }
+
+    fn set_env(&mut self, env: OsEnv) {
+        match self {
+            Process::Std(either) => {
+                match either {
+                    Either::Left(cmd) => {
+                        cmd.envs(env);
+                    }
+                    Either::Right(_) => panic!("process already spawned"),
+                }
+            }
+            Process::Pipe { lhs, rhs } => {
+                lhs.set_env(env.clone());
+                rhs.set_env(env);
+            }
+            Process::Cond { procs, .. } => {
+                let (lhs, rhs) =  procs.as_mut().unwrap().deref_mut();
+                lhs.set_env(env.clone());
+                rhs.set_env(env);
             }
         }
     }
@@ -124,16 +150,18 @@ impl Into<Stdio> for Stream {
 }
 
 impl Interpreter {
-    pub fn run_cmd_pipe(&mut self, cmd: Cmd) {
+    pub fn run_cmd_pipe(&mut self, cmd: Cmd, env: OsEnv) {
         let mut cmd = self.build_cmd(cmd, Stream::Null, Stream::Inherit, Stream::Inherit);
+        cmd.set_env(env);
         cmd.spawn();
         cmd.wait();
     }
 
-    pub fn run_cmd_capture(&mut self, cmd: Cmd) -> String {
+    pub fn run_cmd_capture(&mut self, cmd: Cmd, env: OsEnv) -> String {
         let (mut r, w) = pipe().unwrap();
 
         let mut cmd = self.build_cmd(cmd, Stream::Null, Stream::PipeWriter(w), Stream::Inherit);
+        cmd.set_env(env);
         cmd.spawn();
         cmd.wait();
 
