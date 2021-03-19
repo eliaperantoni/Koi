@@ -317,6 +317,13 @@ impl RawLexer {
         self.buffer.append(&mut tokens);
         first
     }
+
+    fn consume_comment(&mut self) {
+        self.cursor += 1;
+        while !matches!(self.char_at(0), Some('\n')) {
+            self.cursor += 1;
+        }
+    }
 }
 
 impl Iterator for RawLexer {
@@ -326,6 +333,10 @@ impl Iterator for RawLexer {
         let token = if !self.buffer.is_empty() {
             Some(self.buffer.remove(0))
         } else {
+            if matches!(self.char_at(0), Some('#')) {
+                self.consume_comment();
+            }
+
             match (self.char_at(0), self.char_at(1)) {
                 (None, _) => None,
 

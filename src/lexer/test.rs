@@ -485,3 +485,13 @@ fn consumes_whitespace_recording() {
         Token{kind: TokenKind::Space, lexeme: "   ".to_owned()},
     ]);
 }
+
+#[test]
+fn ignores_comments() {
+    assert_eq!(scan("a# i am a comment\nb#another comment\n"), vec![
+        Token{kind: TokenKind::Identifier("a".to_string()), lexeme: "a".to_string()},
+        Token{kind: TokenKind::Newline, lexeme: "\n".to_owned()},
+        Token{kind: TokenKind::Identifier("b".to_string()), lexeme: "b".to_string()},
+        Token{kind: TokenKind::Newline, lexeme: "\n".to_owned()},
+    ]);
+}
