@@ -39,6 +39,13 @@ fn print(int: &mut Interpreter, args: Vec<Value>) -> Value {
     Value::Nil
 }
 
+#[derive(Debug)]
+enum Escape {
+    Break,
+    Continue,
+    Return
+}
+
 impl Interpreter {
     pub fn new() -> Interpreter {
         let mut interpreter = Interpreter {
@@ -52,7 +59,7 @@ impl Interpreter {
 
     pub fn run(&mut self, prog: Prog) {
         for stmt in prog.into_iter() {
-            self.run_stmt(stmt);
+            self.run_stmt(stmt).expect("escape bubbled up to top level");
         }
     }
 
@@ -73,7 +80,7 @@ impl Interpreter {
         }
     }
 
-    fn run_stmt(&mut self, stmt: Stmt) {
+    fn run_stmt(&mut self, stmt: Stmt) -> Result<(),Escape> {
         match stmt {
             Stmt::Cmd(cmd) => {
                 let env = self.stack.os_env();
@@ -102,7 +109,7 @@ impl Interpreter {
             Stmt::Block(stmts) => {
                 self.stack.push();
                 for stmt in stmts {
-                    self.run_stmt(stmt);
+                    self.run_stmt(stmt)?;
                 }
                 self.stack.pop();
             }
@@ -119,7 +126,12 @@ impl Interpreter {
                         for i in l..r {
                             *self.stack.get_mut(&lvar) = Value::Num(i as f64);
 
-                            self.run_stmt(*each_do.clone());
+                            let res = self.run_stmt(*each_do.clone())?;
+                            match &res {
+                                Err(Escape::Continue) => continue,
+                                Err(Escape::Break) => break,
+                                _ => res?,
+                            };
                         }
 
                         self.stack.pop();
@@ -135,7 +147,12 @@ impl Interpreter {
                             *self.stack.get_mut(&lvar) = Value::Num(i as f64);
                             *self.stack.get_mut(&rvar) = v.clone();
 
-                            self.run_stmt(*each_do.clone());
+                            let res = self.run_stmt(*each_do.clone())?;
+                            match &res {
+                                Err(Escape::Continue) => continue,
+                                Err(Escape::Break) => break,
+                                _ => res?,
+                            };
                         }
 
                         self.stack.pop();
@@ -151,7 +168,12 @@ impl Interpreter {
                             *self.stack.get_mut(&lvar) = Value::String(k.clone());
                             *self.stack.get_mut(&rvar) = v.clone();
 
-                            self.run_stmt(*each_do.clone());
+                            let res = self.run_stmt(*each_do.clone())?;
+                            match &res {
+                                Err(Escape::Continue) => continue,
+                                Err(Escape::Break) => break,
+                                _ => res?,
+                            };
                         }
 
                         self.stack.pop();
@@ -161,18 +183,28 @@ impl Interpreter {
             }
             Stmt::While { cond, then_do } => {
                 while self.eval(cond.clone()).is_truthy() {
-                    self.run_stmt(*then_do.clone());
+                    let res = self.run_stmt(*then_do.clone());
+                    match &res {
+                        Err(Escape::Continue) => continue,
+                        Err(Escape::Break) => break,
+                        _ => res?,
+                    };
                 }
             }
             Stmt::If {cond, then_do, else_do} => {
                 if self.eval(cond).is_truthy() {
-                    self.run_stmt(*then_do);
+                    self.run_stmt(*then_do)?;
                 } else if else_do.is_some() {
-                    self.run_stmt(*else_do.unwrap());
+                    self.run_stmt(*else_do.unwrap())?;
                 }
             }
+
+            Stmt::Continue => return Err(Escape::Continue),
+            Stmt::Break => return Err(Escape::Break),
+
             _ => todo!()
         };
+        Ok(())
     }
 
     fn eval(&mut self, expr: Expr) -> Value {
