@@ -499,3 +499,13 @@ fn ignores_comments() {
         Token{kind: TokenKind::Newline, lexeme: "\n".to_owned()},
     ]);
 }
+
+
+#[test]
+fn crlf_line_ending() {
+    assert_eq!(scan("x\r\ny"), vec![
+        Token{kind: TokenKind::Identifier("x".to_string()), lexeme: "x".to_string()},
+        Token{kind: TokenKind::Newline, lexeme: "\r\n".to_owned()},
+        Token{kind: TokenKind::Identifier("y".to_string()), lexeme: "y".to_string()},
+    ]);
+}
