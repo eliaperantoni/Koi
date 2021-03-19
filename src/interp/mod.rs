@@ -126,7 +126,7 @@ impl Interpreter {
                         for i in l..r {
                             *self.stack.get_mut(&lvar) = Value::Num(i as f64);
 
-                            let res = self.run_stmt(*each_do.clone())?;
+                            let res = self.run_stmt(*each_do.clone());
                             match &res {
                                 Err(Escape::Continue) => continue,
                                 Err(Escape::Break) => break,
@@ -147,7 +147,7 @@ impl Interpreter {
                             *self.stack.get_mut(&lvar) = Value::Num(i as f64);
                             *self.stack.get_mut(&rvar) = v.clone();
 
-                            let res = self.run_stmt(*each_do.clone())?;
+                            let res = self.run_stmt(*each_do.clone());
                             match &res {
                                 Err(Escape::Continue) => continue,
                                 Err(Escape::Break) => break,
@@ -168,7 +168,7 @@ impl Interpreter {
                             *self.stack.get_mut(&lvar) = Value::String(k.clone());
                             *self.stack.get_mut(&rvar) = v.clone();
 
-                            let res = self.run_stmt(*each_do.clone())?;
+                            let res = self.run_stmt(*each_do.clone());
                             match &res {
                                 Err(Escape::Continue) => continue,
                                 Err(Escape::Break) => break,

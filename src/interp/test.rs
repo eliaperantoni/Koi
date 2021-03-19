@@ -155,3 +155,13 @@ fn exported_var() {
 fn imported_var() {
     assert_eq!(output("print(USER + '\n' == $(whoami))"), "true\n".to_string());
 }
+
+#[test]
+fn continue_stmt() {
+    assert_eq!(output("for i in 0..=2 {if i == 1 {continue} print(i)}"), "0\n2\n".to_string());
+}
+
+#[test]
+fn break_stmt() {
+    assert_eq!(output("for i in 0..=2 {if i == 1 {break} print(i)}"), "0\n".to_string());
+}
