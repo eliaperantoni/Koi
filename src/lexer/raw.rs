@@ -69,7 +69,9 @@ impl RawLexer {
                 }
                 (TokenKind::Space, length)
             }
+
             '\n' => (TokenKind::Newline, 1),
+            '\r' if matches!(self.char_at(1), Some('\n')) => (TokenKind::Newline, 2),
 
             '(' => (TokenKind::LeftParen, 1),
             ')' => (TokenKind::RightParen, 1),
