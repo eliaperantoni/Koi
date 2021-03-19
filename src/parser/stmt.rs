@@ -53,6 +53,8 @@ impl Parser {
                         // If top level expression is a command, convert to a statement. Reason is we want the subprocess
                         // to inherit the standard streams so that output is printed in realtime
                         Expr::Cmd(cmd) => Stmt::Cmd(cmd),
+                        // We allow comma expression because they can't be created by the user, they are generated
+                        // to emulate x++
                         Expr::Set(..) | Expr::SetField {..} | Expr::Call {..} => Stmt::Expr(expr),
                         _ => panic!("only assignment, call and command expressions are allowed as statements"),
                     }
@@ -92,10 +94,9 @@ impl Parser {
                 continue;
             }
 
+            use TokenKind::*;
             return matches!(line_tokens_iter.next(),
-                Some(Token {kind: TokenKind::LeftParen, ..}) |
-                Some(Token {kind: TokenKind::LeftBracket, ..}) |
-                Some(Token {kind: TokenKind::Equal, ..})
+                Some(Token {kind: LeftParen | LeftBracket | Equal | PlusEqual | MinusEqual | StarEqual | SlashEqual | CaretEqual | PercEqual , ..})
             );
         }
     }

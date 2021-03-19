@@ -124,7 +124,7 @@ impl Parser {
                         }
                     }
                     TokenKind::LeftParen => self.parse_call(lhs),
-                    _ => make_postfix_expr(lhs, &op),
+                    _ => unreachable!(),
                 };
 
                 continue;
@@ -286,57 +286,11 @@ impl Parser {
     }
 }
 
-// Gets a Get or GetField expression and makes it a += 1 or -= 1 expression
-fn make_bumper_from_getter(expr: Expr, op: TokenKind) -> Expr {
-    let op = match op {
-        TokenKind::PlusPlus => BinaryOp::Sum,
-        TokenKind::MinusMinus => BinaryOp::Sub,
-        _ => unreachable!(),
-    };
-
-    let inc = Box::new(Expr::Binary(Box::new(expr.clone()), op, Box::new(Expr::Literal(Value::Num(1.0)))));
-
-    match expr {
-        Expr::Get(name) => Expr::Set(name, inc),
-        Expr::GetField { base, index } => Expr::SetField { base, index, expr: inc },
-        _ => panic!("bad target")
-    }
-}
-
-fn make_postfix_expr(lhs: Expr, op: &TokenKind) -> Expr {
-    match *op {
-        // x++ becomes (x+=1,x-1)
-        // x-- becomes (x-=1,x+1)
-        TokenKind::PlusPlus | TokenKind::MinusMinus => {
-            // Clone because we'll need the getter later to compute the old value
-            let bumper = make_bumper_from_getter(lhs.clone(), op.clone());
-
-            // If we summed 1, then we want to subtract 1 to get the old value and vice-versa
-            let reverser_op = match *op {
-                TokenKind::PlusPlus => BinaryOp::Sub,
-                TokenKind::MinusMinus => BinaryOp::Sum,
-                _ => unreachable!(),
-            };
-
-            // Returns the new value with the transformation reversed
-            let retriever = Expr::Binary(Box::new(lhs), reverser_op, Box::new(Expr::Literal(Value::Num(1.0))));
-
-            // First assign the new value, then evaluate to the value with the transformation reversed
-            Expr::Comma(vec![bumper, retriever])
-        }
-        _ => unreachable!()
-    }
-}
-
 fn make_prefix_expr(op: &TokenKind, rhs: Expr) -> Expr {
     match *op {
         TokenKind::Plus => rhs,
         TokenKind::Minus => Expr::Unary(UnaryOp::Neg, Box::new(rhs)),
         TokenKind::Bang => Expr::Unary(UnaryOp::Not, Box::new(rhs)),
-
-        // ++x becomes x += 1
-        // --x becomes x -= 1
-        TokenKind::PlusPlus | TokenKind::MinusMinus => make_bumper_from_getter(rhs, op.clone()),
 
         _ => unreachable!()
     }
@@ -426,7 +380,7 @@ fn make_infix_expr(lhs: Expr, op: &TokenKind, rhs: Expr) -> Expr {
 fn prefix_binding_power(op: &TokenKind) -> Option<((), u8)> {
     use TokenKind::*;
     let bp = match op {
-        Bang | Plus | Minus | PlusPlus | MinusMinus => ((), 17),
+        Bang | Plus | Minus => ((), 17),
         _ => return None,
     };
     Some(bp)
@@ -451,8 +405,7 @@ fn infix_binding_power(op: &TokenKind) -> Option<(u8, u8)> {
 fn postfix_binding_power(op: &TokenKind) -> Option<(u8, ())> {
     use TokenKind::*;
     let bp = match op {
-        LeftBracket | LeftParen | Dot => (21, ()),
-        PlusPlus | MinusMinus => (19, ()),
+        LeftBracket | LeftParen | Dot => (19, ()),
         _ => return None,
     };
     Some(bp)

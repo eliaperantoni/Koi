@@ -56,9 +56,6 @@ pub enum TokenKind {
     Caret,
     Perc,
 
-    PlusPlus,
-    MinusMinus,
-
     True,
     False,
     Nil,

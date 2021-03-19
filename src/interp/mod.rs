@@ -357,13 +357,6 @@ impl Interpreter {
 
                 Value::Num(-num)
             }
-            Expr::Comma(mut exprs) => {
-                let last = exprs.remove(exprs.len() - 1);
-                for expr in exprs {
-                    self.eval(expr);
-                }
-                self.eval(last)
-            }
             Expr::Call { func, args } => {
                 let func = self.eval(*func);
 

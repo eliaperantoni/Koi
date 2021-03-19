@@ -113,12 +113,10 @@ impl RawLexer {
             }
 
             '+' => match self.char_at(1) {
-                Some('+') => (TokenKind::PlusPlus, 2),
                 Some('=') => (TokenKind::PlusEqual, 2),
                 _ => (TokenKind::Plus, 1),
             },
             '-' => match self.char_at(1) {
-                Some('-') => (TokenKind::MinusMinus, 2),
                 Some('=') => (TokenKind::MinusEqual, 2),
                 _ => (TokenKind::Minus, 1),
             },

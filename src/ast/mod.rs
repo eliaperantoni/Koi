@@ -70,8 +70,6 @@ pub enum Expr {
     Cmd(Cmd),
 
     Lambda(Func),
-
-    Comma(Vec<Expr>),
 }
 
 #[derive(Clone, Debug, PartialEq)]
