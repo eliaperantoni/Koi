@@ -144,3 +144,9 @@ fn if_else_stmt() {
 fn if_else_if_else_stmt() {
     assert_eq!(output("if false {print(1)} else if true {print(2)} else {print(3)}"), "2\n".to_string());
 }
+
+#[test]
+fn exported_var() {
+    assert_eq!(output("let AMPERE = 123\nenv | grep AMPERE"), "".to_string());
+    assert_eq!(output("exp let AMPERE = 123\nenv | grep AMPERE"), "AMPERE=123\n".to_string());
+}
