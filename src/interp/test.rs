@@ -93,14 +93,6 @@ fn interp() {
 }
 
 #[test]
-fn pre_post_inc_dec() {
-    assert_eq!(output("let x = 5 print(x++) print(x)"), "5\n6\n".to_string());
-    assert_eq!(output("let x = 5 print(x--) print(x)"), "5\n4\n".to_string());
-    assert_eq!(output("let x = 5 print(++x) print(x)"), "6\n6\n".to_string());
-    assert_eq!(output("let x = 5 print(--x) print(x)"), "4\n4\n".to_string());
-}
-
-#[test]
 fn arithmetic() {
     assert_eq!(output("print(22+5)"), "27\n".to_string());
     assert_eq!(output("print(22-5)"), "17\n".to_string());
