@@ -147,11 +147,16 @@ impl Interpreter {
                 }
             }
             Stmt::While { cond, then_do } => {
-                self.stack.push();
                 while self.eval(cond.clone()).is_truthy() {
                     self.run_stmt(*then_do.clone());
                 }
-                self.stack.pop();
+            }
+            Stmt::If {cond, then_do, else_do} => {
+                if self.eval(cond).is_truthy() {
+                    self.run_stmt(*then_do);
+                } else if else_do.is_some() {
+                    self.run_stmt(*else_do.unwrap());
+                }
             }
             _ => todo!()
         };

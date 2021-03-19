@@ -129,3 +129,18 @@ fn vecs_are_refs() {
 fn dicts_are_refs() {
     assert_eq!(output("let x = {a: 1, b: 2, c: 3} let y = x y['a'] = 99 y.b=55 print(x.a, x.b, x.c)"), "99 55 3\n".to_string());
 }
+
+#[test]
+fn if_stmt() {
+    assert_eq!(output("if true {print(1)}"), "1\n".to_string());
+}
+
+#[test]
+fn if_else_stmt() {
+    assert_eq!(output("if false {print(1)} else {print(2)}"), "2\n".to_string());
+}
+
+#[test]
+fn if_else_if_else_stmt() {
+    assert_eq!(output("if false {print(1)} else if true {print(2)} else {print(3)}"), "2\n".to_string());
+}
