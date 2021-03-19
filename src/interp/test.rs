@@ -150,3 +150,8 @@ fn exported_var() {
     assert_eq!(output("let AMPERE = 123\nenv | grep AMPERE"), "".to_string());
     assert_eq!(output("exp let AMPERE = 123\nenv | grep AMPERE"), "AMPERE=123\n".to_string());
 }
+
+#[test]
+fn imported_var() {
+    assert_eq!(output("print(USER + '\n' == $(whoami))"), "true\n".to_string());
+}
