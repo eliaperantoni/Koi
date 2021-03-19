@@ -93,4 +93,6 @@ pub enum TokenKind {
 
     Space,
     Newline,
+
+    UnknownChar(char),
 }

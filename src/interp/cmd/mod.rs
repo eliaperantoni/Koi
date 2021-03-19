@@ -222,10 +222,19 @@ impl Interpreter {
     }
 
     fn raster_segments(&mut self, segments: Vec<Vec<Expr>>) -> Vec<String> {
+        let home_dir = dirs::home_dir().expect("bad home dir").display().to_string();
+
         let mut out = Vec::new();
 
         for segment in segments {
-            let vals: Vec<Value> = segment.into_iter().map(|expr| self.eval(expr)).collect();
+            let mut vals: Vec<Value> = segment.into_iter().map(|expr| self.eval(expr)).collect();
+
+            vals.iter_mut().for_each(|val| {
+                if let Value::String(str) = val {
+                     *str = str.replace("~", &home_dir);
+                }
+            });
+
             out.append(&mut cross_product(vals));
         }
 

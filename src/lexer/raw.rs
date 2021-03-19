@@ -146,7 +146,7 @@ impl RawLexer {
                 _ => panic!("unexpected character"),
             },
 
-            _ => panic!("unexpected character"),
+            c => (TokenKind::UnknownChar(c), 1),
         };
 
         let lexeme = self.make_lexeme(self.cursor, self.cursor + length);
