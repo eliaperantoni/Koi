@@ -177,3 +177,21 @@ fn func_return_nil() {
 fn func_no_return() {
     assert_eq!(output("fn p() {} print(p())"), "nil\n".to_string());
 }
+
+#[test]
+#[should_panic]
+fn uncaught_break() {
+    output("break");
+}
+
+#[test]
+#[should_panic]
+fn uncaught_return() {
+    output("return");
+}
+
+#[test]
+#[should_panic]
+fn uncaught_break_func_call() {
+    output("fn p() {break} p()");
+}
