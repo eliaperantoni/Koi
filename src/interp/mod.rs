@@ -118,20 +118,30 @@ impl Interpreter {
                     _ => Value::Nil,
                 };
 
+                self.push_env();
                 self.get_env_mut().def(name, Var::new(val, is_exp));
             }
             Stmt::Expr(expr) => {
                 self.eval(expr);
             }
             Stmt::Block(stmts) => {
+                let original_env = Rc::clone(&self.env);
+
                 self.push_env();
+
+                let mut res = Ok(());
                 for stmt in stmts {
-                    self.run_stmt(stmt).or_else(|err| {
-                        self.pop_env();
-                        Err(err)
-                    })?;
+                    res = self.run_stmt(stmt);
+                    if res.is_err() {
+                        break;
+                    }
                 }
-                self.pop_env();
+
+                while !Rc::ptr_eq(&self.env, &original_env) {
+                    self.pop_env();
+                }
+
+                res?
             }
             Stmt::For { lvar, rvar, iterated, each_do } => {
                 let iterated = self.eval(iterated);
