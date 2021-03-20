@@ -1,16 +1,19 @@
+use crate::interp::Value;
 use std::collections::HashMap;
-use super::Value;
 
-pub type Stack = Vec<Env>;
+#[derive(Clone)]
+pub struct Var {
+    pub val: Value,
+    pub is_exp: bool,
+}
 
-pub type Env = HashMap<String, Value>;
-
-impl Env {
-    pub fn new() -> Env {
-        HashMap::new()
-    }
-
-    pub fn get() -> Value {
-
+impl From<Value> for Var {
+    fn from(val: Value) -> Self {
+        Var {
+            val,
+            is_exp: false,
+        }
     }
 }
+
+pub type Env = HashMap<String, Var>;

@@ -2,23 +2,7 @@ use std::collections::HashMap;
 
 use super::Value;
 use crate::interp::cmd::OsEnv;
-
-#[derive(Clone)]
-pub struct Var {
-    pub val: Value,
-    pub is_exp: bool,
-}
-
-impl From<Value> for Var {
-    fn from(val: Value) -> Self {
-        Var {
-            val,
-            is_exp: false,
-        }
-    }
-}
-
-type Env = HashMap<String, Var>;
+use crate::interp::env::{Env, Var};
 
 pub struct Stack(Vec<Env>);
 

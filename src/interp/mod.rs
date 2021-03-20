@@ -2,7 +2,7 @@ use core::fmt;
 use std::borrow::Borrow;
 use std::cell::{Ref, RefCell, RefMut};
 use std::collections::HashMap;
-use std::env;
+use std::env as std_env;
 use std::fmt::{Debug, Display, Formatter};
 use std::hint::unreachable_unchecked;
 use std::ops::Deref;
@@ -14,10 +14,11 @@ use itertools::Itertools;
 
 use crate::ast::{BinaryOp, Expr, Prog, Stmt, UnaryOp};
 use crate::ast::Expr::Interp;
-use crate::interp::stack::{Stack, Var};
+use crate::interp::stack::Stack;
+use crate::interp::env::Var;
 
 mod cmd;
-
+mod env;
 mod stack;
 
 #[cfg(test)]
@@ -78,7 +79,7 @@ impl Interpreter {
     }
 
     fn import_os_env(&mut self) {
-        for (k, v) in env::vars() {
+        for (k, v) in std_env::vars() {
             self.stack.def(k, Value::String(v));
         }
     }
