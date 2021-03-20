@@ -3,6 +3,7 @@ use crate::lexer::new as new_lexer;
 use crate::interp::{Func, Value};
 
 use super::*;
+use std::collections::HashMap;
 
 fn make_parser(source: &str) -> Parser {
     let lexer = new_lexer(source.to_owned());
@@ -234,7 +235,7 @@ fn parses_explicit_cmd_stmt() {
 #[test]
 #[should_panic]
 fn panics_instead_of_cmd_fallback() {
-    parse("my_fn(\n    \"foo\",\n    \"bar\",\n)");
+    parse("my_fn(\n    \"foo\",\n    \"bar\"@\n)");
 }
 
 #[test]
@@ -573,5 +574,35 @@ fn parses_range_complex_exprs() {
             Box::new(Expr::Literal(Value::Num(1.0))),
         )),
         inclusive: true,
+    });
+}
+
+#[test]
+fn parses_vec_literal() {
+    assert_eq!(parse_expression("[\n1,\n2\n3,]"), Expr::Vec(vec![
+        Expr::Literal(Value::Num(1.0)),
+        Expr::Literal(Value::Num(2.0)),
+        Expr::Literal(Value::Num(3.0)),
+    ]));
+}
+
+#[test]
+fn parses_dict_literal() {
+    let mut map = HashMap::new();
+    map.insert("a".to_string(), Expr::Literal(Value::Num(1.0)));
+    map.insert("b".to_string(), Expr::Literal(Value::Num(2.0)));
+    map.insert("c".to_string(), Expr::Literal(Value::Num(3.0)));
+    assert_eq!(parse_expression("{\na : 1,\nb : 2\nc : 3,}"), Expr::Dict(map));
+}
+
+#[test]
+fn parses_call() {
+    assert_eq!(parse_expression("f(\n1,\n2\n3,)"), Expr::Call{
+        func: Box::new(Expr::Get("f".to_string())),
+        args: vec![
+            Expr::Literal(Value::Num(1.0)),
+            Expr::Literal(Value::Num(2.0)),
+            Expr::Literal(Value::Num(3.0)),
+        ]
     });
 }
