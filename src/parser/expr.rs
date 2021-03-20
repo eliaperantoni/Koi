@@ -151,43 +151,33 @@ impl Parser {
         lhs
     }
 
-    fn parse_call(&mut self, func: Expr) -> Expr {
-        let func = Box::new(func);
-
-        let mut args = Vec::new();
-
-        self.lexer.consume_whitespace(self.is_multiline);
-        if matches!(self.lexer.peek(), Some(Token { kind: TokenKind::RightParen, .. })) {
-            self.lexer.next();
-            return Expr::Call {
-                args,
-                func,
-            };
-        }
-
-        loop {
-            self.lexer.consume_whitespace(self.is_multiline);
-            args.push(self.parse_expr(0));
-            self.lexer.consume_whitespace(self.is_multiline);
-
-            match self.lexer.next() {
-                Some(Token { kind: TokenKind::Comma, .. }) => (),
-                Some(Token { kind: TokenKind::RightParen, .. }) => break,
-                _ => panic!("expected comma or right parenthesis"),
-            }
-        }
-
-        Expr::Call {
-            args,
-            func,
-        }
-    }
-
     fn consume_commas_and_whitespace(&mut self) {
         self.lexer.consume_whitespace(self.is_multiline);
         while matches!(self.lexer.peek(), Some(Token{kind: TokenKind::Comma, ..})) {
             self.lexer.next();
             self.lexer.consume_whitespace(self.is_multiline);
+        }
+    }
+
+    fn parse_call(&mut self, func: Expr) -> Expr {
+        let func = Box::new(func);
+
+        let mut args = Vec::new();
+
+        loop {
+            self.consume_commas_and_whitespace();
+
+            if matches!(self.lexer.peek(), Some(Token{kind: TokenKind::RightParen, ..})) {
+                self.lexer.next();
+                break;
+            }
+
+            args.push(self.parse_expr(0));
+        }
+
+        Expr::Call {
+            args,
+            func,
         }
     }
 
