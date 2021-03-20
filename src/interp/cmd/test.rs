@@ -1,5 +1,5 @@
 use super::cross_product;
-use super::super::Value;
+use crate::interp::value::Value;
 use std::cell::RefCell;
 use std::rc::Rc;
 

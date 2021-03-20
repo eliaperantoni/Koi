@@ -1,5 +1,8 @@
+use std::borrow::BorrowMut;
+use std::cell::RefCell;
 use std::fs::File;
 use std::io::Read;
+use std::ops::{Deref, DerefMut};
 use std::process::{Child, Command, ExitStatus, Stdio};
 use std::thread;
 use std::thread::JoinHandle;
@@ -10,10 +13,7 @@ use os_pipe::{pipe, PipeReader, PipeWriter};
 use crate::ast::{Cmd, CmdOp, Expr};
 
 use super::Interpreter;
-use super::Value;
-use std::cell::RefCell;
-use std::borrow::BorrowMut;
-use std::ops::{Deref, DerefMut};
+use super::value::Value;
 
 #[cfg(test)]
 mod test;

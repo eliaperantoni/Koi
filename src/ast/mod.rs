@@ -1,6 +1,7 @@
 use std::collections::HashMap;
 
-use crate::interp::{Func, Value};
+use crate::interp::Func;
+use crate::interp::Value;
 
 pub type Prog = Vec<Stmt>;
 

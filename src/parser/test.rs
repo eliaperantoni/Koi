@@ -1,9 +1,11 @@
+use std::collections::HashMap;
+
 use crate::ast::{BinaryOp, Cmd, CmdOp, Expr};
+use crate::interp::Func;
+use crate::interp::Value;
 use crate::lexer::new as new_lexer;
-use crate::interp::{Func, Value};
 
 use super::*;
-use std::collections::HashMap;
 
 fn make_parser(source: &str) -> Parser {
     let lexer = new_lexer(source.to_owned());
