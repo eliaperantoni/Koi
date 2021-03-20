@@ -183,25 +183,26 @@ impl Parser {
         }
     }
 
+    fn consume_commas_and_whitespace(&mut self) {
+        self.lexer.consume_whitespace(self.is_multiline);
+        while matches!(self.lexer.peek(), Some(Token{kind: TokenKind::Comma, ..})) {
+            self.lexer.next();
+            self.lexer.consume_whitespace(self.is_multiline);
+        }
+    }
+
     fn parse_vec_literal(&mut self) -> Expr {
         let mut vec = Vec::new();
 
-        self.lexer.consume_whitespace(self.is_multiline);
-        if matches!(self.lexer.peek(), Some(Token { kind: TokenKind::RightBracket, .. })) {
-            self.lexer.next();
-            return Expr::Vec(vec);
-        }
-
         loop {
-            self.lexer.consume_whitespace(self.is_multiline);
-            vec.push(self.parse_expr(0));
-            self.lexer.consume_whitespace(self.is_multiline);
+            self.consume_commas_and_whitespace();
 
-            match self.lexer.next() {
-                Some(Token { kind: TokenKind::Comma, .. }) => (),
-                Some(Token { kind: TokenKind::RightBracket, .. }) => break,
-                _ => panic!("expected comma or right bracket"),
+            if matches!(self.lexer.peek(), Some(Token{kind: TokenKind::RightBracket, ..})) {
+                self.lexer.next();
+                break;
             }
+
+            vec.push(self.parse_expr(0));
         }
 
         Expr::Vec(vec)
@@ -210,14 +211,14 @@ impl Parser {
     fn parse_dict_literal(&mut self) -> Expr {
         let mut dict = HashMap::new();
 
-        self.lexer.consume_whitespace(self.is_multiline);
-        if matches!(self.lexer.peek(), Some(Token { kind: TokenKind::RightBrace, .. })) {
-            self.lexer.next();
-            return Expr::Dict(dict);
-        }
-
         loop {
-            self.lexer.consume_whitespace(self.is_multiline);
+            self.consume_commas_and_whitespace();
+
+            if matches!(self.lexer.peek(), Some(Token{kind: TokenKind::RightBrace, ..})) {
+                self.lexer.next();
+                break;
+            }
+
             let k = match self.lexer.next() {
                 Some(Token { kind: TokenKind::String { value, does_interp }, .. }) if !does_interp => value,
                 Some(Token { kind: TokenKind::Identifier(name), .. }) => name,
@@ -234,13 +235,6 @@ impl Parser {
             let v = self.parse_expr(0);
 
             dict.insert(k, v);
-
-            self.lexer.consume_whitespace(self.is_multiline);
-            match self.lexer.next() {
-                Some(Token { kind: TokenKind::Comma, .. }) => (),
-                Some(Token { kind: TokenKind::RightBrace, .. }) => break,
-                _ => panic!("expected comma or right brace"),
-            }
         }
 
         Expr::Dict(dict)
