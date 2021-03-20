@@ -1,6 +1,3 @@
-extern crate test;
-use test::Bencher;
-
 use crate::lexer::new as new_lexer;
 use crate::parser::Parser;
 

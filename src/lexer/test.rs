@@ -1,6 +1,6 @@
-use super::*;
-
 use crate::token::{Token, TokenKind};
+
+use super::*;
 
 fn make_lexer(source: &str) -> Lexer {
     new(source.to_owned())
@@ -304,9 +304,9 @@ fn scans_lexemes() {
 fn peeks() {
     let mut lexer = make_lexer("+-");
 
-    assert_eq!(lexer.peek(), Some(&Token{kind: TokenKind::Plus, lexeme: "+".to_owned()}));
-    assert_eq!(lexer.next(), Some(Token{kind: TokenKind::Plus, lexeme: "+".to_owned()}));
-    assert_eq!(lexer.next(), Some(Token{kind: TokenKind::Minus, lexeme: "-".to_owned()}));
+    assert_eq!(lexer.peek(), Some(&Token { kind: TokenKind::Plus, lexeme: "+".to_owned() }));
+    assert_eq!(lexer.next(), Some(Token { kind: TokenKind::Plus, lexeme: "+".to_owned() }));
+    assert_eq!(lexer.next(), Some(Token { kind: TokenKind::Minus, lexeme: "-".to_owned() }));
     assert_eq!(lexer.next(), None);
 }
 
@@ -316,13 +316,13 @@ fn records() {
 
     lexer.start_recording();
 
-    assert_eq!(lexer.next(), Some(Token{kind: TokenKind::Plus, lexeme: "+".to_owned()}));
-    assert_eq!(lexer.next(), Some(Token{kind: TokenKind::Minus, lexeme: "-".to_owned()}));
+    assert_eq!(lexer.next(), Some(Token { kind: TokenKind::Plus, lexeme: "+".to_owned() }));
+    assert_eq!(lexer.next(), Some(Token { kind: TokenKind::Minus, lexeme: "-".to_owned() }));
 
     lexer.stop_recording(true);
 
-    assert_eq!(lexer.next(), Some(Token{kind: TokenKind::Plus, lexeme: "+".to_owned()}));
-    assert_eq!(lexer.next(), Some(Token{kind: TokenKind::Minus, lexeme: "-".to_owned()}));
+    assert_eq!(lexer.next(), Some(Token { kind: TokenKind::Plus, lexeme: "+".to_owned() }));
+    assert_eq!(lexer.next(), Some(Token { kind: TokenKind::Minus, lexeme: "-".to_owned() }));
     assert_eq!(lexer.next(), None);
 }
 
@@ -332,12 +332,12 @@ fn records_no_playback() {
 
     lexer.start_recording();
 
-    assert_eq!(lexer.next(), Some(Token{kind: TokenKind::Plus, lexeme: "+".to_owned()}));
-    assert_eq!(lexer.next(), Some(Token{kind: TokenKind::Minus, lexeme: "-".to_owned()}));
+    assert_eq!(lexer.next(), Some(Token { kind: TokenKind::Plus, lexeme: "+".to_owned() }));
+    assert_eq!(lexer.next(), Some(Token { kind: TokenKind::Minus, lexeme: "-".to_owned() }));
 
     lexer.stop_recording(false);
 
-    assert_eq!(lexer.next(), Some(Token{kind: TokenKind::Caret, lexeme: "^".to_owned()}));
+    assert_eq!(lexer.next(), Some(Token { kind: TokenKind::Caret, lexeme: "^".to_owned() }));
     assert_eq!(lexer.next(), None);
 }
 
@@ -346,17 +346,17 @@ fn newline_while_peeking() {
     let mut lexer = make_lexer("+\n-");
 
     assert_eq!(lexer.is_new_line, true);
-    assert_eq!(lexer.peek(), Some(&Token{kind: TokenKind::Plus, lexeme: "+".to_owned()}));
+    assert_eq!(lexer.peek(), Some(&Token { kind: TokenKind::Plus, lexeme: "+".to_owned() }));
     assert_eq!(lexer.is_new_line, true);
-    assert_eq!(lexer.next(), Some(Token{kind: TokenKind::Plus, lexeme: "+".to_owned()}));
+    assert_eq!(lexer.next(), Some(Token { kind: TokenKind::Plus, lexeme: "+".to_owned() }));
     assert_eq!(lexer.is_new_line, false);
-    assert_eq!(lexer.peek(), Some(&Token{kind: TokenKind::Newline, lexeme: "\n".to_owned()}));
+    assert_eq!(lexer.peek(), Some(&Token { kind: TokenKind::Newline, lexeme: "\n".to_owned() }));
     assert_eq!(lexer.is_new_line, false);
-    assert_eq!(lexer.next(), Some(Token{kind: TokenKind::Newline, lexeme: "\n".to_owned()}));
+    assert_eq!(lexer.next(), Some(Token { kind: TokenKind::Newline, lexeme: "\n".to_owned() }));
     assert_eq!(lexer.is_new_line, true);
-    assert_eq!(lexer.peek(), Some(&Token{kind: TokenKind::Minus, lexeme: "-".to_owned()}));
+    assert_eq!(lexer.peek(), Some(&Token { kind: TokenKind::Minus, lexeme: "-".to_owned() }));
     assert_eq!(lexer.is_new_line, true);
-    assert_eq!(lexer.next(), Some(Token{kind: TokenKind::Minus, lexeme: "-".to_owned()}));
+    assert_eq!(lexer.next(), Some(Token { kind: TokenKind::Minus, lexeme: "-".to_owned() }));
     assert_eq!(lexer.is_new_line, false);
     assert_eq!(lexer.next(), None);
 }
@@ -367,20 +367,20 @@ fn newline_while_recording() {
 
     lexer.start_recording();
 
-    assert_eq!(lexer.next(), Some(Token{kind: TokenKind::Plus, lexeme: "+".to_owned()}));
-    assert_eq!(lexer.next(), Some(Token{kind: TokenKind::Minus, lexeme: "-".to_owned()}));
-    assert_eq!(lexer.next(), Some(Token{kind: TokenKind::Newline, lexeme: "\n".to_owned()}));
+    assert_eq!(lexer.next(), Some(Token { kind: TokenKind::Plus, lexeme: "+".to_owned() }));
+    assert_eq!(lexer.next(), Some(Token { kind: TokenKind::Minus, lexeme: "-".to_owned() }));
+    assert_eq!(lexer.next(), Some(Token { kind: TokenKind::Newline, lexeme: "\n".to_owned() }));
 
     lexer.stop_recording(true);
 
     assert_eq!(lexer.is_new_line, true);
-    assert_eq!(lexer.next(), Some(Token{kind: TokenKind::Plus, lexeme: "+".to_owned()}));
+    assert_eq!(lexer.next(), Some(Token { kind: TokenKind::Plus, lexeme: "+".to_owned() }));
     assert_eq!(lexer.is_new_line, false);
-    assert_eq!(lexer.next(), Some(Token{kind: TokenKind::Minus, lexeme: "-".to_owned()}));
+    assert_eq!(lexer.next(), Some(Token { kind: TokenKind::Minus, lexeme: "-".to_owned() }));
     assert_eq!(lexer.is_new_line, false);
-    assert_eq!(lexer.next(), Some(Token{kind: TokenKind::Newline, lexeme: "\n".to_owned()}));
+    assert_eq!(lexer.next(), Some(Token { kind: TokenKind::Newline, lexeme: "\n".to_owned() }));
     assert_eq!(lexer.is_new_line, true);
-    assert_eq!(lexer.next(), Some(Token{kind: TokenKind::Plus, lexeme: "+".to_owned()}));
+    assert_eq!(lexer.next(), Some(Token { kind: TokenKind::Plus, lexeme: "+".to_owned() }));
     assert_eq!(lexer.is_new_line, false);
     assert_eq!(lexer.next(), None);
 }
@@ -389,11 +389,11 @@ fn newline_while_recording() {
 fn records_with_peeked() {
     let mut lexer = make_lexer("+");
 
-    assert_eq!(lexer.peek(), Some(&Token{kind: TokenKind::Plus, lexeme: "+".to_owned()}));
+    assert_eq!(lexer.peek(), Some(&Token { kind: TokenKind::Plus, lexeme: "+".to_owned() }));
     lexer.start_recording();
-    assert_eq!(lexer.next(), Some(Token{kind: TokenKind::Plus, lexeme: "+".to_owned()}));
+    assert_eq!(lexer.next(), Some(Token { kind: TokenKind::Plus, lexeme: "+".to_owned() }));
     lexer.stop_recording(true);
-    assert_eq!(lexer.next(), Some(Token{kind: TokenKind::Plus, lexeme: "+".to_owned()}));
+    assert_eq!(lexer.next(), Some(Token { kind: TokenKind::Plus, lexeme: "+".to_owned() }));
     assert_eq!(lexer.next(), None);
 }
 
@@ -402,10 +402,10 @@ fn peeks_while_recording() {
     let mut lexer = make_lexer("+-");
 
     lexer.start_recording();
-    assert_eq!(lexer.peek(), Some(&Token{kind: TokenKind::Plus, lexeme: "+".to_owned()}));
+    assert_eq!(lexer.peek(), Some(&Token { kind: TokenKind::Plus, lexeme: "+".to_owned() }));
     lexer.stop_recording(true);
-    assert_eq!(lexer.next(), Some(Token{kind: TokenKind::Plus, lexeme: "+".to_owned()}));
-    assert_eq!(lexer.next(), Some(Token{kind: TokenKind::Minus, lexeme: "-".to_owned()}));
+    assert_eq!(lexer.next(), Some(Token { kind: TokenKind::Plus, lexeme: "+".to_owned() }));
+    assert_eq!(lexer.next(), Some(Token { kind: TokenKind::Minus, lexeme: "-".to_owned() }));
     assert_eq!(lexer.next(), None);
 }
 
@@ -414,12 +414,12 @@ fn peeks_while_recording_and_consumes() {
     let mut lexer = make_lexer("+-");
 
     lexer.start_recording();
-    assert_eq!(lexer.peek(), Some(&Token{kind: TokenKind::Plus, lexeme: "+".to_owned()}));
-    assert_eq!(lexer.next(), Some(Token{kind: TokenKind::Plus, lexeme: "+".to_owned()}));
+    assert_eq!(lexer.peek(), Some(&Token { kind: TokenKind::Plus, lexeme: "+".to_owned() }));
+    assert_eq!(lexer.next(), Some(Token { kind: TokenKind::Plus, lexeme: "+".to_owned() }));
     lexer.stop_recording(true);
 
-    assert_eq!(lexer.next(), Some(Token{kind: TokenKind::Plus, lexeme: "+".to_owned()}));
-    assert_eq!(lexer.next(), Some(Token{kind: TokenKind::Minus, lexeme: "-".to_owned()}));
+    assert_eq!(lexer.next(), Some(Token { kind: TokenKind::Plus, lexeme: "+".to_owned() }));
+    assert_eq!(lexer.next(), Some(Token { kind: TokenKind::Minus, lexeme: "-".to_owned() }));
     assert_eq!(lexer.next(), None);
 }
 
@@ -428,12 +428,12 @@ fn peeks_after_record() {
     let mut lexer = make_lexer("+-");
 
     lexer.start_recording();
-    assert_eq!(lexer.next(), Some(Token{kind: TokenKind::Plus, lexeme: "+".to_owned()}));
+    assert_eq!(lexer.next(), Some(Token { kind: TokenKind::Plus, lexeme: "+".to_owned() }));
     lexer.stop_recording(true);
-    assert_eq!(lexer.next(), Some(Token{kind: TokenKind::Plus, lexeme: "+".to_owned()}));
+    assert_eq!(lexer.next(), Some(Token { kind: TokenKind::Plus, lexeme: "+".to_owned() }));
 
-    assert_eq!(lexer.peek(), Some(&Token{kind: TokenKind::Minus, lexeme: "-".to_owned()}));
-    assert_eq!(lexer.next(), Some(Token{kind: TokenKind::Minus, lexeme: "-".to_owned()}));
+    assert_eq!(lexer.peek(), Some(&Token { kind: TokenKind::Minus, lexeme: "-".to_owned() }));
+    assert_eq!(lexer.next(), Some(Token { kind: TokenKind::Minus, lexeme: "-".to_owned() }));
     assert_eq!(lexer.next(), None);
 }
 
@@ -442,11 +442,11 @@ fn peeks_after_record_without_playback() {
     let mut lexer = make_lexer("+-");
 
     lexer.start_recording();
-    assert_eq!(lexer.next(), Some(Token{kind: TokenKind::Plus, lexeme: "+".to_owned()}));
+    assert_eq!(lexer.next(), Some(Token { kind: TokenKind::Plus, lexeme: "+".to_owned() }));
     lexer.stop_recording(false);
 
-    assert_eq!(lexer.peek(), Some(&Token{kind: TokenKind::Minus, lexeme: "-".to_owned()}));
-    assert_eq!(lexer.next(), Some(Token{kind: TokenKind::Minus, lexeme: "-".to_owned()}));
+    assert_eq!(lexer.peek(), Some(&Token { kind: TokenKind::Minus, lexeme: "-".to_owned() }));
+    assert_eq!(lexer.next(), Some(Token { kind: TokenKind::Minus, lexeme: "-".to_owned() }));
     assert_eq!(lexer.next(), None);
 }
 
@@ -455,21 +455,21 @@ fn peeks_while_recording_nothing() {
     let mut lexer = make_lexer("+");
 
     lexer.start_recording();
-    assert_eq!(lexer.peek(), Some(&Token{kind: TokenKind::Plus, lexeme: "+".to_owned()}));
+    assert_eq!(lexer.peek(), Some(&Token { kind: TokenKind::Plus, lexeme: "+".to_owned() }));
     lexer.stop_recording(true);
 
-    assert_eq!(lexer.next(), Some(Token{kind: TokenKind::Plus, lexeme: "+".to_owned()}));
+    assert_eq!(lexer.next(), Some(Token { kind: TokenKind::Plus, lexeme: "+".to_owned() }));
     assert_eq!(lexer.next(), None);
 }
 
 #[test]
 fn consumes_whitespace() {
     assert_eq!(scan(" \n \n   "), vec![
-        Token{kind: TokenKind::Space, lexeme: " ".to_owned()},
-        Token{kind: TokenKind::Newline, lexeme: "\n".to_owned()},
-        Token{kind: TokenKind::Space, lexeme: " ".to_owned()},
-        Token{kind: TokenKind::Newline, lexeme: "\n".to_owned()},
-        Token{kind: TokenKind::Space, lexeme: "   ".to_owned()},
+        Token { kind: TokenKind::Space, lexeme: " ".to_owned() },
+        Token { kind: TokenKind::Newline, lexeme: "\n".to_owned() },
+        Token { kind: TokenKind::Space, lexeme: " ".to_owned() },
+        Token { kind: TokenKind::Newline, lexeme: "\n".to_owned() },
+        Token { kind: TokenKind::Space, lexeme: "   ".to_owned() },
     ]);
 }
 
@@ -482,21 +482,21 @@ fn consumes_whitespace_recording() {
     lexer.stop_recording(true);
 
     assert_eq!(lexer.collect::<Vec<Token>>(), vec![
-        Token{kind: TokenKind::Space, lexeme: " ".to_owned()},
-        Token{kind: TokenKind::Newline, lexeme: "\n".to_owned()},
-        Token{kind: TokenKind::Space, lexeme: " ".to_owned()},
-        Token{kind: TokenKind::Newline, lexeme: "\n".to_owned()},
-        Token{kind: TokenKind::Space, lexeme: "   ".to_owned()},
+        Token { kind: TokenKind::Space, lexeme: " ".to_owned() },
+        Token { kind: TokenKind::Newline, lexeme: "\n".to_owned() },
+        Token { kind: TokenKind::Space, lexeme: " ".to_owned() },
+        Token { kind: TokenKind::Newline, lexeme: "\n".to_owned() },
+        Token { kind: TokenKind::Space, lexeme: "   ".to_owned() },
     ]);
 }
 
 #[test]
 fn ignores_comments() {
     assert_eq!(scan("a# i am a comment\nb#another comment\n"), vec![
-        Token{kind: TokenKind::Identifier("a".to_string()), lexeme: "a".to_string()},
-        Token{kind: TokenKind::Newline, lexeme: "\n".to_owned()},
-        Token{kind: TokenKind::Identifier("b".to_string()), lexeme: "b".to_string()},
-        Token{kind: TokenKind::Newline, lexeme: "\n".to_owned()},
+        Token { kind: TokenKind::Identifier("a".to_string()), lexeme: "a".to_string() },
+        Token { kind: TokenKind::Newline, lexeme: "\n".to_owned() },
+        Token { kind: TokenKind::Identifier("b".to_string()), lexeme: "b".to_string() },
+        Token { kind: TokenKind::Newline, lexeme: "\n".to_owned() },
     ]);
 }
 
@@ -504,8 +504,8 @@ fn ignores_comments() {
 #[test]
 fn crlf_line_ending() {
     assert_eq!(scan("x\r\ny"), vec![
-        Token{kind: TokenKind::Identifier("x".to_string()), lexeme: "x".to_string()},
-        Token{kind: TokenKind::Newline, lexeme: "\r\n".to_owned()},
-        Token{kind: TokenKind::Identifier("y".to_string()), lexeme: "y".to_string()},
+        Token { kind: TokenKind::Identifier("x".to_string()), lexeme: "x".to_string() },
+        Token { kind: TokenKind::Newline, lexeme: "\r\n".to_owned() },
+        Token { kind: TokenKind::Identifier("y".to_string()), lexeme: "y".to_string() },
     ]);
 }

@@ -1,7 +1,7 @@
-use super::Parser;
-
 use crate::interp::Func;
 use crate::token::{Token, TokenKind};
+
+use super::Parser;
 
 impl Parser {
     pub fn continue_parse_fn(&mut self) -> Func {

@@ -602,12 +602,12 @@ fn parses_dict_literal() {
 
 #[test]
 fn parses_call() {
-    assert_eq!(parse_expression("f(\n1,\n2\n3,)"), Expr::Call{
+    assert_eq!(parse_expression("f(\n1,\n2\n3,)"), Expr::Call {
         func: Box::new(Expr::Get("f".to_string())),
         args: vec![
             Expr::Literal(Value::Num(1.0)),
             Expr::Literal(Value::Num(2.0)),
             Expr::Literal(Value::Num(3.0)),
-        ]
+        ],
     });
 }

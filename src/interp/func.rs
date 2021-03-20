@@ -13,7 +13,7 @@ pub enum Func {
         name: Option<String>,
         params: Vec<String>,
         body: Box<Stmt>,
-        captured_env: Option<Rc<RefCell<Env>>>
+        captured_env: Option<Rc<RefCell<Env>>>,
     },
     Native {
         name: String,

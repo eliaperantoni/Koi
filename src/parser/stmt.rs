@@ -7,26 +7,26 @@ use super::Parser;
 impl Parser {
     pub fn parse_stmt(&mut self) -> Stmt {
         match self.lexer.peek() {
-            Some(Token {kind: TokenKind::LeftBrace, ..}) => self.parse_block(),
+            Some(Token { kind: TokenKind::LeftBrace, .. }) => self.parse_block(),
 
-            Some(Token {kind: TokenKind::Let, ..}) |
-            Some(Token {kind: TokenKind::Exp, ..}) => self.parse_let_stmt(),
+            Some(Token { kind: TokenKind::Let, .. }) |
+            Some(Token { kind: TokenKind::Exp, .. }) => self.parse_let_stmt(),
 
-            Some(Token{kind: TokenKind::If, ..}) => self.parse_if_stmt(),
-            Some(Token{kind: TokenKind::For, ..}) => self.parse_for_stmt(),
-            Some(Token{kind: TokenKind::While, ..}) => self.parse_while_stmt(),
-            Some(Token{kind: TokenKind::Fn, ..}) => self.parse_fn_stmt(),
+            Some(Token { kind: TokenKind::If, .. }) => self.parse_if_stmt(),
+            Some(Token { kind: TokenKind::For, .. }) => self.parse_for_stmt(),
+            Some(Token { kind: TokenKind::While, .. }) => self.parse_while_stmt(),
+            Some(Token { kind: TokenKind::Fn, .. }) => self.parse_fn_stmt(),
 
-            Some(Token{kind: TokenKind::Return, ..}) => self.parse_return(),
+            Some(Token { kind: TokenKind::Return, .. }) => self.parse_return(),
 
-            Some(Token{kind: TokenKind::Continue, ..}) => {
+            Some(Token { kind: TokenKind::Continue, .. }) => {
                 self.lexer.next();
                 Stmt::Continue
-            },
-            Some(Token{kind: TokenKind::Break, ..}) => {
+            }
+            Some(Token { kind: TokenKind::Break, .. }) => {
                 self.lexer.next();
                 Stmt::Break
-            },
+            }
 
             _ => {
                 let is_dollar_in_front = matches!(self.lexer.peek(), Some(Token {kind: TokenKind::Dollar, ..}));
@@ -55,7 +55,7 @@ impl Parser {
                         Expr::Cmd(cmd) => Stmt::Cmd(cmd),
                         // We allow comma expression because they can't be created by the user, they are generated
                         // to emulate x++
-                        Expr::Set(..) | Expr::SetField {..} | Expr::Call {..} => Stmt::Expr(expr),
+                        Expr::Set(..) | Expr::SetField { .. } | Expr::Call { .. } => Stmt::Expr(expr),
                         _ => panic!("only assignment, call and command expressions are allowed as statements"),
                     }
                 }
@@ -241,7 +241,7 @@ impl Parser {
         self.lexer.consume_whitespace(self.is_multiline);
 
         let (params, body) = match self.continue_parse_fn() {
-            Func::User {params, body, ..} => (params, body),
+            Func::User { params, body, .. } => (params, body),
             _ => unreachable!(),
         };
 

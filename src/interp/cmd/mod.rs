@@ -1,8 +1,7 @@
-use std::borrow::BorrowMut;
 use std::cell::RefCell;
 use std::fs::File;
 use std::io::Read;
-use std::ops::{Deref, DerefMut};
+use std::ops::DerefMut;
 use std::process::{Child, Command, ExitStatus, Stdio};
 use std::thread;
 use std::thread::JoinHandle;
@@ -67,7 +66,7 @@ impl Process {
                 rhs.set_env(env);
             }
             Process::Cond { procs, .. } => {
-                let (lhs, rhs) =  procs.as_mut().unwrap().deref_mut();
+                let (lhs, rhs) = procs.as_mut().unwrap().deref_mut();
                 lhs.set_env(env.clone());
                 rhs.set_env(env);
             }
@@ -166,7 +165,7 @@ impl Interpreter {
         cmd.wait();
 
         let mut out = String::new();
-        r.read_to_string(&mut out);
+        r.read_to_string(&mut out).unwrap();
 
         out
     }
@@ -259,7 +258,7 @@ impl Interpreter {
 
             vals.iter_mut().for_each(|val| {
                 if let Value::String(str) = val {
-                     *str = str.replace("~", &home_dir);
+                    *str = str.replace("~", &home_dir);
                 }
             });
 

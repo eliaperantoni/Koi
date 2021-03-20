@@ -1,11 +1,9 @@
-use std::borrow::BorrowMut;
 use std::cell::RefCell;
 use std::collections::HashMap;
-use std::ops::DerefMut;
 use std::rc::Rc;
 
-use crate::interp::value::Value;
 use crate::interp::cmd::OsEnv;
+use crate::interp::value::Value;
 
 pub struct Var {
     val: Value,

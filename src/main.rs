@@ -3,8 +3,8 @@
 #![feature(option_insert)]
 #![feature(test)]
 
-use std::fs;
 use std::error::Error;
+use std::fs;
 
 mod token;
 mod lexer;

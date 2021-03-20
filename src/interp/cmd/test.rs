@@ -1,7 +1,9 @@
-use super::cross_product;
-use crate::interp::value::Value;
 use std::cell::RefCell;
 use std::rc::Rc;
+
+use crate::interp::value::Value;
+
+use super::cross_product;
 
 #[test]
 fn test_cross_product() {

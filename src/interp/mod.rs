@@ -1,13 +1,8 @@
-use core::fmt;
-use std::borrow::Borrow;
 use std::cell::{Ref, RefCell, RefMut};
 use std::collections::HashMap;
 use std::env as std_env;
-use std::fmt::{Debug, Display, Formatter};
-use std::hint::unreachable_unchecked;
+use std::fmt::Debug;
 use std::mem;
-use std::ops::{Deref, DerefMut};
-use std::panic::panic_any;
 use std::rc::Rc;
 
 use itertools::Itertools;
@@ -16,7 +11,6 @@ pub use func::Func;
 pub use value::Value;
 
 use crate::ast::{BinaryOp, Expr, Prog, Stmt, UnaryOp};
-use crate::ast::Expr::Interp;
 use crate::interp::env::{Env, Var};
 
 mod cmd;
@@ -33,7 +27,7 @@ pub struct Interpreter {
 }
 
 fn print(int: &mut Interpreter, args: Vec<Value>) -> Value {
-    let mut res = args.iter().map(|arg| arg.to_string()).join(" ");
+    let res = args.iter().map(|arg| arg.to_string()).join(" ");
 
     if let Some(str) = &mut int.collector {
         str.push_str(&res);
@@ -49,7 +43,7 @@ fn print(int: &mut Interpreter, args: Vec<Value>) -> Value {
 enum Escape {
     Break,
     Continue,
-    Return(Value)
+    Return(Value),
 }
 
 impl Interpreter {
@@ -88,13 +82,12 @@ impl Interpreter {
     }
 
     fn push_env(&mut self) {
-        let new_env = Rc::new(RefCell::new(Env::new_from(&self.env)));
-        mem::replace(&mut self.env, new_env);
+        self.env = Rc::new(RefCell::new(Env::new_from(&self.env)));
     }
 
     fn pop_env(&mut self) {
         let parent_env = self.get_env().parent_ref();
-        mem::replace(&mut self.env, parent_env);
+        self.env = parent_env;
     }
 
     fn get_env(&self) -> Ref<Env> {
@@ -279,9 +272,9 @@ impl Interpreter {
             Expr::Cmd(cmd) => {
                 let os_env = self.get_env().os_env();
                 Value::String(self.run_cmd_capture(cmd, os_env))
-            },
+            }
             Expr::Get(name) => RefCell::borrow(&self.env).get(&name).clone(),
-            Expr::GetField {base, index} => {
+            Expr::GetField { base, index } => {
                 let base = self.eval(*base);
                 let index = self.eval(*index);
 
@@ -301,7 +294,7 @@ impl Interpreter {
                         };
 
                         RefCell::borrow(&dict).get(&index).cloned().unwrap()
-                    },
+                    }
                     _ => panic!("bad get target"),
                 }
             }
@@ -331,7 +324,7 @@ impl Interpreter {
                         };
 
                         dict.borrow_mut().insert(index, value.clone());
-                    },
+                    }
                     _ => panic!("bad assignment target"),
                 };
 
@@ -429,7 +422,7 @@ impl Interpreter {
                     Func::User { params, body, captured_env, .. } => {
                         assert_eq!(params.len(), args.len(), "number of arguments does not match number of parameters");
 
-                        let mut func_env = Rc::new(RefCell::new(if let Some(captured_env) = captured_env {
+                        let func_env = Rc::new(RefCell::new(if let Some(captured_env) = captured_env {
                             Env::new_from(&captured_env)
                         } else {
                             Env::new()
@@ -447,7 +440,7 @@ impl Interpreter {
 
                         match res {
                             Err(Escape::Return(val)) => val,
-                            Err(err) => panic!("non return escape outside function"),
+                            Err(_) => panic!("non return escape outside function"),
                             _ => Value::Nil,
                         }
                     }
