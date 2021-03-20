@@ -151,11 +151,10 @@ impl Parser {
         lhs
     }
 
-    fn consume_commas_and_whitespace(&mut self) {
+    fn consume_comma(&mut self) {
         self.lexer.consume_whitespace(self.is_multiline);
-        while matches!(self.lexer.peek(), Some(Token{kind: TokenKind::Comma, ..})) {
+        if matches!(self.lexer.peek(), Some(Token{kind: TokenKind::Comma, ..})) {
             self.lexer.next();
-            self.lexer.consume_whitespace(self.is_multiline);
         }
     }
 
@@ -165,7 +164,7 @@ impl Parser {
         let mut args = Vec::new();
 
         loop {
-            self.consume_commas_and_whitespace();
+            self.lexer.consume_whitespace(self.is_multiline);
 
             if matches!(self.lexer.peek(), Some(Token{kind: TokenKind::RightParen, ..})) {
                 self.lexer.next();
@@ -173,6 +172,8 @@ impl Parser {
             }
 
             args.push(self.parse_expr(0));
+
+            self.consume_comma();
         }
 
         Expr::Call {
@@ -185,7 +186,7 @@ impl Parser {
         let mut vec = Vec::new();
 
         loop {
-            self.consume_commas_and_whitespace();
+            self.lexer.consume_whitespace(self.is_multiline);
 
             if matches!(self.lexer.peek(), Some(Token{kind: TokenKind::RightBracket, ..})) {
                 self.lexer.next();
@@ -193,6 +194,8 @@ impl Parser {
             }
 
             vec.push(self.parse_expr(0));
+
+            self.consume_comma();
         }
 
         Expr::Vec(vec)
@@ -202,7 +205,7 @@ impl Parser {
         let mut dict = HashMap::new();
 
         loop {
-            self.consume_commas_and_whitespace();
+            self.lexer.consume_whitespace(self.is_multiline);
 
             if matches!(self.lexer.peek(), Some(Token{kind: TokenKind::RightBrace, ..})) {
                 self.lexer.next();
@@ -225,6 +228,8 @@ impl Parser {
             let v = self.parse_expr(0);
 
             dict.insert(k, v);
+
+            self.consume_comma();
         }
 
         Expr::Dict(dict)
