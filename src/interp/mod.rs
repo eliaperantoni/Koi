@@ -5,27 +5,25 @@ use std::collections::HashMap;
 use std::env as std_env;
 use std::fmt::{Debug, Display, Formatter};
 use std::hint::unreachable_unchecked;
-use std::ops::Deref;
+use std::mem;
+use std::ops::{Deref, DerefMut};
 use std::panic::panic_any;
 use std::rc::Rc;
-use std::mem;
 
 use itertools::Itertools;
 
 use crate::ast::{BinaryOp, Expr, Prog, Stmt, UnaryOp};
 use crate::ast::Expr::Interp;
-use crate::interp::stack::Stack;
-use crate::interp::env::Var;
+use crate::interp::env::{Env, Var};
 
 mod cmd;
 mod env;
-mod stack;
 
 #[cfg(test)]
 mod test;
 
 pub struct Interpreter {
-    stack: Stack,
+    env: Rc<RefCell<Env>>,
     collector: Option<String>,
 }
 
@@ -52,12 +50,12 @@ enum Escape {
 impl Interpreter {
     pub fn new() -> Interpreter {
         let mut interpreter = Interpreter {
-            stack: Stack::new(),
+            env: Rc::new(RefCell::new(Env::new())),
             collector: None,
         };
         interpreter.init_native_funcs();
         interpreter.import_os_env();
-        interpreter.stack.push();
+        interpreter.push_env();
         interpreter
     }
 
@@ -72,7 +70,7 @@ impl Interpreter {
     }
 
     fn init_native_funcs(&mut self) {
-        self.stack.def("print".to_string(), Value::Func(Func::Native {
+        self.get_env_mut().def("print".to_string(), Value::Func(Func::Native {
             name: "print".to_string(),
             func: print,
         }));
@@ -80,14 +78,32 @@ impl Interpreter {
 
     fn import_os_env(&mut self) {
         for (k, v) in std_env::vars() {
-            self.stack.def(k, Value::String(v));
+            RefCell::borrow_mut(&self.env).def(k, Value::String(v));
         }
     }
 
-    fn run_stmt(&mut self, stmt: Stmt) -> Result<(),Escape> {
+    fn push_env(&mut self) {
+        let new_env = Rc::new(RefCell::new(Env::new_from(&self.env)));
+        mem::replace(&mut self.env, new_env);
+    }
+
+    fn pop_env(&mut self) {
+        let parent_env = self.get_env().parent_ref();
+        mem::replace(&mut self.env, parent_env);
+    }
+
+    fn get_env(&self) -> Ref<Env> {
+        RefCell::borrow(&self.env)
+    }
+
+    fn get_env_mut(&mut self) -> RefMut<Env> {
+        RefCell::borrow_mut(&self.env)
+    }
+
+    fn run_stmt(&mut self, stmt: Stmt) -> Result<(), Escape> {
         match stmt {
             Stmt::Cmd(cmd) => {
-                let env = self.stack.os_env();
+                let env = self.get_env().os_env();
 
                 if self.collector.is_some() {
                     let output = self.run_cmd_capture(cmd, env);
@@ -102,23 +118,20 @@ impl Interpreter {
                     _ => Value::Nil,
                 };
 
-                self.stack.def(name, Var {
-                    val,
-                    is_exp,
-                });
+                self.get_env_mut().def(name, Var::new(val, is_exp));
             }
             Stmt::Expr(expr) => {
                 self.eval(expr);
             }
             Stmt::Block(stmts) => {
-                self.stack.push();
+                self.push_env();
                 for stmt in stmts {
                     self.run_stmt(stmt).or_else(|err| {
-                        self.stack.pop();
+                        self.pop_env();
                         Err(err)
                     })?;
                 }
-                self.stack.pop();
+                self.pop_env();
             }
             Stmt::For { lvar, rvar, iterated, each_do } => {
                 let iterated = self.eval(iterated);
@@ -127,11 +140,11 @@ impl Interpreter {
                     Value::Range(l, r) => {
                         assert!(rvar.is_none(), "for loop with range does not need a second variable");
 
-                        self.stack.push();
-                        self.stack.def(lvar.clone(), Value::Num(l as f64));
+                        self.push_env();
+                        self.get_env_mut().def(lvar.clone(), Value::Num(l as f64));
 
                         for i in l..r {
-                            *self.stack.get_mut(&lvar) = Value::Num(i as f64);
+                            self.get_env_mut().put(&lvar, Value::Num(i as f64));
 
                             let res = self.run_stmt(*each_do.clone());
                             match &res {
@@ -141,18 +154,18 @@ impl Interpreter {
                             };
                         }
 
-                        self.stack.pop();
+                        self.pop_env();
                     }
                     Value::Vec(vec) => {
                         let rvar = rvar.expect("for loop with vec does need a second variable");
 
-                        self.stack.push();
-                        self.stack.def(lvar.clone(), Value::Nil);
-                        self.stack.def(rvar.clone(), Value::Nil);
+                        self.push_env();
+                        self.get_env_mut().def(lvar.clone(), Value::Nil);
+                        self.get_env_mut().def(rvar.clone(), Value::Nil);
 
                         for (i, v) in RefCell::borrow(&vec).iter().enumerate() {
-                            *self.stack.get_mut(&lvar) = Value::Num(i as f64);
-                            *self.stack.get_mut(&rvar) = v.clone();
+                            self.get_env_mut().put(&lvar, Value::Num(i as f64));
+                            self.get_env_mut().put(&rvar, v.clone());
 
                             let res = self.run_stmt(*each_do.clone());
                             match &res {
@@ -162,18 +175,18 @@ impl Interpreter {
                             };
                         }
 
-                        self.stack.pop();
+                        self.pop_env();
                     }
                     Value::Dict(dict) => {
                         let rvar = rvar.expect("for loop with vec does need a second variable");
 
-                        self.stack.push();
-                        self.stack.def(lvar.clone(), Value::Nil);
-                        self.stack.def(rvar.clone(), Value::Nil);
+                        self.push_env();
+                        self.get_env_mut().def(lvar.clone(), Value::Nil);
+                        self.get_env_mut().def(rvar.clone(), Value::Nil);
 
                         for (k, v) in RefCell::borrow(&dict).iter() {
-                            *self.stack.get_mut(&lvar) = Value::String(k.clone());
-                            *self.stack.get_mut(&rvar) = v.clone();
+                            self.get_env_mut().put(&lvar, Value::String(k.clone()));
+                            self.get_env_mut().put(&rvar, v.clone());
 
                             let res = self.run_stmt(*each_do.clone());
                             match &res {
@@ -183,7 +196,7 @@ impl Interpreter {
                             };
                         }
 
-                        self.stack.pop();
+                        self.pop_env();
                     }
                     _ => unreachable!()
                 }
@@ -209,12 +222,10 @@ impl Interpreter {
             Stmt::Break => return Err(Escape::Break),
             Stmt::Func(func) => {
                 match &func {
+                    // Lambdas don't get parsed as Stmt::Func but Expr::Lambda, therefore a name should always be present
                     Func::User { name, .. } => {
-                        // Lambdas don't get parsed as Stmt::Func but Expr::Lambda, therefore a name should always be
-                        // present here
-                        let name = name.as_ref().unwrap();
-
-                        self.stack.def(name.clone(), Value::Func(func));
+                        let name = name.as_ref().unwrap().clone();
+                        self.get_env_mut().def(name, Value::Func(func));
                     }
                     Func::Native { .. } => unreachable!(),
                 }
@@ -245,8 +256,11 @@ impl Interpreter {
                 let dict = Rc::new(RefCell::new(dict));
                 Value::Dict(dict)
             }
-            Expr::Cmd(cmd) => Value::String(self.run_cmd_capture(cmd, self.stack.os_env())),
-            Expr::Get(name) => self.stack.get(&name).clone(),
+            Expr::Cmd(cmd) => {
+                let os_env = self.get_env().os_env();
+                Value::String(self.run_cmd_capture(cmd, os_env))
+            },
+            Expr::Get(name) => RefCell::borrow(&self.env).get(&name).clone(),
             Expr::GetField {base, index} => {
                 let base = self.eval(*base);
                 let index = self.eval(*index);
@@ -273,7 +287,7 @@ impl Interpreter {
             }
             Expr::Set(name, expr) => {
                 let value = self.eval(*expr);
-                *self.stack.get_mut(&name) = value.clone();
+                self.get_env_mut().put(&name, value.clone());
                 value
             }
             Expr::SetField { base, index, expr } => {
@@ -395,16 +409,16 @@ impl Interpreter {
                     Func::User { params, body, .. } => {
                         assert_eq!(params.len(), args.len(), "number of arguments does not match number of parameters");
 
-                        let mut func_stack = self.stack.new_shared_globals();
-                        let mut outer_stack = mem::replace(&mut self.stack, func_stack);
+                        let mut func_env = Rc::new(RefCell::new(Env::new()));
+                        let mut callee_env = mem::replace(&mut self.env, func_env);
 
                         for (param, arg) in params.into_iter().zip(args.into_iter()) {
-                            self.stack.def(param, arg);
+                            self.get_env_mut().def(param, arg);
                         }
 
                         let res = self.run_stmt(*body);
 
-                        mem::swap(&mut self.stack, &mut outer_stack);
+                        mem::swap(&mut self.env, &mut callee_env);
 
                         match res {
                             Err(Escape::Return(val)) => val,
