@@ -221,11 +221,16 @@ impl Interpreter {
             Stmt::Continue => return Err(Escape::Continue),
             Stmt::Break => return Err(Escape::Break),
             Stmt::Func(func) => {
-                match &func {
+                match func {
                     // Lambdas don't get parsed as Stmt::Func but Expr::Lambda, therefore a name should always be present
-                    Func::User { name, .. } => {
-                        let name = name.as_ref().unwrap().clone();
-                        self.get_env_mut().def(name, Value::Func(func));
+                    Func::User { name, params, body, .. } => {
+                        let func = Value::Func(Func::User {
+                            name: name.clone(),
+                            params,
+                            body,
+                            captured_env: Some(Rc::clone(&self.env)),
+                        });
+                        self.get_env_mut().def(name.unwrap(), func);
                     }
                     Func::Native { .. } => unreachable!(),
                 }
@@ -406,10 +411,15 @@ impl Interpreter {
                 let args: Vec<Value> = args.into_iter().map(|expr| self.eval(expr)).collect();
 
                 match func {
-                    Func::User { params, body, .. } => {
+                    Func::User { params, body, captured_env, .. } => {
                         assert_eq!(params.len(), args.len(), "number of arguments does not match number of parameters");
 
-                        let mut func_env = Rc::new(RefCell::new(Env::new()));
+                        let mut func_env = Rc::new(RefCell::new(if let Some(captured_env) = captured_env {
+                            Env::new_from(&captured_env)
+                        } else {
+                            Env::new()
+                        }));
+
                         let mut callee_env = mem::replace(&mut self.env, func_env);
 
                         for (param, arg) in params.into_iter().zip(args.into_iter()) {
@@ -431,7 +441,15 @@ impl Interpreter {
                     }
                 }
             }
-            Expr::Lambda(func) => Value::Func(func),
+            Expr::Lambda(func) => match func {
+                Func::User { name, params, body, .. } => Value::Func(Func::User {
+                    name,
+                    params,
+                    body,
+                    captured_env: Some(Rc::clone(&self.env)),
+                }),
+                Func::Native { .. } => unreachable!()
+            }
             _ => unreachable!()
         }
     }
@@ -443,6 +461,7 @@ pub enum Func {
         name: Option<String>,
         params: Vec<String>,
         body: Box<Stmt>,
+        captured_env: Option<Rc<RefCell<Env>>>
     },
     Native {
         name: String,

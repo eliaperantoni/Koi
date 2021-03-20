@@ -249,6 +249,7 @@ impl Parser {
             name: Some(name),
             params,
             body,
+            captured_env: None,
         };
 
         Stmt::Func(func)
