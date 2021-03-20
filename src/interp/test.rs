@@ -205,3 +205,8 @@ fn close_scope_escaping_func() {
 fn close_scope_escaping_loop() {
     assert_eq!(output("while true { let i = 10 break } print(i)"), "nil\n".to_string());
 }
+
+#[test]
+fn func_cannot_access_outer_scope() {
+    assert_eq!(output("fn f() {print(x)} let x = 10 f()"), "nil\n".to_string());
+}

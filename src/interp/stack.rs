@@ -3,6 +3,7 @@ use std::collections::HashMap;
 use super::Value;
 use crate::interp::cmd::OsEnv;
 
+#[derive(Clone)]
 pub struct Var {
     pub val: Value,
     pub is_exp: bool,
@@ -70,5 +71,13 @@ impl Stack {
         }
 
         out
+    }
+
+    pub fn new_shared_globals(&self) -> Stack {
+        let mut stack = Stack::new();
+        for (k, v) in self.0.first().unwrap().iter() {
+            stack.def(k.clone(), v.clone());
+        }
+        stack
     }
 }

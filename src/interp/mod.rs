@@ -8,6 +8,7 @@ use std::hint::unreachable_unchecked;
 use std::ops::Deref;
 use std::panic::panic_any;
 use std::rc::Rc;
+use std::mem;
 
 use itertools::Itertools;
 
@@ -55,6 +56,7 @@ impl Interpreter {
         };
         interpreter.init_native_funcs();
         interpreter.import_os_env();
+        interpreter.stack.push();
         interpreter
     }
 
@@ -392,7 +394,8 @@ impl Interpreter {
                     Func::User { params, body, .. } => {
                         assert_eq!(params.len(), args.len(), "number of arguments does not match number of parameters");
 
-                        self.stack.push();
+                        let mut func_stack = self.stack.new_shared_globals();
+                        let mut outer_stack = mem::replace(&mut self.stack, func_stack);
 
                         for (param, arg) in params.into_iter().zip(args.into_iter()) {
                             self.stack.def(param, arg);
@@ -400,7 +403,7 @@ impl Interpreter {
 
                         let res = self.run_stmt(*body);
 
-                        self.stack.pop();
+                        mem::swap(&mut self.stack, &mut outer_stack);
 
                         match res {
                             Err(Escape::Return(val)) => val,
