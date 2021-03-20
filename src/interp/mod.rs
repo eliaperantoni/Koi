@@ -410,7 +410,7 @@ impl Interpreter {
                     }
                 }
             }
-            Expr::Lambda(_) => todo!(),
+            Expr::Lambda(func) => Value::Func(func),
             _ => unreachable!()
         }
     }
