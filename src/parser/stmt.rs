@@ -1,6 +1,6 @@
 use crate::ast::{Expr, Stmt};
-use crate::token::{Token, TokenKind};
 use crate::interp::Func;
+use crate::token::{Token, TokenKind};
 
 use super::Parser;
 
@@ -258,6 +258,10 @@ impl Parser {
         self.lexer.next();
 
         self.lexer.consume_whitespace(false);
+
+        // Because of this you can't write `fn f() {return let x = 2}` because it will try to parse `let x = 2` as an
+        // expression. But why would you execute a statement after a return anyway? The only think you would ever put
+        // after a return are: an expression to return, a right brace to close a block or a newline.
         if matches!(self.lexer.peek(), None | Some(Token {kind: TokenKind::Newline | TokenKind::RightBrace, ..})) {
             return Stmt::Return(None);
         }
