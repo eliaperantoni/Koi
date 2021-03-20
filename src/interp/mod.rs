@@ -2,11 +2,12 @@ use core::fmt;
 use std::borrow::Borrow;
 use std::cell::{Ref, RefCell, RefMut};
 use std::collections::HashMap;
+use std::env;
 use std::fmt::{Debug, Display, Formatter};
+use std::hint::unreachable_unchecked;
 use std::ops::Deref;
 use std::panic::panic_any;
 use std::rc::Rc;
-use std::env;
 
 use itertools::Itertools;
 
@@ -43,7 +44,7 @@ fn print(int: &mut Interpreter, args: Vec<Value>) -> Value {
 enum Escape {
     Break,
     Continue,
-    Return
+    Return(Value)
 }
 
 impl Interpreter {
@@ -191,18 +192,36 @@ impl Interpreter {
                     };
                 }
             }
-            Stmt::If {cond, then_do, else_do} => {
+            Stmt::If { cond, then_do, else_do } => {
                 if self.eval(cond).is_truthy() {
                     self.run_stmt(*then_do)?;
                 } else if else_do.is_some() {
                     self.run_stmt(*else_do.unwrap())?;
                 }
             }
-
             Stmt::Continue => return Err(Escape::Continue),
             Stmt::Break => return Err(Escape::Break),
+            Stmt::Func(func) => {
+                match &func {
+                    Func::User { name, .. } => {
+                        // Lambdas don't get parsed as Stmt::Func but Expr::Lambda, therefore a name should always be
+                        // present here
+                        let name = name.as_ref().unwrap();
 
-            _ => todo!()
+                        self.stack.def(name.clone(), Value::Func(func));
+                    }
+                    Func::Native { .. } => unreachable!(),
+                }
+            }
+            Stmt::Return(expr) => {
+                let ret_val = if let Some(expr) = expr {
+                    self.eval(expr)
+                } else {
+                    Value::Nil
+                };
+
+                return Err(Escape::Return(ret_val));
+            }
         };
         Ok(())
     }
@@ -359,14 +378,36 @@ impl Interpreter {
             }
             Expr::Call { func, args } => {
                 let func = self.eval(*func);
+                let func = match func {
+                    Value::Func(func) => func,
+                    _ => panic!("attempt to call non-function"),
+                };
 
-                let args = args.into_iter().map(|expr| self.eval(expr)).collect();
+                let args: Vec<Value> = args.into_iter().map(|expr| self.eval(expr)).collect();
 
                 match func {
-                    Value::Func(Func::Native { func, .. }) => {
+                    Func::User { params, body, .. } => {
+                        assert_eq!(params.len(), args.len(), "number of arguments does not match number of parameters");
+
+                        self.stack.push();
+
+                        for (param, arg) in params.into_iter().zip(args.into_iter()) {
+                            self.stack.def(param, arg);
+                        }
+
+                        let res = self.run_stmt(*body);
+
+                        self.stack.pop();
+
+                        match res {
+                            Err(Escape::Return(val)) => val,
+                            Err(err) => panic!("non return escape outside function"),
+                            _ => Value::Nil,
+                        }
+                    }
+                    Func::Native { func, .. } => {
                         func(self, args)
                     }
-                    _ => panic!("attempt to call non-function")
                 }
             }
             Expr::Lambda(_) => todo!(),
