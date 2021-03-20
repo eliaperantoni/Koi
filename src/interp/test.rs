@@ -157,3 +157,23 @@ fn continue_stmt() {
 fn break_stmt() {
     assert_eq!(output("for i in 0..=2 {if i == 1 {break} print(i)}"), "0\n".to_string());
 }
+
+#[test]
+fn func() {
+    assert_eq!(output("fn p() {print('ampere')} p()"), "ampere\n".to_string());
+}
+
+#[test]
+fn func_return() {
+    assert_eq!(output("fn p(x) {return x^4} print(p(2))"), "16\n".to_string());
+}
+
+#[test]
+fn func_return_nil() {
+    assert_eq!(output("fn p() {return} print(p())"), "nil\n".to_string());
+}
+
+#[test]
+fn func_no_return() {
+    assert_eq!(output("fn p() {} print(p())"), "nil\n".to_string());
+}

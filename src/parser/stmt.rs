@@ -258,7 +258,7 @@ impl Parser {
         self.lexer.next();
 
         self.lexer.consume_whitespace(false);
-        if matches!(self.lexer.peek(), None | Some(Token {kind: TokenKind::Newline, ..})) {
+        if matches!(self.lexer.peek(), None | Some(Token {kind: TokenKind::Newline | TokenKind::RightBrace, ..})) {
             return Stmt::Return(None);
         }
 
