@@ -110,7 +110,10 @@ impl Interpreter {
             Stmt::Block(stmts) => {
                 self.stack.push();
                 for stmt in stmts {
-                    self.run_stmt(stmt)?;
+                    self.run_stmt(stmt).or_else(|err| {
+                        self.stack.pop();
+                        Err(err)
+                    })?;
                 }
                 self.stack.pop();
             }

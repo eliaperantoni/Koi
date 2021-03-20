@@ -195,3 +195,13 @@ fn uncaught_return() {
 fn uncaught_break_func_call() {
     output("fn p() {break} p()");
 }
+
+#[test]
+fn close_scope_escaping_func() {
+    assert_eq!(output("fn p() {let i = 10 return} p() print(i)"), "nil\n".to_string());
+}
+
+#[test]
+fn close_scope_escaping_loop() {
+    assert_eq!(output("while true { let i = 10 break } print(i)"), "nil\n".to_string());
+}
