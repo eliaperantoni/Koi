@@ -17,6 +17,7 @@ mod cmd;
 mod env;
 mod value;
 mod func;
+mod native;
 
 #[cfg(test)]
 mod test;
@@ -24,19 +25,6 @@ mod test;
 pub struct Interpreter {
     env: Rc<RefCell<Env>>,
     collector: Option<String>,
-}
-
-fn print(int: &mut Interpreter, args: Vec<Value>) -> Value {
-    let res = args.iter().map(|arg| arg.to_string()).join(" ");
-
-    if let Some(str) = &mut int.collector {
-        str.push_str(&res);
-        str.push_str("\n");
-    } else {
-        println!("{}", res);
-    }
-
-    Value::Nil
 }
 
 #[derive(Debug)]
@@ -69,9 +57,18 @@ impl Interpreter {
     }
 
     fn init_native_funcs(&mut self) {
+        use native::*;
+
         self.get_env_mut().def("print".to_string(), Value::Func(Func::Native {
             name: "print".to_string(),
+            params: None,
             func: print,
+        }));
+
+        self.get_env_mut().def("exit".to_string(), Value::Func(Func::Native {
+            name: "exit".to_string(),
+            params: Some(1),
+            func: exit,
         }));
     }
 
@@ -444,7 +441,11 @@ impl Interpreter {
                             _ => Value::Nil,
                         }
                     }
-                    Func::Native { func, .. } => {
+                    Func::Native { func, params, .. } => {
+                        if let Some(params) = params {
+                            assert_eq!(params, args.len(), "number of arguments does not match number of parameters");
+                        }
+
                         func(self, args)
                     }
                 }
