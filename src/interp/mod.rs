@@ -63,12 +63,14 @@ impl Interpreter {
             name: "print".to_string(),
             params: None,
             func: print,
+            receiver: None,
         }));
 
         self.get_env_mut().def("exit".to_string(), Value::Func(Func::Native {
             name: "exit".to_string(),
             params: Some(1),
             func: exit,
+            receiver: None,
         }));
     }
 
@@ -93,6 +95,19 @@ impl Interpreter {
 
     fn get_env_mut(&mut self) -> RefMut<Env> {
         RefCell::borrow_mut(&self.env)
+    }
+
+    fn build_native_method(&self, base: Value, method_name: String) -> Value {
+        let func = match (base.clone(), &method_name[..]) {
+            (_, "string") => Func::Native {
+                func: native::string,
+                params: Some(1),
+                name: "string".to_string(),
+                receiver: Some(Box::new(base)),
+            },
+            _ => panic!("no method found with this name"),
+        };
+        Value::Func(func)
     }
 
     fn run_stmt(&mut self, stmt: Stmt) -> Result<(), Escape> {
@@ -275,24 +290,38 @@ impl Interpreter {
                 let base = self.eval(*base);
                 let index = self.eval(*index);
 
-                match base {
-                    Value::Vec(vec) => {
-                        let index = match index {
-                            Value::Num(num) if num.trunc() == num => num as usize,
-                            _ => panic!("bad index, want integer"),
+                let val = match (base.clone(), index.clone()) {
+                    (Value::Vec(vec), Value::Num(index)) => {
+                        let index = if index.trunc() == index {
+                            index as usize
+                        } else {
+                            panic!("expected integer index")
                         };
 
-                        RefCell::borrow(&vec)[index].clone()
+                        RefCell::borrow(&vec).get(index).cloned()
                     }
-                    Value::Dict(dict) => {
+                    (Value::Dict(dict), index @ Value::String(_) | index @ Value::Num(_)) => {
                         let index = match index {
                             Value::String(str) => str,
-                            _ => panic!("bad index, want string"),
+                            Value::Num(num) => num.to_string(),
+                            _ => panic!("expected num or string index"),
                         };
 
-                        RefCell::borrow(&dict).get(&index).cloned().unwrap()
+                        RefCell::borrow(&dict).get(&index).cloned()
                     }
-                    _ => panic!("bad get target"),
+                    _ => None
+                };
+
+                if let Some(val) = val {
+                    val
+                } else {
+                    let method_name = if let Value::String(method_name) = index {
+                        method_name
+                    } else {
+                        panic!("expected string index");
+                    };
+
+                    self.build_native_method(base, method_name)
                 }
             }
             Expr::Set(name, expr) => {
@@ -413,7 +442,7 @@ impl Interpreter {
                     _ => panic!("attempt to call non-function"),
                 };
 
-                let args: Vec<Value> = args.into_iter().map(|expr| self.eval(expr)).collect();
+                let mut args: Vec<Value> = args.into_iter().map(|expr| self.eval(expr)).collect();
 
                 match func {
                     Func::User { params, body, captured_env, .. } => {
@@ -441,7 +470,11 @@ impl Interpreter {
                             _ => Value::Nil,
                         }
                     }
-                    Func::Native { func, params, .. } => {
+                    Func::Native { func, params, receiver, .. } => {
+                        if let Some(receiver) = receiver {
+                            args.insert(0, *receiver);
+                        }
+
                         if let Some(params) = params {
                             assert_eq!(params, args.len(), "number of arguments does not match number of parameters");
                         }

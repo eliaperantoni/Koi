@@ -24,3 +24,7 @@ pub fn exit(int: &mut Interpreter, mut args: Vec<Value>) -> Value {
 
     process::exit(code);
 }
+
+pub fn string(int: &mut Interpreter, mut args: Vec<Value>) -> Value {
+    Value::String(args.remove(0).to_string())
+}

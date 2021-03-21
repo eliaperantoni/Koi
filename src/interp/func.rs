@@ -19,6 +19,7 @@ pub enum Func {
         name: String,
         params: Option<usize>,
         func: fn(&mut Interpreter, Vec<Value>) -> Value,
+        receiver: Option<Box<Value>>,
     },
 }
 
