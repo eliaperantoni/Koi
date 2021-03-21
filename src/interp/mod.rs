@@ -105,6 +105,12 @@ impl Interpreter {
                 name: "string".to_string(),
                 receiver: Some(Box::new(base)),
             },
+            (_, "toJson") => Func::Native {
+                func: native::to_json,
+                params: Some(1),
+                name: "toJson".to_string(),
+                receiver: Some(Box::new(base)),
+            },
             (Value::String(str), "lower") => Func::Native {
                 func: native::lower,
                 params: Some(1),

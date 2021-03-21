@@ -2,6 +2,7 @@ use std::cell::RefCell;
 use std::collections::HashMap;
 use std::fmt::{Display, Formatter};
 use std::rc::Rc;
+use serde_json::{Value as JSONValue, Number as JSONNumber, Map as JSONMap};
 
 use itertools::Itertools;
 
@@ -57,6 +58,36 @@ impl Value {
             self.to_string()
         } else {
             format!("\'{}\'", self.to_string())
+        }
+    }
+}
+
+impl From<Value> for JSONValue {
+    fn from(val: Value) -> Self {
+        match val {
+            Value::Nil => JSONValue::Null,
+            Value::Num(num) => JSONValue::Number(JSONNumber::from_f64(num).unwrap()),
+            Value::String(str) => JSONValue::String(str),
+            Value::Bool(bool) => JSONValue::Bool(bool),
+            Value::Vec(vec) => {
+                let mut json_vec = Vec::new();
+
+                for val in RefCell::borrow(&vec).iter() {
+                    json_vec.push(val.clone().into());
+                }
+
+                JSONValue::Array(json_vec)
+            }
+            Value::Dict(map) => {
+                let mut json_map = JSONMap::new();
+
+                for (k, v) in RefCell::borrow(&map).iter() {
+                    json_map.insert(k.clone(), v.clone().into());
+                }
+
+                JSONValue::Object(json_map)
+            }
+            _ => panic!("unserializable object")
         }
     }
 }
