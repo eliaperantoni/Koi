@@ -5,8 +5,6 @@ use std::fmt::Debug;
 use std::mem;
 use std::rc::Rc;
 
-use itertools::Itertools;
-
 pub use func::Func;
 pub use value::Value;
 
@@ -424,7 +422,7 @@ impl Interpreter {
             }
             Expr::Call { func, args } => {
                 let func = self.eval(*func);
-                let mut args: Vec<Value> = args.into_iter().map(|expr| self.eval(expr)).collect();
+                let args: Vec<Value> = args.into_iter().map(|expr| self.eval(expr)).collect();
 
                 self.call(func, args)
             }

@@ -1,4 +1,4 @@
-use std::cell::{RefCell, Ref};
+use std::cell::RefCell;
 use std::collections::HashMap;
 use std::fmt::{Display, Formatter};
 use std::rc::Rc;
@@ -117,7 +117,6 @@ impl From<JSONValue> for Value {
 
                 Value::Dict(Rc::new(RefCell::new(map)))
             }
-            _ => todo!()
         }
     }
 }

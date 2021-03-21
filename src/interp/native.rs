@@ -5,7 +5,6 @@ use std::process;
 use std::cell::RefCell;
 use std::rc::Rc;
 use std::collections::HashMap;
-use std::panic::panic_any;
 use crate::interp::dict_key;
 use regex::Regex;
 use serde_json::{Value as JSONValue, from_str as json_from_str};
@@ -23,7 +22,7 @@ pub fn print(int: &mut Interpreter, args: Vec<Value>) -> Value {
     Value::Nil
 }
 
-pub fn exit(int: &mut Interpreter, mut args: Vec<Value>) -> Value {
+pub fn exit(_: &mut Interpreter, mut args: Vec<Value>) -> Value {
     let code = match args.remove(0) {
         Value::Num(num) if num.trunc() == num => num as i32,
         _ => panic!("expected integer")
@@ -32,42 +31,42 @@ pub fn exit(int: &mut Interpreter, mut args: Vec<Value>) -> Value {
     process::exit(code);
 }
 
-pub fn string(int: &mut Interpreter, mut args: Vec<Value>) -> Value {
+pub fn string(_int: &mut Interpreter, mut args: Vec<Value>) -> Value {
     Value::String(args.remove(0).to_string())
 }
 
-pub fn to_json(int: &mut Interpreter, mut args: Vec<Value>) -> Value {
+pub fn to_json(_int: &mut Interpreter, mut args: Vec<Value>) -> Value {
     let json = JSONValue::from(args.remove(0));
     Value::String(json.to_string())
 }
 
-pub fn from_json(int: &mut Interpreter, mut args: Vec<Value>) -> Value {
+pub fn from_json(_int: &mut Interpreter, mut args: Vec<Value>) -> Value {
     let recv = if let Value::String(recv) = args.remove(0) {recv} else {unreachable!()};
     let val: JSONValue = json_from_str(&recv).unwrap();
     Value::from(val)
 }
 
-pub fn lower(int: &mut Interpreter, mut args: Vec<Value>) -> Value {
+pub fn lower(_int: &mut Interpreter, mut args: Vec<Value>) -> Value {
     let recv = if let Value::String(recv) = args.remove(0) {recv} else {unreachable!()};
     Value::String(recv.to_lowercase())
 }
 
-pub fn upper(int: &mut Interpreter, mut args: Vec<Value>) -> Value {
+pub fn upper(_int: &mut Interpreter, mut args: Vec<Value>) -> Value {
     let recv = if let Value::String(recv) = args.remove(0) {recv} else {unreachable!()};
     Value::String(recv.to_uppercase())
 }
 
-pub fn bool(int: &mut Interpreter, mut args: Vec<Value>) -> Value {
+pub fn bool(_int: &mut Interpreter, mut args: Vec<Value>) -> Value {
     let recv = if let Value::String(recv) = args.remove(0) {recv} else {unreachable!()};
     Value::Bool(recv.parse::<bool>().unwrap())
 }
 
-pub fn num(int: &mut Interpreter, mut args: Vec<Value>) -> Value {
+pub fn num(_int: &mut Interpreter, mut args: Vec<Value>) -> Value {
     let recv = if let Value::String(recv) = args.remove(0) {recv} else {unreachable!()};
     Value::Num(recv.parse::<f64>().unwrap())
 }
 
-pub fn replace(int: &mut Interpreter, mut args: Vec<Value>) -> Value {
+pub fn replace(_int: &mut Interpreter, mut args: Vec<Value>) -> Value {
     let recv = if let Value::String(recv) = args.remove(0) {recv} else {unreachable!()};
 
     let (from, to) = match (args.remove(0), args.remove(0)) {
@@ -78,7 +77,7 @@ pub fn replace(int: &mut Interpreter, mut args: Vec<Value>) -> Value {
     Value::String(recv.replace(&from, &to))
 }
 
-pub fn split(int: &mut Interpreter, mut args: Vec<Value>) -> Value {
+pub fn split(_int: &mut Interpreter, mut args: Vec<Value>) -> Value {
     let recv = if let Value::String(recv) = args.remove(0) {recv} else {unreachable!()};
 
     let sep = match args.remove(0) {
@@ -91,7 +90,7 @@ pub fn split(int: &mut Interpreter, mut args: Vec<Value>) -> Value {
     Value::Vec(Rc::new(RefCell::new(vec)))
 }
 
-pub fn join(int: &mut Interpreter, mut args: Vec<Value>) -> Value {
+pub fn join(_int: &mut Interpreter, mut args: Vec<Value>) -> Value {
     let recv = if let Value::String(recv) = args.remove(0) {recv} else {unreachable!()};
 
     let vec = match args.remove(0) {
@@ -141,26 +140,26 @@ pub fn for_each(int: &mut Interpreter, mut args: Vec<Value>) -> Value {
     Value::Nil
 }
 
-pub fn clone_vec(int: &mut Interpreter, mut args: Vec<Value>) -> Value {
+pub fn clone_vec(_int: &mut Interpreter, mut args: Vec<Value>) -> Value {
     let recv = if let Value::Vec(recv) = args.remove(0) {recv} else {unreachable!()};
     let recv = RefCell::borrow(&recv);
     Value::Vec(Rc::new(RefCell::new(recv.clone())))
 }
 
-pub fn clone_dict(int: &mut Interpreter, mut args: Vec<Value>) -> Value {
+pub fn clone_dict(_int: &mut Interpreter, mut args: Vec<Value>) -> Value {
     let recv = if let Value::Dict(recv) = args.remove(0) {recv} else {unreachable!()};
     let recv = RefCell::borrow(&recv);
     Value::Dict(Rc::new(RefCell::new(recv.clone())))
 }
 
-pub fn vec_2_dict(int: &mut Interpreter, mut args: Vec<Value>) -> Value {
+pub fn vec_2_dict(_int: &mut Interpreter, mut args: Vec<Value>) -> Value {
     let recv = if let Value::Vec(recv) = args.remove(0) {recv} else {unreachable!()};
     let recv = RefCell::borrow(&recv);
 
     let mut map = HashMap::new();
 
     for tuple in recv.iter() {
-        let mut tuple = if let Value::Vec(tuple) = tuple {
+        let tuple = if let Value::Vec(tuple) = tuple {
             RefCell::borrow(&tuple)
         } else {
             panic!("expected all elements to be vec");
@@ -177,7 +176,7 @@ pub fn vec_2_dict(int: &mut Interpreter, mut args: Vec<Value>) -> Value {
     Value::Dict(Rc::new(RefCell::new(map)))
 }
 
-pub fn dict_2_vec(int: &mut Interpreter, mut args: Vec<Value>) -> Value {
+pub fn dict_2_vec(_int: &mut Interpreter, mut args: Vec<Value>) -> Value {
     let recv = if let Value::Dict(recv) = args.remove(0) {recv} else {unreachable!()};
     let recv = RefCell::borrow(&recv);
 
@@ -193,7 +192,7 @@ pub fn dict_2_vec(int: &mut Interpreter, mut args: Vec<Value>) -> Value {
     Value::Vec(Rc::new(RefCell::new(vec)))
 }
 
-pub fn matches(int: &mut Interpreter, mut args: Vec<Value>) -> Value {
+pub fn matches(_int: &mut Interpreter, mut args: Vec<Value>) -> Value {
     let recv = if let Value::String(recv) = args.remove(0) {recv} else {unreachable!()};
 
     let pat = match args.remove(0) {
@@ -206,7 +205,7 @@ pub fn matches(int: &mut Interpreter, mut args: Vec<Value>) -> Value {
     Value::Bool(re.is_match(&recv))
 }
 
-pub fn find(int: &mut Interpreter, mut args: Vec<Value>) -> Value {
+pub fn find(_int: &mut Interpreter, mut args: Vec<Value>) -> Value {
     let recv = if let Value::String(recv) = args.remove(0) {recv} else {unreachable!()};
 
     let pat = match args.remove(0) {
