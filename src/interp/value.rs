@@ -17,7 +17,7 @@ pub enum Value {
     Vec(Rc<RefCell<Vec<Value>>>),
     Dict(Rc<RefCell<HashMap<String, Value>>>),
 
-    Range(i32, i32),
+    Range(usize, usize),
 
     Func(Func),
 }

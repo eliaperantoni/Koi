@@ -387,6 +387,11 @@ impl Interpreter {
                 let index = self.eval(*index);
 
                 let val = match (base.clone(), index.clone()) {
+                    (Value::Vec(vec), Value::Range(from, to)) => {
+                        let vec = RefCell::borrow(&vec);
+                        let vec = &vec[from..to];
+                        Some(Value::Vec(Rc::new(RefCell::new(vec.to_vec()))))
+                    }
                     (Value::Vec(vec), Value::Num(index)) => {
                         let index = if index.trunc() == index {
                             index as usize
@@ -466,7 +471,7 @@ impl Interpreter {
                 match (l, r) {
                     // The x.trunc() == x part is to check that the numbers are integers
                     (Value::Num(l), Value::Num(r)) if l.trunc() == l && r.trunc() == r => {
-                        Value::Range(l as i32, r as i32 + if inclusive { 1 } else { 0 })
+                        Value::Range(l as usize, r as usize + if inclusive { 1 } else { 0 })
                     }
                     _ => panic!("range must evaluate to integers")
                 }
