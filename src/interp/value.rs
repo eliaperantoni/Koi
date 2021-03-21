@@ -1,4 +1,4 @@
-use std::cell::RefCell;
+use std::cell::{RefCell, Ref};
 use std::collections::HashMap;
 use std::fmt::{Display, Formatter};
 use std::rc::Rc;
@@ -88,6 +88,36 @@ impl From<Value> for JSONValue {
                 JSONValue::Object(json_map)
             }
             _ => panic!("unserializable object")
+        }
+    }
+}
+
+impl From<JSONValue> for Value {
+    fn from(json_val: JSONValue) -> Self {
+        match json_val {
+            JSONValue::Null => Value::Nil,
+            JSONValue::Number(json_num) => Value::Num(json_num.as_f64().unwrap()),
+            JSONValue::String(json_str) => Value::String(json_str),
+            JSONValue::Bool(json_bool) => Value::Bool(json_bool),
+            JSONValue::Array(json_vec) => {
+                let mut vec = Vec::new();
+
+                for json_val in json_vec {
+                    vec.push(json_val.into());
+                }
+
+                Value::Vec(Rc::new(RefCell::new(vec)))
+            }
+            JSONValue::Object(json_map) => {
+                let mut map = HashMap::new();
+
+                for (k, v) in json_map {
+                    map.insert(k, v.into());
+                }
+
+                Value::Dict(Rc::new(RefCell::new(map)))
+            }
+            _ => todo!()
         }
     }
 }

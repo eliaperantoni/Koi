@@ -8,7 +8,7 @@ use std::collections::HashMap;
 use std::panic::panic_any;
 use crate::interp::dict_key;
 use regex::Regex;
-use serde_json::Value as JSONValue;
+use serde_json::{Value as JSONValue, from_str as json_from_str};
 
 pub fn print(int: &mut Interpreter, args: Vec<Value>) -> Value {
     let res = args.iter().map(|arg| arg.to_string()).join(" ");
@@ -39,6 +39,12 @@ pub fn string(int: &mut Interpreter, mut args: Vec<Value>) -> Value {
 pub fn to_json(int: &mut Interpreter, mut args: Vec<Value>) -> Value {
     let json = JSONValue::from(args.remove(0));
     Value::String(json.to_string())
+}
+
+pub fn from_json(int: &mut Interpreter, mut args: Vec<Value>) -> Value {
+    let recv = if let Value::String(recv) = args.remove(0) {recv} else {unreachable!()};
+    let val: JSONValue = json_from_str(&recv).unwrap();
+    Value::from(val)
 }
 
 pub fn lower(int: &mut Interpreter, mut args: Vec<Value>) -> Value {
