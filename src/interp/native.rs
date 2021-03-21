@@ -7,6 +7,7 @@ use std::rc::Rc;
 use std::collections::HashMap;
 use std::panic::panic_any;
 use crate::interp::dict_key;
+use regex::Regex;
 
 pub fn print(int: &mut Interpreter, args: Vec<Value>) -> Value {
     let res = args.iter().map(|arg| arg.to_string()).join(" ");
@@ -178,4 +179,38 @@ pub fn dict_2_vec(int: &mut Interpreter, mut args: Vec<Value>) -> Value {
     }
 
     Value::Vec(Rc::new(RefCell::new(vec)))
+}
+
+pub fn matches(int: &mut Interpreter, mut args: Vec<Value>) -> Value {
+    let recv = if let Value::String(recv) = args.remove(0) {recv} else {unreachable!()};
+
+    let pat = match args.remove(0) {
+        Value::String(pat) => pat,
+        _ => panic!("expected arg to be string")
+    };
+
+    let re = Regex::new(&pat).unwrap();
+
+    Value::Bool(re.is_match(&recv))
+}
+
+pub fn find(int: &mut Interpreter, mut args: Vec<Value>) -> Value {
+    let recv = if let Value::String(recv) = args.remove(0) {recv} else {unreachable!()};
+
+    let pat = match args.remove(0) {
+        Value::String(pat) => pat,
+        _ => panic!("expected arg to be string")
+    };
+
+    let re = Regex::new(&pat).unwrap();
+
+    let matches = re.captures_iter(&recv).map(|match_| {
+        let groups = match_.iter().map(|group|
+            Value::String(group.unwrap().as_str().to_string())
+        ).collect::<Vec<Value>>();
+
+        Value::Vec(Rc::new(RefCell::new(groups)))
+    }).collect::<Vec<Value>>();
+
+    Value::Vec(Rc::new(RefCell::new(matches)))
 }

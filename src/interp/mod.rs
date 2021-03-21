@@ -147,6 +147,18 @@ impl Interpreter {
                 name: "join".to_string(),
                 receiver: Some(Box::new(base)),
             },
+            (Value::String(str), "matches") => Func::Native {
+                func: native::matches,
+                params: Some(2),
+                name: "matches".to_string(),
+                receiver: Some(Box::new(base)),
+            },
+            (Value::String(str), "find") => Func::Native {
+                func: native::find,
+                params: Some(2),
+                name: "find".to_string(),
+                receiver: Some(Box::new(base)),
+            },
             (Value::Vec(vec), "map") => Func::Native {
                 func: native::map,
                 params: Some(2),

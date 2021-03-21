@@ -302,7 +302,11 @@ impl RawLexer {
                     Some('t') => '\t',
                     Some('r') => '\r',
                     Some('\\') => '\\',
-                    Some(_) => panic!("unexpected escape character"),
+                    Some('{') => '{',
+                    Some(c) => {
+                        literal_piece.push('\\');
+                        c
+                    }
                     None => panic!("unterminated string"),
                 };
 
