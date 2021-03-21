@@ -217,3 +217,8 @@ fn func_cannot_access_outer_scope() {
 fn closure() {
     assert_eq!(output("let f { let i = 55 f = fn() { return i } } print(f())"), "55\n".to_string());
 }
+
+#[test]
+fn slices() {
+    assert_eq!(output("let x = [1 2 3 4 5 6] let y = x[0..5] y[0] = 99 print(x) print(y)"), "[1, 2, 3, 4, 5, 6]\n[99, 2, 3, 4, 5]\n".to_string());
+}
