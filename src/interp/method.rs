@@ -1,7 +1,7 @@
+use super::func::Func;
 use super::Interpreter;
 use super::native;
 use super::value::Value;
-use super::func::Func;
 
 impl Interpreter {
     pub fn build_native_method(&self, base: Value, method_name: String) -> Value {

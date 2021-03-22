@@ -2,9 +2,9 @@ use std::cell::RefCell;
 use std::collections::HashMap;
 use std::fmt::{Display, Formatter};
 use std::rc::Rc;
-use serde_json::{Value as JSONValue, Number as JSONNumber, Map as JSONMap};
 
 use itertools::Itertools;
+use serde_json::{Map as JSONMap, Number as JSONNumber, Value as JSONValue};
 
 use crate::interp::func::Func;
 
@@ -83,7 +83,7 @@ impl From<Value> for JSONValue {
 
                 for (k, v) in RefCell::borrow(&map).iter() {
                     if matches!(v, Value::Func(_) | Value::Range(_, _)) {
-                        continue
+                        continue;
                     }
                     json_map.insert(k.clone(), v.clone().into());
                 }
