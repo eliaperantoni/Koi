@@ -82,12 +82,15 @@ impl From<Value> for JSONValue {
                 let mut json_map = JSONMap::new();
 
                 for (k, v) in RefCell::borrow(&map).iter() {
+                    if matches!(v, Value::Func(_) | Value::Range(_, _)) {
+                        continue
+                    }
                     json_map.insert(k.clone(), v.clone().into());
                 }
 
                 JSONValue::Object(json_map)
             }
-            _ => panic!("unserializable object")
+            Value::Func(_) | Value::Range(_, _) => panic!("unserializable value")
         }
     }
 }

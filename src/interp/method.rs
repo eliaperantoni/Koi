@@ -12,6 +12,12 @@ impl Interpreter {
                 name: "string".to_string(),
                 receiver: Some(Box::new(base)),
             },
+            (_, "type") => Func::Native {
+                func: native::typ,
+                params: Some(1),
+                name: "type".to_string(),
+                receiver: Some(Box::new(base)),
+            },
             (_, "toJson") => Func::Native {
                 func: native::to_json,
                 params: Some(1),
@@ -78,6 +84,18 @@ impl Interpreter {
                 name: "find".to_string(),
                 receiver: Some(Box::new(base)),
             },
+            (Value::Vec(_), "len") => Func::Native {
+                func: native::vec_len,
+                params: Some(1),
+                name: "len".to_string(),
+                receiver: Some(Box::new(base)),
+            },
+            (Value::Dict(_), "len") => Func::Native {
+                func: native::dict_len,
+                params: Some(1),
+                name: "len".to_string(),
+                receiver: Some(Box::new(base)),
+            },
             (Value::Vec(_), "map") => Func::Native {
                 func: native::map,
                 params: Some(2),
@@ -118,6 +136,18 @@ impl Interpreter {
                 func: native::dict_2_vec,
                 params: Some(1),
                 name: "vec".to_string(),
+                receiver: Some(Box::new(base)),
+            },
+            (Value::Vec(_), "remove") => Func::Native {
+                func: native::vec_remove,
+                params: Some(2),
+                name: "remove".to_string(),
+                receiver: Some(Box::new(base)),
+            },
+            (Value::Dict(_), "remove") => Func::Native {
+                func: native::dict_remove,
+                params: Some(2),
+                name: "remove".to_string(),
                 receiver: Some(Box::new(base)),
             },
             _ => panic!("no method found with this name"),

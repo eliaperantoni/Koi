@@ -1,13 +1,16 @@
+use std::cell::RefCell;
+use std::collections::HashMap;
+use std::process;
+use std::rc::Rc;
+
+use itertools::Itertools;
+use regex::Regex;
+use serde_json::{from_str as json_from_str, Value as JSONValue};
+
+use crate::interp::dict_key;
+
 use super::Interpreter;
 use super::value::Value;
-use itertools::Itertools;
-use std::process;
-use std::cell::RefCell;
-use std::rc::Rc;
-use std::collections::HashMap;
-use crate::interp::dict_key;
-use regex::Regex;
-use serde_json::{Value as JSONValue, from_str as json_from_str};
 
 pub fn print(int: &mut Interpreter, args: Vec<Value>) -> Value {
     let res = args.iter().map(|arg| arg.to_string()).join(" ");
@@ -35,39 +38,52 @@ pub fn string(_int: &mut Interpreter, mut args: Vec<Value>) -> Value {
     Value::String(args.remove(0).to_string())
 }
 
+pub fn typ(_int: &mut Interpreter, mut args: Vec<Value>) -> Value {
+    Value::String(String::from(match args.remove(0) {
+        Value::Nil => "nil",
+        Value::Num(_) => "num",
+        Value::String(_) => "string",
+        Value::Bool(_) => "bool",
+        Value::Vec(_) => "vec",
+        Value::Dict(_) => "dict",
+        Value::Range(_, _) => "range",
+        Value::Func(_) => "func"
+    }))
+}
+
 pub fn to_json(_int: &mut Interpreter, mut args: Vec<Value>) -> Value {
     let json = JSONValue::from(args.remove(0));
     Value::String(json.to_string())
 }
 
 pub fn from_json(_int: &mut Interpreter, mut args: Vec<Value>) -> Value {
-    let recv = if let Value::String(recv) = args.remove(0) {recv} else {unreachable!()};
+    let recv = if let Value::String(recv) = args.remove(0) { recv } else { unreachable!() };
     let val: JSONValue = json_from_str(&recv).unwrap();
     Value::from(val)
 }
 
 pub fn lower(_int: &mut Interpreter, mut args: Vec<Value>) -> Value {
-    let recv = if let Value::String(recv) = args.remove(0) {recv} else {unreachable!()};
+    let recv = if let Value::String(recv) = args.remove(0) { recv } else { unreachable!() };
     Value::String(recv.to_lowercase())
 }
 
 pub fn upper(_int: &mut Interpreter, mut args: Vec<Value>) -> Value {
-    let recv = if let Value::String(recv) = args.remove(0) {recv} else {unreachable!()};
+    let recv = if let Value::String(recv) = args.remove(0) { recv } else { unreachable!() };
     Value::String(recv.to_uppercase())
 }
 
 pub fn bool(_int: &mut Interpreter, mut args: Vec<Value>) -> Value {
-    let recv = if let Value::String(recv) = args.remove(0) {recv} else {unreachable!()};
+    let recv = if let Value::String(recv) = args.remove(0) { recv } else { unreachable!() };
     Value::Bool(recv.parse::<bool>().unwrap())
 }
 
 pub fn num(_int: &mut Interpreter, mut args: Vec<Value>) -> Value {
-    let recv = if let Value::String(recv) = args.remove(0) {recv} else {unreachable!()};
+    let recv = if let Value::String(recv) = args.remove(0) { recv } else { unreachable!() };
     Value::Num(recv.parse::<f64>().unwrap())
 }
 
 pub fn replace(_int: &mut Interpreter, mut args: Vec<Value>) -> Value {
-    let recv = if let Value::String(recv) = args.remove(0) {recv} else {unreachable!()};
+    let recv = if let Value::String(recv) = args.remove(0) { recv } else { unreachable!() };
 
     let (from, to) = match (args.remove(0), args.remove(0)) {
         (Value::String(from), Value::String(to)) => (from, to),
@@ -78,7 +94,7 @@ pub fn replace(_int: &mut Interpreter, mut args: Vec<Value>) -> Value {
 }
 
 pub fn split(_int: &mut Interpreter, mut args: Vec<Value>) -> Value {
-    let recv = if let Value::String(recv) = args.remove(0) {recv} else {unreachable!()};
+    let recv = if let Value::String(recv) = args.remove(0) { recv } else { unreachable!() };
 
     let sep = match args.remove(0) {
         Value::String(sep) => sep,
@@ -91,7 +107,7 @@ pub fn split(_int: &mut Interpreter, mut args: Vec<Value>) -> Value {
 }
 
 pub fn join(_int: &mut Interpreter, mut args: Vec<Value>) -> Value {
-    let recv = if let Value::String(recv) = args.remove(0) {recv} else {unreachable!()};
+    let recv = if let Value::String(recv) = args.remove(0) { recv } else { unreachable!() };
 
     let vec = match args.remove(0) {
         Value::Vec(vec) => vec,
@@ -103,8 +119,20 @@ pub fn join(_int: &mut Interpreter, mut args: Vec<Value>) -> Value {
     Value::String(res)
 }
 
+pub fn vec_len(_int: &mut Interpreter, mut args: Vec<Value>) -> Value {
+    let recv = if let Value::Vec(recv) = args.remove(0) { recv } else { unreachable!() };
+    let recv = RefCell::borrow(&recv);
+    Value::Num(recv.len() as f64)
+}
+
+pub fn dict_len(_int: &mut Interpreter, mut args: Vec<Value>) -> Value {
+    let recv = if let Value::Dict(recv) = args.remove(0) { recv } else { unreachable!() };
+    let recv = RefCell::borrow(&recv);
+    Value::Num(recv.len() as f64)
+}
+
 pub fn map(int: &mut Interpreter, mut args: Vec<Value>) -> Value {
-    let recv = if let Value::Vec(recv) = args.remove(0) {recv} else {unreachable!()};
+    let recv = if let Value::Vec(recv) = args.remove(0) { recv } else { unreachable!() };
     let recv = RefCell::borrow(&recv);
 
     let f = args.remove(0);
@@ -116,7 +144,7 @@ pub fn map(int: &mut Interpreter, mut args: Vec<Value>) -> Value {
 }
 
 pub fn filter(int: &mut Interpreter, mut args: Vec<Value>) -> Value {
-    let recv = if let Value::Vec(recv) = args.remove(0) {recv} else {unreachable!()};
+    let recv = if let Value::Vec(recv) = args.remove(0) { recv } else { unreachable!() };
     let recv = RefCell::borrow(&recv);
 
     let f = args.remove(0);
@@ -128,7 +156,7 @@ pub fn filter(int: &mut Interpreter, mut args: Vec<Value>) -> Value {
 }
 
 pub fn for_each(int: &mut Interpreter, mut args: Vec<Value>) -> Value {
-    let recv = if let Value::Vec(recv) = args.remove(0) {recv} else {unreachable!()};
+    let recv = if let Value::Vec(recv) = args.remove(0) { recv } else { unreachable!() };
     let recv = RefCell::borrow(&recv);
 
     let f = args.remove(0);
@@ -141,19 +169,19 @@ pub fn for_each(int: &mut Interpreter, mut args: Vec<Value>) -> Value {
 }
 
 pub fn clone_vec(_int: &mut Interpreter, mut args: Vec<Value>) -> Value {
-    let recv = if let Value::Vec(recv) = args.remove(0) {recv} else {unreachable!()};
+    let recv = if let Value::Vec(recv) = args.remove(0) { recv } else { unreachable!() };
     let recv = RefCell::borrow(&recv);
     Value::Vec(Rc::new(RefCell::new(recv.clone())))
 }
 
 pub fn clone_dict(_int: &mut Interpreter, mut args: Vec<Value>) -> Value {
-    let recv = if let Value::Dict(recv) = args.remove(0) {recv} else {unreachable!()};
+    let recv = if let Value::Dict(recv) = args.remove(0) { recv } else { unreachable!() };
     let recv = RefCell::borrow(&recv);
     Value::Dict(Rc::new(RefCell::new(recv.clone())))
 }
 
 pub fn vec_2_dict(_int: &mut Interpreter, mut args: Vec<Value>) -> Value {
-    let recv = if let Value::Vec(recv) = args.remove(0) {recv} else {unreachable!()};
+    let recv = if let Value::Vec(recv) = args.remove(0) { recv } else { unreachable!() };
     let recv = RefCell::borrow(&recv);
 
     let mut map = HashMap::new();
@@ -177,7 +205,7 @@ pub fn vec_2_dict(_int: &mut Interpreter, mut args: Vec<Value>) -> Value {
 }
 
 pub fn dict_2_vec(_int: &mut Interpreter, mut args: Vec<Value>) -> Value {
-    let recv = if let Value::Dict(recv) = args.remove(0) {recv} else {unreachable!()};
+    let recv = if let Value::Dict(recv) = args.remove(0) { recv } else { unreachable!() };
     let recv = RefCell::borrow(&recv);
 
     let mut vec = Vec::new();
@@ -193,7 +221,7 @@ pub fn dict_2_vec(_int: &mut Interpreter, mut args: Vec<Value>) -> Value {
 }
 
 pub fn matches(_int: &mut Interpreter, mut args: Vec<Value>) -> Value {
-    let recv = if let Value::String(recv) = args.remove(0) {recv} else {unreachable!()};
+    let recv = if let Value::String(recv) = args.remove(0) { recv } else { unreachable!() };
 
     let pat = match args.remove(0) {
         Value::String(pat) => pat,
@@ -206,7 +234,7 @@ pub fn matches(_int: &mut Interpreter, mut args: Vec<Value>) -> Value {
 }
 
 pub fn find(_int: &mut Interpreter, mut args: Vec<Value>) -> Value {
-    let recv = if let Value::String(recv) = args.remove(0) {recv} else {unreachable!()};
+    let recv = if let Value::String(recv) = args.remove(0) { recv } else { unreachable!() };
 
     let pat = match args.remove(0) {
         Value::String(pat) => pat,
@@ -224,4 +252,25 @@ pub fn find(_int: &mut Interpreter, mut args: Vec<Value>) -> Value {
     }).collect::<Vec<Value>>();
 
     Value::Vec(Rc::new(RefCell::new(matches)))
+}
+
+pub fn vec_remove(_int: &mut Interpreter, mut args: Vec<Value>) -> Value {
+    let recv = if let Value::Vec(recv) = args.remove(0) { recv } else { unreachable!() };
+    let mut recv = RefCell::borrow_mut(&recv);
+
+    let index = match args.remove(0) {
+        Value::Num(index) if index.trunc() == index => index as usize,
+        _ => panic!("expected integer index")
+    };
+
+    recv.remove(index)
+}
+
+pub fn dict_remove(_int: &mut Interpreter, mut args: Vec<Value>) -> Value {
+    let recv = if let Value::Dict(recv) = args.remove(0) { recv } else { unreachable!() };
+    let mut recv = RefCell::borrow_mut(&recv);
+
+    let index = dict_key(args.remove(0));
+
+    recv.remove(&index).expect("key not found")
 }
