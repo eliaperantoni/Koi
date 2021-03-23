@@ -379,7 +379,7 @@ impl Interpreter {
                         res.append(&mut rhs.clone());
 
                         Value::Vec(Rc::new(RefCell::new(res)))
-                    },
+                    }
                     (Value::Dict(lhs), Value::Dict(rhs)) => {
                         let lhs = RefCell::borrow(&lhs);
                         let rhs = RefCell::borrow(&rhs);
@@ -393,7 +393,7 @@ impl Interpreter {
                         }
 
                         Value::Dict(Rc::new(RefCell::new(res)))
-                    },
+                    }
                     _ => panic!("invalid operands types for op {:?}", BinaryOp::Sum),
                 }
             }
