@@ -348,3 +348,13 @@ fn native_vec_remove() {
 fn native_dict_remove() {
     assert_eq!(output("let x = {a: 1 b: 2} print(x.remove('a')) print(x)"), "1\n{b: 2}\n".to_string());
 }
+
+#[test]
+fn native_vec_sum() {
+    assert_eq!(output("print([1] + [2])"), "[1, 2]\n".to_string());
+}
+
+#[test]
+fn native_dict_sum() {
+    assert_eq!(output("print({} + {a:1})"), "{a: 1}\n".to_string());
+}

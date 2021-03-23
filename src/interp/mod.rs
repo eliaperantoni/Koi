@@ -370,6 +370,30 @@ impl Interpreter {
                 match (self.eval(*lhs), self.eval(*rhs)) {
                     (Value::Num(lhs), Value::Num(rhs)) => Value::Num(lhs + rhs),
                     (Value::String(lhs), Value::String(rhs)) => Value::String(lhs + &rhs),
+                    (Value::Vec(lhs), Value::Vec(rhs)) => {
+                        let lhs = RefCell::borrow(&lhs);
+                        let rhs = RefCell::borrow(&rhs);
+
+                        let mut res = Vec::new();
+                        res.append(&mut lhs.clone());
+                        res.append(&mut rhs.clone());
+
+                        Value::Vec(Rc::new(RefCell::new(res)))
+                    },
+                    (Value::Dict(lhs), Value::Dict(rhs)) => {
+                        let lhs = RefCell::borrow(&lhs);
+                        let rhs = RefCell::borrow(&rhs);
+
+                        let mut res = HashMap::new();
+                        for (k, v) in lhs.clone().into_iter() {
+                            res.insert(k, v);
+                        }
+                        for (k, v) in rhs.clone().into_iter() {
+                            res.insert(k, v);
+                        }
+
+                        Value::Dict(Rc::new(RefCell::new(res)))
+                    },
                     _ => panic!("invalid operands types for op {:?}", BinaryOp::Sum),
                 }
             }
