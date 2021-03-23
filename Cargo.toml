@@ -1,5 +1,5 @@
 [package]
-name = "ampere"
+name = "koi"
 version = "0.1.0"
 authors = ["elia"]
 edition = "2018"
