@@ -119,6 +119,11 @@ pub fn join(_int: &mut Interpreter, mut args: Vec<Value>) -> Value {
     Value::String(res)
 }
 
+pub fn string_len(_int: &mut Interpreter, mut args: Vec<Value>) -> Value {
+    let recv = if let Value::String(recv) = args.remove(0) { recv } else { unreachable!() };
+    Value::Num(recv.len() as f64)
+}
+
 pub fn vec_len(_int: &mut Interpreter, mut args: Vec<Value>) -> Value {
     let recv = if let Value::Vec(recv) = args.remove(0) { recv } else { unreachable!() };
     let recv = RefCell::borrow(&recv);

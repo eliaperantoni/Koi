@@ -84,6 +84,12 @@ impl Interpreter {
                 name: "find".to_string(),
                 receiver: Some(Box::new(base)),
             },
+            (Value::String(_), "len") => Func::Native {
+                func: native::string_len,
+                params: Some(1),
+                name: "len".to_string(),
+                receiver: Some(Box::new(base)),
+            },
             (Value::Vec(_), "len") => Func::Native {
                 func: native::vec_len,
                 params: Some(1),

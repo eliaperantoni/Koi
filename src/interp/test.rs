@@ -222,3 +222,129 @@ fn closure() {
 fn slices() {
     assert_eq!(output("let x = [1 2 3 4 5 6] let y = x[0..5] y[0] = 99 print(x) print(y)"), "[1, 2, 3, 4, 5, 6]\n[99, 2, 3, 4, 5]\n".to_string());
 }
+
+#[test]
+fn native_string() {
+    assert_eq!(output("let x = [1 2 3].string() print(x + '!')"), "[1, 2, 3]!\n".to_string());
+}
+
+#[test]
+fn native_type() {
+    assert_eq!(output("print([1 2 3].type())"), "vec\n".to_string());
+}
+
+#[test]
+fn native_to_json() {
+    assert_eq!(output("print(['a', 'b'].toJson())"), "[\"a\",\"b\"]\n".to_string());
+}
+
+#[test]
+fn native_from_json() {
+    assert_eq!(output("print('[\"xyz\",\"b\"]'.fromJson()[0])"), "xyz\n".to_string());
+}
+
+#[test]
+fn native_upper() {
+    assert_eq!(output("print('xyzXYZ123'.upper())"), "XYZXYZ123\n".to_string());
+}
+
+#[test]
+fn native_lower() {
+    assert_eq!(output("print('xyzXYZ123'.lower())"), "xyzxyz123\n".to_string());
+}
+
+#[test]
+fn native_bool() {
+    assert_eq!(output("print(!'true'.bool())"), "false\n".to_string());
+}
+
+#[test]
+fn native_num() {
+    assert_eq!(output("print(2 * '4.1'.num())"), "8.2\n".to_string());
+}
+
+#[test]
+fn native_replace() {
+    assert_eq!(output("print('---xyz---'.replace('xyz', 'abc'))"), "---abc---\n".to_string());
+}
+
+#[test]
+fn native_split() {
+    assert_eq!(output("print('u-v-www-x-y'.split('-')[2])"), "www\n".to_string());
+}
+
+#[test]
+fn native_join() {
+    assert_eq!(output("print('-'.join(['a' 'b' 'c']))"), "a-b-c\n".to_string());
+    assert_eq!(output("print(''.join(['a' 'b' 'c']))"), "abc\n".to_string());
+}
+
+#[test]
+fn native_string_len() {
+    assert_eq!(output("print('xyz'.len())"), "3\n".to_string());
+}
+
+#[test]
+fn native_vec_len() {
+    assert_eq!(output("print([1 2 3].len())"), "3\n".to_string());
+}
+
+#[test]
+fn native_dict_len() {
+    assert_eq!(output("print({a:1 b:2 c:3}.len())"), "3\n".to_string());
+}
+
+#[test]
+fn native_map() {
+    assert_eq!(output("print([2 4 6].map(fn(i){return i^2}))"), "[4, 16, 36]\n".to_string());
+}
+
+#[test]
+fn native_filter() {
+    assert_eq!(output("print([1 2 3 4 5 6].filter(fn(i){return i%2==0}))"), "[2, 4, 6]\n".to_string());
+}
+
+#[test]
+fn native_for_each() {
+    assert_eq!(output("let i = 0 let x = [1 2 3 4 5 6] x.forEach(fn(_){i+=1}) print(i)"), "6\n".to_string());
+}
+
+#[test]
+fn native_clone_vec() {
+    assert_eq!(output("let x = [1] let y = x.clone() y[0] = 99 print(x)"), "[1]\n".to_string());
+}
+
+#[test]
+fn native_clone_dict() {
+    assert_eq!(output("let x = {a:1} let y = x.clone() y.a = 99 print(x)"), "{a: 1}\n".to_string());
+}
+
+#[test]
+fn native_vec_2_dict() {
+    assert_eq!(output("print([['a', 1]].dict())"), "{a: 1}\n".to_string());
+}
+
+#[test]
+fn native_dict_2_vec() {
+    assert_eq!(output("print({a:1}.vec())"), "[['a', 1]]\n".to_string());
+}
+
+#[test]
+fn native_matches() {
+    assert_eq!(output("print('00AAA'.matches('\\d\\d\\w\\{3}'))"), "true\n".to_string());
+}
+
+#[test]
+fn native_find() {
+    assert_eq!(output("print('01 23'.find('(\\d)(\\d)'))"), "[['01', '0', '1'], ['23', '2', '3']]\n".to_string());
+}
+
+#[test]
+fn native_vec_remove() {
+    assert_eq!(output("let x = [1 2] print(x.remove(0)) print(x)"), "1\n[2]\n".to_string());
+}
+
+#[test]
+fn native_dict_remove() {
+    assert_eq!(output("let x = {a: 1 b: 2} print(x.remove('a')) print(x)"), "1\n{b: 2}\n".to_string());
+}
