@@ -3,6 +3,7 @@ use crate::parser::Parser;
 
 use super::*;
 use super::value::Value;
+use std::fs;
 
 fn output(source: &str) -> String {
     let lexer = new_lexer(source.to_owned());
@@ -357,4 +358,17 @@ fn native_vec_sum() {
 #[test]
 fn native_dict_sum() {
     assert_eq!(output("print({} + {a:1})"), "{a: 1}\n".to_string());
+}
+
+#[test]
+fn test_golden() {
+    for path in fs::read_dir("src/interp/golden").unwrap() {
+        let content = fs::read_to_string(path.unwrap().path()).unwrap();
+        let (source, want) = {
+            let split = content.split("\n#---\n").collect::<Vec<&str>>();
+            (split[0].clone(), split[1].clone())
+        };
+
+        assert_eq!(output(source), want);
+    }
 }

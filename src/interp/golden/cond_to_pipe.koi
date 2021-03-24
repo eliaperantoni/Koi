@@ -1,0 +1,3 @@
+( echo -n 'VGhpcyBpc' ; echo -n 'yBLb2k=' ) | base64 -d | cat
+#---
+This is Koi

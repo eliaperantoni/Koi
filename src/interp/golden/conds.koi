@@ -1,0 +1,11 @@
+python -c 'exit(0)' ; python -c 'print("a")'
+python -c 'exit(1)' ; python -c 'print("b")'
+python -c 'exit(0)' && python -c 'print("c")'
+python -c 'exit(1)' && python -c 'print("d")'
+python -c 'exit(0)' || python -c 'print("e")'
+python -c 'exit(1)' || python -c 'print("f")'
+#---
+a
+b
+c
+f

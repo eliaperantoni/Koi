@@ -1,0 +1,10 @@
+let out = $(python -c 'import sys; sys.stdout.write("X\\n"); sys.stderr.write("X\\n")')
+print(out)
+echo ---
+python -c 'import sys; sys.stdout.write("X\\n"); sys.stderr.write("X\\n")'
+#---
+X
+
+---
+X
+X

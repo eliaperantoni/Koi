@@ -102,7 +102,7 @@ impl Interpreter {
                 let env = self.get_env().os_env();
 
                 if self.collector.is_some() {
-                    let output = self.run_cmd_capture(cmd, env);
+                    let output = self.run_cmd_capture(cmd, env, true);
                     self.collector.as_mut().unwrap().push_str(&output);
                 } else {
                     self.run_cmd_pipe(cmd, env);
@@ -269,7 +269,7 @@ impl Interpreter {
             }
             Expr::Cmd(cmd) => {
                 let os_env = self.get_env().os_env();
-                Value::String(self.run_cmd_capture(cmd, os_env))
+                Value::String(self.run_cmd_capture(cmd, os_env, false))
             }
             Expr::Get(name) => RefCell::borrow(&self.env).get(&name).clone(),
             Expr::GetField { base, index } => {

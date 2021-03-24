@@ -156,10 +156,16 @@ impl Interpreter {
         cmd.wait();
     }
 
-    pub fn run_cmd_capture(&mut self, cmd: Cmd, env: OsEnv) -> String {
+    pub fn run_cmd_capture(&mut self, cmd: Cmd, env: OsEnv, capture_err: bool) -> String {
         let (mut r, w) = pipe().unwrap();
 
-        let mut cmd = self.build_cmd(cmd, Stream::Null, Stream::PipeWriter(w), Stream::Inherit);
+        let err_stream = if capture_err {
+            Stream::PipeWriter(w.try_clone().unwrap())
+        } else {
+            Stream::Inherit
+        };
+
+        let mut cmd = self.build_cmd(cmd, Stream::Null, Stream::PipeWriter(w), err_stream);
         cmd.set_env(env);
         cmd.spawn();
         cmd.wait();

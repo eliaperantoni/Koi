@@ -1,0 +1,52 @@
+rm /tmp/out /tmp/err
+touch /tmp/out /tmp/err
+echo 'A'
+python -c 'import sys; sys.stdout.write("stdout\\n"); sys.stderr.write("stderr\\n")'
+cat /tmp/out | python -c 'import sys; print("CAT" + sys.stdin.read().replace("\\n", ""))'
+cat /tmp/err | python -c 'import sys; print("CAT" + sys.stdin.read().replace("\\n", ""))'
+echo '/A'
+
+rm /tmp/out /tmp/err
+touch /tmp/out /tmp/err
+echo 'B'
+python -c 'import sys; sys.stdout.write("stdout\\n"); sys.stderr.write("stderr\\n")' > /tmp/out
+cat /tmp/out | python -c 'import sys; print("CAT" + sys.stdin.read().replace("\\n", ""))'
+cat /tmp/err | python -c 'import sys; print("CAT" + sys.stdin.read().replace("\\n", ""))'
+echo '/B'
+
+rm /tmp/out /tmp/err
+touch /tmp/out /tmp/err
+echo 'C'
+python -c 'import sys; sys.stdout.write("stdout\\n"); sys.stderr.write("stderr\\n")' *> /tmp/err
+cat /tmp/out | python -c 'import sys; print("CAT" + sys.stdin.read().replace("\\n", ""))'
+cat /tmp/err | python -c 'import sys; print("CAT" + sys.stdin.read().replace("\\n", ""))'
+echo '/C'
+
+rm /tmp/out /tmp/err
+touch /tmp/out /tmp/err
+echo 'D'
+python -c 'import sys; sys.stdout.write("stdout\\n"); sys.stderr.write("stderr\\n")' &> /tmp/err
+cat /tmp/out | python -c 'import sys; print("CAT" + sys.stdin.read().replace("\\n", ""))'
+cat /tmp/err | python -c 'import sys; print("CAT" + sys.stdin.read().replace("\\n", ""))'
+echo '/D'
+#---
+A
+stderr
+stdout
+CAT
+CAT
+/A
+B
+stderr
+CATstdout
+CAT
+/B
+C
+stdout
+CAT
+CATstderr
+/C
+D
+CAT
+CATstderrstdout
+/D
