@@ -62,6 +62,22 @@ pub fn from_json(_int: &mut Interpreter, mut args: Vec<Value>) -> Value {
     Value::from(val)
 }
 
+pub fn strip(_int: &mut Interpreter, mut args: Vec<Value>) -> Value {
+    let recv = if let Value::String(recv) = args.remove(0) { recv } else { unreachable!() };
+    Value::String(recv.trim().to_string())
+}
+
+pub fn string_contains(_int: &mut Interpreter, mut args: Vec<Value>) -> Value {
+    let recv = if let Value::String(recv) = args.remove(0) { recv } else { unreachable!() };
+
+    let target = match args.remove(0) {
+        Value::String(sep) => sep,
+        _ => panic!("expected arg to be string")
+    };
+
+    Value::Bool(recv.contains(&target))
+}
+
 pub fn lower(_int: &mut Interpreter, mut args: Vec<Value>) -> Value {
     let recv = if let Value::String(recv) = args.remove(0) { recv } else { unreachable!() };
     Value::String(recv.to_lowercase())
@@ -257,6 +273,22 @@ pub fn find(_int: &mut Interpreter, mut args: Vec<Value>) -> Value {
     }).collect::<Vec<Value>>();
 
     Value::Vec(Rc::new(RefCell::new(matches)))
+}
+
+pub fn vec_contains(_int: &mut Interpreter, mut args: Vec<Value>) -> Value {
+    let recv = if let Value::Vec(recv) = args.remove(0) { recv } else { unreachable!() };
+    let recv = RefCell::borrow(&recv);
+
+    Value::Bool(recv.contains(&args.remove(0)))
+}
+
+pub fn dict_contains(_int: &mut Interpreter, mut args: Vec<Value>) -> Value {
+    let recv = if let Value::Dict(recv) = args.remove(0) { recv } else { unreachable!() };
+    let recv = RefCell::borrow(&recv);
+
+    let key = dict_key(args.remove(0));
+
+    Value::Bool(recv.contains_key(&key))
 }
 
 pub fn vec_remove(_int: &mut Interpreter, mut args: Vec<Value>) -> Value {

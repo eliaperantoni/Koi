@@ -361,6 +361,28 @@ fn native_dict_sum() {
 }
 
 #[test]
+fn native_strip() {
+    assert_eq!(output("print('x\n')"), "x\n\n".to_string());
+    assert_eq!(output("print('x\n'.strip())"), "x\n".to_string());
+}
+
+#[test]
+fn native_string_contains() {
+    assert_eq!(output("print('abcXXXdef'.contains('XXX'))"), "true\n".to_string());
+    assert_eq!(output("print('abcXYXdef'.contains('XXX'))"), "false\n".to_string());
+}
+
+#[test]
+fn native_vec_contains() {
+    assert_eq!(output("print([1 2 3].contains(2))"), "true\n".to_string());
+}
+
+#[test]
+fn native_dict_contains() {
+    assert_eq!(output("print({a:1 b:2 c:3}.contains('b'))"), "true\n".to_string());
+}
+
+#[test]
 fn test_golden() {
     for path in fs::read_dir("src/interp/golden").unwrap() {
         let content = fs::read_to_string(path.unwrap().path()).unwrap();

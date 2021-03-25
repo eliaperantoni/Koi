@@ -30,6 +30,18 @@ impl Interpreter {
                 name: "fromJson".to_string(),
                 receiver: Some(Box::new(base)),
             },
+            (Value::String(_), "strip") => Func::Native {
+                func: native::strip,
+                params: Some(1),
+                name: "strip".to_string(),
+                receiver: Some(Box::new(base)),
+            },
+            (Value::String(_), "contains") => Func::Native {
+                func: native::string_contains,
+                params: Some(2),
+                name: "contains".to_string(),
+                receiver: Some(Box::new(base)),
+            },
             (Value::String(_), "lower") => Func::Native {
                 func: native::lower,
                 params: Some(1),
@@ -142,6 +154,18 @@ impl Interpreter {
                 func: native::dict_2_vec,
                 params: Some(1),
                 name: "vec".to_string(),
+                receiver: Some(Box::new(base)),
+            },
+            (Value::Vec(_), "contains") => Func::Native {
+                func: native::vec_contains,
+                params: Some(2),
+                name: "contains".to_string(),
+                receiver: Some(Box::new(base)),
+            },
+            (Value::Dict(_), "contains") => Func::Native {
+                func: native::dict_contains,
+                params: Some(2),
+                name: "contains".to_string(),
                 receiver: Some(Box::new(base)),
             },
             (Value::Vec(_), "remove") => Func::Native {
