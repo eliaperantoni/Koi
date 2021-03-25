@@ -1,0 +1,106 @@
+:root {
+    --white: rgb(246, 235, 235);
+    --white-subtle: rgba(246, 235, 235, 0.7);
+}
+
+html {
+    min-height: 100vh;
+
+    font-family: 'Iosevka';
+    color: var(--white);
+}
+
+html, body, #root {
+    display: flex;
+    flex: 1;
+}
+
+body {
+    background: #06080B;
+    margin: 0;
+
+    flex-direction: column;
+    justify-content: flex-start;
+
+    padding: 128px 256px;
+}
+
+a {
+    color: #00c0ff;
+}
+
+.header {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+
+    position: absolute;
+    top: 64px;
+    left: 64px;
+}
+
+.header > .text {
+    display: flex;
+    flex-direction: column;
+    margin-left: 36px;
+}
+
+.header > .logo {
+    width: 200px;
+    height: auto;
+}
+
+.header .koi {
+    font-size: 4rem;
+}
+
+.header .slogan {
+    color: var(--white-subtle);
+    font-size: 1.4rem;
+}
+
+.taste {
+    margin-top: 200px;
+    display: flex;
+    flex-direction: row;
+}
+
+.taste > .code, .taste > .desc {
+    flex: 1;
+}
+
+.taste > .code {
+    margin-right: 18px;
+}
+
+.taste > .desc {
+    font-size: 1.2rem;
+    margin-left: 18px;
+    align-self: center;
+}
+
+.code {
+    background: #000000;
+    border: #151515 2px solid;
+    border-radius: 16px;
+    padding: 32px;
+
+    font-size: 1.2rem;
+    font-family: 'Iosevka';
+}
+
+span.kw {
+    color: #F7005E;
+}
+
+span.str {
+    color: #00EA8C;
+}
+
+span.fn {
+    color: #00E8FF;
+}
+
+span.int {
+    color: #BB4DFF;
+}

@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Köi</title>
+    <link rel="icon" type="image/png" href="/assets/flavicon.png"/>
+    <link rel="stylesheet" href="/style.css">
+</head>
+<body>
+<div class="header">
+    <img class="logo" src="/assets/koi.svg" alt="Koi logo">
+    <div class="text">
+        <span class="koi">/Köi/</span>
+        <span class="slogan">A friendly companion for your<br>shell scripting journeys.</span>
+    </div>
+</div>
+
+<div class="taste">
+    <pre class="code">let me = $(whoami).<span class="fn">strip</span>()
+echo Greetings {me}!
+
+for _, n in [1 2 3] {
+    <span class="fn">print</span>('2 to the {n} is {2^n}')
+}
+
+[
+    {cmd: 'ls'}
+    {cmd: 'ps'}
+].<span class="fn">forEach</span>(fn(obj){
+    man {obj.cmd} --help <span class="kw">|</span> head -n 5
+})</pre>
+    <div class="desc">
+        <p>Köi is a minimalistic language, mainly aimed at shell scripting.</p>
+        <p>It tries to provide a familiar and ergonomic syntax for non-shell code, without compromising the ease of launching and composing programs that traditional shell languages offer.</p>
+        <p>Köi is inspired by Rust, Python, JavaScript, Lua and Bash.<br>It is built in Rust by <a href="https://github.com/eliaperantoni">@eliaperantoni</a>.</p>
+    </div>
+</div>
+</body>
+</html>
