@@ -1,5 +1,7 @@
 use std::cell::RefCell;
 use std::collections::HashMap;
+use std::io;
+use std::io::{BufRead, Write};
 use std::process;
 use std::rc::Rc;
 
@@ -23,6 +25,27 @@ pub fn print(int: &mut Interpreter, args: Vec<Value>) -> Value {
     }
 
     Value::Nil
+}
+
+pub fn input(int: &mut Interpreter, mut args: Vec<Value>) -> Value {
+    if int.collector.is_some() {
+        panic!("called input in testing");
+    }
+
+    let msg = match args.remove(0) {
+        Value::String(msg) => msg,
+        _ => panic!("expected arg to be string")
+    };
+
+    print!("{}", msg);
+    io::stdout().flush().unwrap();
+
+    let mut buf = String::new();
+
+    let stdin = io::stdin();
+    stdin.lock().read_line(&mut buf).unwrap();
+
+    Value::String(buf)
 }
 
 pub fn exit(_: &mut Interpreter, mut args: Vec<Value>) -> Value {

@@ -1,9 +1,10 @@
+use std::fs;
+
 use crate::lexer::new as new_lexer;
 use crate::parser::Parser;
 
 use super::*;
 use super::value::Value;
-use std::fs;
 
 fn output(source: &str) -> String {
     let lexer = new_lexer(source.to_owned());

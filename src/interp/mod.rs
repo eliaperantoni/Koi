@@ -65,6 +65,13 @@ impl Interpreter {
             receiver: None,
         }));
 
+        self.get_env_mut().def("input".to_string(), Value::Func(Func::Native {
+            name: "input".to_string(),
+            params: None,
+            func: input,
+            receiver: None,
+        }));
+
         self.get_env_mut().def("exit".to_string(), Value::Func(Func::Native {
             name: "exit".to_string(),
             params: Some(1),
