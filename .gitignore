@@ -1,6 +1,7 @@
 /target
 .idea
 /prog.koi
+/Koifile
 web/dist/
 web/snippets/out
 web/node_modules
