@@ -160,21 +160,22 @@ impl RawLexer {
     }
 
     fn scan_number(&mut self) -> Token {
-        let mut iter = self.source[self.cursor..].iter().peekable();
+        let start = self.cursor;
 
-        let int_part: String = iter.take_while_ref(|&c| c.is_ascii_digit()).collect();
+        while self.cursor < self.source.len() && self.source[self.cursor].is_ascii_digit() {
+            self.cursor += 1;
+        }
 
-        let dec_part: Option<String> = match (iter.next(), iter.peek()) {
-            (Some('.'), Some('.')) => None,
-            (Some('.'), _) => Some(iter.take_while_ref(|&c| c.is_ascii_digit()).collect()),
-            _ => None,
-        };
+        if self.cursor < self.source.len() && self.source[self.cursor] == '.' && self.source[self.cursor+1].is_ascii_digit() {
+            self.cursor += 1;
 
-        let length = int_part.len() + dec_part.map(|s| 1 + s.len()).unwrap_or(0);
-        let lexeme = self.make_lexeme(self.cursor, self.cursor + length);
+            while self.cursor < self.source.len() && self.source[self.cursor].is_ascii_digit() {
+                self.cursor += 1;
+            }
+        }
+
+        let lexeme = self.make_lexeme(start, self.cursor);
         let value = lexeme.parse().expect("could not parse number literal");
-
-        self.cursor += lexeme.len();
 
         Token {
             lexeme,

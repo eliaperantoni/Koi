@@ -18,16 +18,22 @@ impl Interpreter {
                 name: "type".to_string(),
                 receiver: Some(Box::new(base)),
             },
+            (_, "bool") => Func::Native {
+                func: native::bool,
+                params: Some(1),
+                name: "bool".to_string(),
+                receiver: Some(Box::new(base)),
+            },
             (_, "toJson") => Func::Native {
                 func: native::to_json,
                 params: Some(1),
                 name: "toJson".to_string(),
                 receiver: Some(Box::new(base)),
             },
-            (Value::String(_), "fromJson") => Func::Native {
-                func: native::from_json,
+            (Value::String(_), "parseJson") => Func::Native {
+                func: native::parse_json,
                 params: Some(1),
-                name: "fromJson".to_string(),
+                name: "parseJson".to_string(),
                 receiver: Some(Box::new(base)),
             },
             (Value::String(_), "strip") => Func::Native {
@@ -54,16 +60,16 @@ impl Interpreter {
                 name: "upper".to_string(),
                 receiver: Some(Box::new(base)),
             },
-            (Value::String(_), "bool") => Func::Native {
-                func: native::bool,
+            (Value::String(_), "parseBool") => Func::Native {
+                func: native::parse_bool,
                 params: Some(1),
-                name: "bool".to_string(),
+                name: "parseBool".to_string(),
                 receiver: Some(Box::new(base)),
             },
-            (Value::String(_), "num") => Func::Native {
-                func: native::num,
+            (Value::String(_), "parseNum") => Func::Native {
+                func: native::parse_num,
                 params: Some(1),
-                name: "num".to_string(),
+                name: "parseNum".to_string(),
                 receiver: Some(Box::new(base)),
             },
             (Value::String(_), "replace") => Func::Native {
@@ -144,16 +150,16 @@ impl Interpreter {
                 name: "clone".to_string(),
                 receiver: Some(Box::new(base)),
             },
-            (Value::Vec(_), "dict") => Func::Native {
+            (Value::Vec(_), "toDict") => Func::Native {
                 func: native::vec_2_dict,
                 params: Some(1),
-                name: "dict".to_string(),
+                name: "toDict".to_string(),
                 receiver: Some(Box::new(base)),
             },
-            (Value::Dict(_), "vec") => Func::Native {
+            (Value::Dict(_), "toVec") => Func::Native {
                 func: native::dict_2_vec,
                 params: Some(1),
-                name: "vec".to_string(),
+                name: "toVec".to_string(),
                 receiver: Some(Box::new(base)),
             },
             (Value::Vec(_), "contains") => Func::Native {

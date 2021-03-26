@@ -241,8 +241,8 @@ fn native_to_json() {
 }
 
 #[test]
-fn native_from_json() {
-    assert_eq!(output("print('[\"xyz\",\"b\"]'.fromJson()[0])"), "xyz\n".to_string());
+fn native_parse_json() {
+    assert_eq!(output("print('[\"xyz\",\"b\"]'.parseJson()[0])"), "xyz\n".to_string());
 }
 
 #[test]
@@ -256,13 +256,13 @@ fn native_lower() {
 }
 
 #[test]
-fn native_bool() {
-    assert_eq!(output("print(!'true'.bool())"), "false\n".to_string());
+fn native_parse_bool() {
+    assert_eq!(output("print(!'true'.parseBool())"), "false\n".to_string());
 }
 
 #[test]
-fn native_num() {
-    assert_eq!(output("print(2 * '4.1'.num())"), "8.2\n".to_string());
+fn native_parse_num() {
+    assert_eq!(output("print(2 * '4.1'.parseNum())"), "8.2\n".to_string());
 }
 
 #[test]
@@ -323,12 +323,12 @@ fn native_clone_dict() {
 
 #[test]
 fn native_vec_2_dict() {
-    assert_eq!(output("print([['a', 1]].dict())"), "{a: 1}\n".to_string());
+    assert_eq!(output("print([['a', 1]].toDict())"), "{a: 1}\n".to_string());
 }
 
 #[test]
 fn native_dict_2_vec() {
-    assert_eq!(output("print({a:1}.vec())"), "[['a', 1]]\n".to_string());
+    assert_eq!(output("print({a:1}.toVec())"), "[['a', 1]]\n".to_string());
 }
 
 #[test]
@@ -394,4 +394,11 @@ fn test_golden() {
 
         assert_eq!(output(source), want);
     }
+}
+
+#[test]
+fn native_bool() {
+    assert_eq!(output("print(nil.bool())"), "false\n".to_string());
+    assert_eq!(output("print(false.bool())"), "false\n".to_string());
+    assert_eq!(output("print(123.bool())"), "true\n".to_string());
 }

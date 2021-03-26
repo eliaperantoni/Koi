@@ -61,6 +61,10 @@ pub fn string(_int: &mut Interpreter, mut args: Vec<Value>) -> Value {
     Value::String(args.remove(0).to_string())
 }
 
+pub fn bool(_int: &mut Interpreter, mut args: Vec<Value>) -> Value {
+    Value::Bool(args.remove(0).is_truthy())
+}
+
 pub fn typ(_int: &mut Interpreter, mut args: Vec<Value>) -> Value {
     Value::String(String::from(match args.remove(0) {
         Value::Nil => "nil",
@@ -79,7 +83,7 @@ pub fn to_json(_int: &mut Interpreter, mut args: Vec<Value>) -> Value {
     Value::String(json.to_string())
 }
 
-pub fn from_json(_int: &mut Interpreter, mut args: Vec<Value>) -> Value {
+pub fn parse_json(_int: &mut Interpreter, mut args: Vec<Value>) -> Value {
     let recv = if let Value::String(recv) = args.remove(0) { recv } else { unreachable!() };
     let val: JSONValue = json_from_str(&recv).unwrap();
     Value::from(val)
@@ -111,12 +115,12 @@ pub fn upper(_int: &mut Interpreter, mut args: Vec<Value>) -> Value {
     Value::String(recv.to_uppercase())
 }
 
-pub fn bool(_int: &mut Interpreter, mut args: Vec<Value>) -> Value {
+pub fn parse_bool(_int: &mut Interpreter, mut args: Vec<Value>) -> Value {
     let recv = if let Value::String(recv) = args.remove(0) { recv } else { unreachable!() };
     Value::Bool(recv.parse::<bool>().unwrap())
 }
 
-pub fn num(_int: &mut Interpreter, mut args: Vec<Value>) -> Value {
+pub fn parse_num(_int: &mut Interpreter, mut args: Vec<Value>) -> Value {
     let recv = if let Value::String(recv) = args.remove(0) { recv } else { unreachable!() };
     Value::Num(recv.parse::<f64>().unwrap())
 }

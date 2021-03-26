@@ -108,7 +108,7 @@ fn scans_string_literal_with_escape_chars() {
 
 #[test]
 fn scans_number_literals() {
-    assert_eq!(scan("12 3.14 10. .5"), vec![
+    assert_eq!(scan("12 3.14 .5"), vec![
         Token {
             kind: TokenKind::Num(12.0),
             lexeme: "12".to_owned(),
@@ -120,14 +120,6 @@ fn scans_number_literals() {
         Token {
             kind: TokenKind::Num(3.14),
             lexeme: "3.14".to_owned(),
-        },
-        Token {
-            kind: TokenKind::Space,
-            lexeme: " ".to_owned(),
-        },
-        Token {
-            kind: TokenKind::Num(10.0),
-            lexeme: "10.".to_owned(),
         },
         Token {
             kind: TokenKind::Space,
