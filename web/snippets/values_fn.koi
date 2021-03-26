@@ -1,0 +1,5 @@
+°1fn° f() {}
+°1fn° g(x) {°1return° x}
+°1fn° h(x, y, z) {
+  °1return° x*y*z
+}

@@ -16,12 +16,45 @@
 </div>
 
 <div class="taste">
-    <pre class="code"><!-- SNIPPET demo --></pre>
-    <div class="desc">
-        <p>Köi is a minimalistic language, mainly aimed at shell scripting.</p>
-        <p>It tries to provide a familiar and ergonomic syntax for non-shell code, without compromising the ease of launching and composing programs that traditional shell languages offer.</p>
-        <p>Köi is inspired by Rust, Python, JavaScript, Lua and Bash.<br>It is built in Rust by <a href="https://github.com/eliaperantoni">@eliaperantoni</a>.</p>
+    <div class="container">
+        <pre class="code"><!-- SNIPPET demo --></pre>
+        <div class="desc">
+            <p>Köi is a minimalistic language, mainly aimed at shell scripting.</p>
+            <p>It tries to provide a familiar and ergonomic syntax for non-shell code, without compromising the ease of launching and composing programs that traditional shell languages offer.</p>
+            <p>Köi is inspired by Rust, Python, JavaScript, Lua and Bash.</p>
+            <div class="buttons">
+                <a href="#learn-more" class="button">LEARN MORE</a>
+                <a href="https://github.com/eliaperantoni/Koi/releases" class="button">DOWNLOAD</a>
+                <a href="https://github.com/eliaperantoni/Koi" class="button">SOURCE</a>
+            </div>
+        </div>
     </div>
 </div>
+
+<div class="section-header" id="learn-more">Types and literals</div>
+
+<div class="section">
+    <p>Koi is a dinamically typed language. It has: nil, numbers, strings, booleans, vectors, dictionaries, functions and ranges. If you're familiar with Python or JavaScript you'll feel right at home.</p>
+
+    <p><span class="code-inline"><!-- SNIPPET values_nil --></span> represents the absence of a value.</p>
+
+    <p>There is no distinction between integers and floating points. They're the same type: number. There are places where integers are required (such as ranges) so in that case, attempting to use a number with non-zero decimal part will throw an error.</p>
+    <pre class="code"><!-- SNIPPET values_num --></pre>
+
+    <p>String literals can be delimited with either ' or ".</p>
+    <pre class="code"><!-- SNIPPET values_str --></pre>
+
+    <p>In vectors and dictionaries literals, commas are optional. They're only required in special cases where the parser is too greedy and detects a whole expression that you intended to be two separate expressions instead.</p>
+    <pre class="code"><!-- SNIPPET values_vec_dict --></pre>
+
+    <p>Ranges represent a range between two numbers and are used in for loops and to slice vectors. An equal sign can be used to indicate that the range is right-inclusive.</p>
+    <pre class="code"><!-- SNIPPET values_range --></pre>
+
+    <p>Functions literals (also called lambdas or anonymous functions) look just like regular functions but don't have a name.</p>
+    <pre class="code"><!-- SNIPPET values_fn --></pre>
+</div>
+
+<div class="section-header">Expressions</div>
+
 </body>
 </html>

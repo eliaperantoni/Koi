@@ -6,7 +6,8 @@ conv = {
     1: 'kw',
     2: 'str',
     3: 'fn',
-    4: 'int'
+    4: 'int',
+    5: 'com'
 }
 
 for path in glob.glob('*.koi'):

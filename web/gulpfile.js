@@ -15,7 +15,7 @@ function generateSnippets() {
 
 function html() {
     return gulp.src('index.html')
-        .pipe(replace(/<!-- SNIPPET (.+) -->/, function (match, name) {
+        .pipe(replace(/<!-- SNIPPET (.+) -->/g, function (match, name) {
             return fs.readFileSync(path.join('snippets/out', `${name}.koi`));
         }))
         .pipe(htmlmin({collapseWhitespace: true}))

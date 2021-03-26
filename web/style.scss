@@ -1,13 +1,12 @@
-:root {
-    --white: rgb(246, 235, 235);
-    --white-subtle: rgba(246, 235, 235, 0.7);
-}
+$back: #06080B;
+$white: rgb(246, 235, 235);
+$white-subtle: rgba(246, 235, 235, 0.7);
 
 html {
     min-height: 100vh;
 
     font-family: 'Iosevka';
-    color: var(--white);
+    color: $white;
 }
 
 html, body, #root {
@@ -16,77 +15,35 @@ html, body, #root {
 }
 
 body {
-    background: #06080B;
+    background: $back;
     margin: 0;
 
     flex-direction: column;
     justify-content: flex-start;
-
-    padding: 128px 256px;
 }
 
 a {
     color: #00c0ff;
 }
 
-.header {
-    display: flex;
-    flex-direction: row;
-    align-items: center;
-
-    position: absolute;
-    top: 64px;
-    left: 64px;
-}
-
-.header > .text {
-    display: flex;
-    flex-direction: column;
-    margin-left: 36px;
-}
-
-.header > .logo {
-    width: 200px;
-    height: auto;
-}
-
-.header .koi {
-    font-size: 4rem;
-}
-
-.header .slogan {
-    color: var(--white-subtle);
-    font-size: 1.4rem;
-}
-
-.taste {
-    margin-top: 200px;
-    display: flex;
-    flex-direction: row;
-}
-
-.taste > .code, .taste > .desc {
-    flex: 1;
-}
-
-.taste > .code {
-    margin-right: 18px;
-}
-
-.taste > .desc {
-    font-size: 1.2rem;
-    margin-left: 18px;
-    align-self: center;
-}
+$code-border: #282828;
 
 .code {
     background: #000000;
-    border: #151515 2px solid;
+    border: $code-border 2px solid;
     border-radius: 16px;
     padding: 32px;
+    margin: 0;
 
     font-size: 1.2rem;
     font-family: 'Iosevka';
+}
+
+.code-inline {
+    border: $code-border 2px solid;
+    border-radius: 4px;
+    background: #000000;
+    padding: 0 8px;
 }
 
 span.kw {
@@ -103,4 +60,107 @@ span.fn {
 
 span.int {
     color: #BB4DFF;
+}
+
+span.com {
+    color: #4a4f54;
+}
+
+.header {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+
+    position: absolute;
+    top: 64px;
+    left: 64px;
+
+    > .logo {
+        width: 200px;
+        height: auto;
+    }
+
+    > .text {
+        display: flex;
+        flex-direction: column;
+        margin-left: 36px;
+
+        > .koi {
+            font-size: 4rem;
+        }
+
+        > .slogan {
+            color: $white-subtle;
+            font-size: 1.2rem;
+        }
+    }
+}
+
+.taste {
+    height: 100vh;
+
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.taste > .container {
+    margin-top: 128px;
+
+    padding: 0 256px;
+
+    display: flex;
+    flex-direction: row;
+    flex-wrap: wrap;
+
+    gap: 48px;
+
+    > .code {
+        flex: 1;
+        align-self: stretch;
+    }
+
+    > .desc {
+        flex: 2;
+
+        font-size: 1.2rem;
+        align-self: center;
+    }
+}
+
+.desc > .buttons {
+    display: flex;
+    flex-direction: row;
+    margin-top: 32px;
+    gap: 22px;
+}
+
+a.button {
+    background: $white;
+    color: $back;
+    text-decoration: none;
+    font-size: 1.2rem;
+    padding: 16px 24px;
+    box-sizing: border-box;
+    border-radius: 4px;
+}
+
+div.section-header {
+    background: $white;
+    color: $back;
+
+    font-size: 2rem;
+    padding: 1rem 0 1rem 256px;
+}
+
+div.section {
+    margin: 128px auto;
+    width: 50%;
+    min-width: 800px;
+
+    font-size: 1.2rem;
+
+    .code {
+        margin: 36px 0;
+    }
 }
