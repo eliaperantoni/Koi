@@ -59,11 +59,11 @@ impl RawLexer {
                 (TokenKind::Dollar, 1)
             }
 
-            ' ' => {
+            ' ' | '\t' => {
                 let mut length = 1;
                 loop {
                     match self.char_at(length) {
-                        Some(' ') => length += 1,
+                        Some(' ') | Some('\t') => length += 1,
                         _ => break,
                     }
                 }
@@ -325,7 +325,7 @@ impl RawLexer {
 
     fn consume_comment(&mut self) {
         self.cursor += 1;
-        while !matches!(self.char_at(0), Some('\n')) {
+        while self.cursor < self.source.len() && !matches!(self.char_at(0), Some('\n')) {
             self.cursor += 1;
         }
     }
