@@ -1,3 +1,6 @@
 /target
-/.idea
-prog.koi
+.idea
+/prog.koi
+web/dist/
+web/snippets/out
+web/node_modules

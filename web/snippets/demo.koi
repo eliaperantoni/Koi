@@ -1,13 +1,13 @@
-let me = $(whoami).°3strip°()
-echo Greetings {me}!
+°1let° me = $(whoami).°3strip°()
+echo Greetings °4{°me°4}°!
 
-for _, n in [1 2 3] {
-    °3print°(°2'2 to the °{n}°2 is °{2^n}°2'°)
+°1for° _, n °1in° [1 2 3] {
+    °3print°(°2'2 to the °°4{°n°4}°°2 is °°4{°2^n°4}°°2'°)
 }
 
 [
     {cmd: °2'ls'°}
     {cmd: °2'ps'°}
-].°3forEach°(fn(obj){
-    man {obj.cmd} --help °1|° head -n 5
+].°3forEach°(°1fn°(obj){
+    man °4{°obj.cmd°4}° --help °1|° head -n 5
 })

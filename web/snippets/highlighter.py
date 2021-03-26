@@ -14,7 +14,7 @@ for path in glob.glob('*.koi'):
         koi = f.read()
 
     while True:
-        match = re.search('°(\d).*°', koi)
+        match = re.search('°(\d)[^°]*°', koi)
         if match is None:
             break
 
@@ -22,8 +22,6 @@ for path in glob.glob('*.koi'):
         a,b = match.span()
 
         koi = koi[:a] + f'<span class="{conv[t]}">{koi[a+2:b-1]}</span>' + koi[b:]
-
-    print(koi)
 
     with open(os.path.join('out', path), 'w') as f:
         f.write(koi)
