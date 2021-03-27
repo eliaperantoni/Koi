@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <title>Köi</title>
-    <link rel="icon" type="image/png" href="/assets/flavicon.png"/>
+    <link rel="icon" type="image/png" href="/assets/koi.svg"/>
     <link rel="stylesheet" href="/style.css">
 </head>
 <body>
@@ -56,16 +56,16 @@
 
 <div class="section">
     <p>The <span class="code-inline">nil</span> type (which is also the literal) is used to represent the absence of a value.</p>
-    <p>Numbers in Koi have the <span class="code-inline">num</span> type. There's no distinction between integers and floating points. In places where an integer is expected by the language, a check is performed to assert that the decimal part is 0, otherwise an error is thrown.</p>
+    <p>Numbers in Köi have the <span class="code-inline">num</span> type. There's no distinction between integers and floating points. In places where an integer is expected by the language, a check is performed to assert that the decimal part is 0, otherwise an error is thrown.</p>
     <pre class="code"><!-- SNIPPET primitive_0 --></pre>
-    <p>Koi offers 6 different operators for numbers: sum, difference, multiplication, division, power and modulo:</p>
+    <p>Köi offers 6 different operators for numbers: sum, difference, multiplication, division, power and modulo:</p>
     <pre class="code"><!-- SNIPPET primitive_1 --></pre>
     <p>Comparison is as usual:</p>
     <pre class="code"><!-- SNIPPET primitive_2 --></pre>
     <p>Booleans have the <span class="code-inline">bool</span> type. Values are created using the <span class="code-inline">true</span> and <span class="code-inline">false</span> literals.</p>
     <p>Available operators are: conjunction, disjunction and negation:</p>
     <pre class="code"><!-- SNIPPET primitive_3 --></pre>
-    <p>All values in Koi can be coerced to a boolean by calling <span class="code-inline">.bool()</span> on them. All values are truthy expect <span class="code-inline">nil</span> and <span class="code-inline">false</span>.</p>
+    <p>All values in Köi can be coerced to a boolean by calling <span class="code-inline">.bool()</span> on them. All values are truthy expect <span class="code-inline">nil</span> and <span class="code-inline">false</span>.</p>
     <p>Values can be compared for equality using <span class="code-inline">==</span>. Values of different types are never equal:</p>
     <pre class="code"><!-- SNIPPET primitive_4 --></pre>
 </div>
@@ -93,7 +93,7 @@
 <div class="section">
     <p>New variables are declared with the <span class="code-inline">let</span> keyword. If you don't provide an initializer, the variable will be <span class="code-inline">nil</span>.</p>
     <pre class="code"><!-- SNIPPET variables_0 --></pre>
-    <p>Koi has blocks and names are lexically scoped.</p>
+    <p>Köi has blocks and names are lexically scoped.</p>
     <pre class="code"><!-- SNIPPET variables_1 --></pre>
     <p>Assignment to variables is done using <span class="code-inline">=</span>:</p>
     <pre class="code"><!-- SNIPPET variables_2 --></pre>
@@ -130,7 +130,7 @@
 <div class="section-header" id="json">JSON</div>
 
 <div class="section">
-    <p>Values in Koi can easily be converted to and from JSON strings:</p>
+    <p>Values in Köi can easily be converted to and from JSON strings:</p>
     <pre class="code"><!-- SNIPPET json_0 --></pre>
     <p>Note that it won't work if the value is composed of non-serializable values (functions and ranges).</p>
 </div>
@@ -138,7 +138,7 @@
 <div class="section-header" id="ifsloops">Ifs and loops</div>
 
 <div class="section">
-    <p>Koi has an if statement and two loops (for and while). They don't require parenthesis to wrap their header but it's mandatory for the body to be a block.</p>
+    <p>Köi has an if statement and two loops (for and while). They don't require parenthesis to wrap their header but it's mandatory for the body to be a block.</p>
     <p><span class="code-inline">if</span> and <span class="code-inline">while</span> are pretty straightforward:</p>
     <pre class="code"><!-- SNIPPET ifsloops_0 --></pre>
     <p>The <span class="code-inline">for</span> loop can be used to iterate over: a range, a vector or a dictionary. In the first case it expects one and only one iteration variable, the other two require exactly two: the first is the index or the key, the second is the value. If you don't need either one, name the variable <span class="code-inline">_</span>.</p>
@@ -166,16 +166,16 @@
 <div class="section-header" id="cmd">Commands</div>
 
 <div class="section">
-    <p>Commands like those you would write in a shell prompt are valid statements in Koi. No need to mark or prefix them in any way.</p>
+    <p>Commands like those you would write in a shell prompt are valid statements in Köi. No need to mark or prefix them in any way.</p>
     <p>Code meant to be interpreted and code meant to execute child processes on the operating system can be interleaved freely:</p>
     <pre class="code"><!-- SNIPPET cmd_0 --></pre>
     <p>Command statements, as we shall call them from now on, inherit the interpreter's standard output and standard error. Therefore their output will appear in real time as they're running.</p>
     <p>It might be useful to know how the parser distinguishes what is a command and what is interpretable code: whenever it begins to parse a new line, it looks for keywords that start a statement (such as <span class="code-inline">if</span>, <span class="code-inline">for</span>, <span class="code-inline">let</span>). If it can't find one, then it probes for an expression prefix on the same line. An expression prefix is a series of <span class="code-inline">identifier.</span> until one of <span class="code-inline">[</span>, <span class="code-inline">(</span> or <span class="code-inline">=</span> (or one of its variants) is found. If the parser encounters an error or no prefix is found that matches this pattern, the whole line is parsed as a command.</p>
     <p>Let's look at some examples:</p>
     <pre class="code"><!-- SNIPPET cmd_1 --></pre>
-    <p>If a command is also valid interpretable code and is being parsed as such, you can force Koi to parse it as a command by prefixing it with <span class="code-inline">$</span>.</p>
+    <p>If a command is also valid interpretable code and is being parsed as such, you can force Köi to parse it as a command by prefixing it with <span class="code-inline">$</span>.</p>
     <pre class="code"><!-- SNIPPET cmd_2 --></pre>
-    <p>Now that we're talking about parsing, it might be a good time to explain that Koi has no semicolons at all, not even optional ones. Statements require no syntax to be separated from one another:</p>
+    <p>Now that we're talking about parsing, it might be a good time to explain that Köi has no semicolons at all, not even optional ones. Statements require no syntax to be separated from one another:</p>
     <pre class="code"><!-- SNIPPET cmd_3 --></pre>
     <p>Note that once a line begins with interpretable code, the parser will automatically assume that everything else that follows on the same line is also interpretable code. To force it to parse a command you have to use <span class="code-inline">$</span>.</p>
     <pre class="code"><!-- SNIPPET cmd_4 --></pre>
@@ -198,7 +198,7 @@
     <p>Remember: splitting is only performed when a space appears unquoted in the source code.</p>
     <p>String interpolation works a little bit differently in commands when compared to strings. If the expression evaluates to an array, a cross product is performed and multiple arguments are produced:</p>
     <pre class="code"><!-- SNIPPET cmd_12 --></pre>
-    <p>When Koi starts, all environment variables are declared in the global scope:</p>
+    <p>When Köi starts, all environment variables are declared in the global scope:</p>
     <pre class="code"><!-- SNIPPET cmd_13 --></pre>
     <p>To declare a new exported variable use <span class="code-inline">exp</span>. All variables declared with <span class="code-inline">exp</span> that are in scope of a command statement or expression will be part of the child process' environment:</p>
     <pre class="code"><!-- SNIPPET cmd_14 --></pre>
@@ -220,9 +220,9 @@
 <div class="section-header" id="cmdline">Command line</div>
 
 <div class="section">
-    <p><span class="code-inline">koi</span> takes in the path to a Koi source file to run. Alternatively the <span class="code-inline">-s</span> flag can be set to read the source from standard input.</p>
+    <p><span class="code-inline">koi</span> takes in the path to a Köi source file to run. Alternatively the <span class="code-inline">-s</span> flag can be set to read the source from standard input.</p>
     <pre class="code"><!-- SNIPPET cmdline_0 --></pre>
-    <p>The <span class="code-inline">-f</span> argument allows you to specify the name of a function declared in the global scope. Koi will execute the source file and then call the function with no arguments.</p>
+    <p>The <span class="code-inline">-f</span> argument allows you to specify the name of a function declared in the global scope. Köi will execute the source file and then call the function with no arguments.</p>
     <p>This is useful for writing automation scripts that provide a series of tasks that can be invoked from the terminal. Similar to makefiles or gulpfiles.</p>
     <pre class="code"><!-- SNIPPET cmdline_1 --></pre>
     <pre class="code"><!-- SNIPPET cmdline_2 --></pre>
