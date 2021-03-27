@@ -22,9 +22,9 @@
             <p>Köi is a minimalistic language, mainly aimed at shell scripting.</p>
             <p>It tries to provide a familiar and ergonomic syntax for non-shell code, without compromising the ease of launching and composing programs that traditional shell languages offer.</p>
             <p>Köi is inspired by Rust, Python, JavaScript, Lua and Bash.</p>
-            <p>Handcrafted with love and bestemmie using Rust.</p>
+            <p>Handcrafted with love using Rust.</p>
             <div class="buttons">
-                <a href="#learn-more" class="button">LEARN MORE</a>
+                <a href="#primitive" class="button">LEARN MORE</a>
                 <a href="https://github.com/eliaperantoni/Koi/releases" class="button">DOWNLOAD</a>
                 <a href="https://github.com/eliaperantoni/Koi" class="button">SOURCE</a>
             </div>
@@ -32,7 +32,27 @@
     </div>
 </div>
 
-<div class="section-header" id="learn-more">Primitive types</div>
+<div class="bar">
+    <a href="#primitive">Primitive types</a>
+    <span>·</span>
+    <a href="#strings">Strings</a>
+    <span>·</span>
+    <a href="#variables">Variables</a>
+    <span>·</span>
+    <a href="#vecdict">Vectors and dictionaries</a>
+    <span>·</span>
+    <a href="#json">JSON</a>
+    <span>·</span>
+    <a href="#ifsloops">Ifs and loops</a>
+    <span>·</span>
+    <a href="#fn">Functions</a>
+    <span>·</span>
+    <a href="#cmd">Commands</a>
+    <span>·</span>
+    <a href="#cmdline">Command line</a>
+</div>
+
+<div class="section-header" id="primitive">Primitive types</div>
 
 <div class="section">
     <p>The <span class="code-inline">nil</span> type (which is also the literal) is used to represent the absence of a value.</p>
@@ -50,7 +70,7 @@
     <pre class="code"><!-- SNIPPET primitive_4 --></pre>
 </div>
 
-<div class="section-header">Strings</div>
+<div class="section-header" id="strings">Strings</div>
 
 <div class="section">
     <p>Strings are delimited with either ' or " and can span multiple lines:</p>
@@ -68,7 +88,7 @@
     <pre class="code"><!-- SNIPPET strings_5 --></pre>
 </div>
 
-<div class="section-header">Variables</div>
+<div class="section-header" id="variables">Variables</div>
 
 <div class="section">
     <p>New variables are declared with the <span class="code-inline">let</span> keyword. If you don't provide an initializer, the variable will be <span class="code-inline">nil</span>.</p>
@@ -81,7 +101,7 @@
     <pre class="code"><!-- SNIPPET variables_3 --></pre>
 </div>
 
-<div class="section-header">Vectors and dictionaries</div>
+<div class="section-header" id="vecdict">Vectors and dictionaries</div>
 
 <div class="section">
     <p>Vectors are list of values of (potentially) different types.</p>
@@ -107,7 +127,7 @@
     <pre class="code"><!-- SNIPPET vecdict_7 --></pre>
 </div>
 
-<div class="section-header">JSON</div>
+<div class="section-header" id="json">JSON</div>
 
 <div class="section">
     <p>Values in Koi can easily be converted to and from JSON strings:</p>
@@ -115,7 +135,7 @@
     <p>Note that it won't work if the value is composed of non-serializable values (functions and ranges).</p>
 </div>
 
-<div class="section-header">Ifs and loops</div>
+<div class="section-header" id="ifsloops">Ifs and loops</div>
 
 <div class="section">
     <p>Koi has an if statement and two loops (for and while). They don't require parenthesis to wrap their header but it's mandatory for the body to be a block.</p>
@@ -127,7 +147,7 @@
     <pre class="code"><!-- SNIPPET ifsloops_2 --></pre>
 </div>
 
-<div class="section-header">Functions</div>
+<div class="section-header" id="fn">Functions</div>
 
 <div class="section">
     <p>Functions are declared using the <span class="code-inline">fn</span> keyword. In function calls, commas are optional (just like in vectors and dictionaries literals):</p>
@@ -143,7 +163,7 @@
     <pre class="code"><!-- SNIPPET fn_4 --></pre>
 </div>
 
-<div class="section-header">Commands</div>
+<div class="section-header" id="cmd">Commands</div>
 
 <div class="section">
     <p>Commands like those you would write in a shell prompt are valid statements in Koi. No need to mark or prefix them in any way.</p>
@@ -197,7 +217,7 @@
     <pre class="code"><!-- SNIPPET cmd_19 --></pre>
 </div>
 
-<div class="section-header">Command line</div>
+<div class="section-header" id="cmdline">Command line</div>
 
 <div class="section">
     <p><span class="code-inline">koi</span> takes in the path to a Koi source file to run. Alternatively the <span class="code-inline">-s</span> flag can be set to read the source from standard input.</p>
@@ -209,6 +229,14 @@
     <p>If no path is provided to <span class="code-inline">koi</span>, a default value of <span class="code-inline">Koifile</span> will be used.</p>
     <p>This means that you can write your automation tasks in a <span class="code-inline">Koifile</span> and run them very easily like:</p>
     <pre class="code"><!-- SNIPPET cmdline_3 --></pre>
+</div>
+
+<div class="footer">
+    <div class="buttons">
+        <a href="https://github.com/eliaperantoni/Koi/releases" class="button">DOWNLOAD</a>
+        <a href="https://github.com/eliaperantoni/Koi" class="button">SOURCE</a>
+    </div>
+    <span>Köi is handcrafted using Rust by <a href="https://github.com/eliaperantoni">@eliaperantoni</a></span>
 </div>
 
 </body>

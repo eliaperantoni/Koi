@@ -27,10 +27,6 @@ body {
     justify-content: flex-start;
 }
 
-a {
-    color: #00c0ff;
-}
-
 $code-border: #282828;
 
 .code {
@@ -53,20 +49,25 @@ $code-border: #282828;
     padding: 0 8px;
 }
 
+$color-kw: #F7005E;
+$color-str: #00EA8C;
+$color-fn: #00E8FF;
+$color-int: #BB4DFF;
+
 span.kw {
-    color: #F7005E;
+    color: $color-kw;
 }
 
 span.str {
-    color: #00EA8C;
+    color: $color-str;
 }
 
 span.fn {
-    color: #00E8FF;
+    color: $color-fn;
 }
 
 span.int {
-    color: #BB4DFF;
+    color: $color-int;
 }
 
 span.com {
@@ -152,12 +153,14 @@ a.button {
     border-radius: 4px;
 }
 
+$bar-height: 32px;
+
 div.section-header {
     background: $white;
     color: $back;
 
     font-size: 2rem;
-    padding: 1rem 0 1rem 256px;
+    padding: $bar-height + 12px 0 12px 256px;
 }
 
 div.section {
@@ -169,5 +172,61 @@ div.section {
 
     .code {
         margin: 36px 0;
+    }
+}
+
+
+.footer {
+    background: $white;
+
+    align-self: stretch;
+    height: 300px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+
+    .buttons {
+        display: flex;
+        flex-direction: row;
+        gap: 22px;
+    }
+
+    .button {
+        color: $white;
+        background: $back;
+    }
+
+    > span {
+        color: $back;
+        margin-top: 36px;
+
+        > a {
+            color: $back;
+        }
+    }
+}
+
+.bar {
+    position: sticky;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: $bar-height;
+    background: $white;
+
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+    align-items: center;
+
+    gap: 12px;
+
+    > a {
+        color: $back;
+    }
+
+    > span {
+        color: rgba($back, 0.7);
     }
 }
