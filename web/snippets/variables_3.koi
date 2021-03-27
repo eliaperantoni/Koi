@@ -1,0 +1,14 @@
+°1let° year = 2020
+year += 1
+°3print°(year)
+°5# 2021°
+
+°1let° name = °2'Koi'°
+name += °2'!'°
+°3print°(name)
+°5# Koi!°
+
+°1let° n = 2
+n ^= 4
+°3print°(n)
+°5# 16°

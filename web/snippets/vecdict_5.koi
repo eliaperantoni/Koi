@@ -1,0 +1,6 @@
+°1let° songs = [
+    {author: °2'Hippo Campus'° name: °2'Vacation'°}
+    {author: °2'Daft Punk'°    name: °2'Touch'°}
+]
+°3print°(songs.°3len°())
+°5# 2°

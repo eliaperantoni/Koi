@@ -1,0 +1,4 @@
+°1let° fruits = [°2'pear'° °2'apple'° °2'orange'°]
+°1let° good_fruits = fruits[1..fruits.°3len°()]
+°3print°(good_fruits)
+°5# ['apple' 'orange']°

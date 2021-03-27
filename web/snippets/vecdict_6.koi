@@ -1,0 +1,16 @@
+°1let° x = [°2'samir'°, °2'u'°, °2'are'°, °2'breaking'°, °2'the'°, °2'car'°]
+°1let° y = x
+y[x.°3len°()-1] = °2'nuclear reactor'°
+°3print°(x)
+°5# ['samir', 'u', 'are', 'breaking', 'the', 'nuclear reactor']°
+
+°1let° x = [°2'who'°, °2'let'°, °2'the'°, °2'dogs'°, °2'out'°]
+°1let° y = x.°3clone°()
+y[3] = °2'cats'°
+°3print°(x)
+°5# ['who', 'let', 'the', 'dogs', 'out']°
+
+°1let° x = [1 2 4 8 16 32]
+°1let° y = x.°3clone°()
+°3print°(x == y)
+°5# true°

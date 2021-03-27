@@ -1,0 +1,38 @@
+°1let° primes = [1 2 3 4 5 7]
+primes.°3remove°(3)
+°3print°(primes)
+°5# [1, 2, 3, 5, 7]°
+
+°3print°(primes.°3contains°(4))
+°5# false°
+
+°3print°(primes.°3map°(°1fn°(n) {°1return° n*2}))
+°5# [2, 4, 6, 10, 14]°
+
+°3print°(primes.°3filter°(°1fn°(n){°1return° n % 2 == 0}))
+°5# [2]°
+
+primes.°3forEach°(°1fn°(n){
+    °3print°(n.°3type°())
+})
+°5# Prints 'num' 5 times°
+
+let db = {
+    host: °2'localhost'°
+    port: 5432
+    user: °2'lisa'°
+    password: °2'dGhlcmUgYXJlIGVhc3RlciBlZ2dz'°
+}
+db.°3remove°(°2'password'°)
+
+°3print°(db.°3contains°(°2'host'°))
+°5# true°
+
+°5# This is similar to JS .toEntries()°
+°1let° db_vec = db.°3toVec°()
+°3print°(db_vec)
+°5# [['host', 'localhost'], ['port', 5432], ['user', 'lisa']]°
+
+°5# This is similar to JS .fromEntries()°
+°3print°(db_vec.°3toDict°() == db)
+°5# true°

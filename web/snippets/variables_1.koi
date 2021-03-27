@@ -1,0 +1,12 @@
+°1let° x = 10
+
+{
+    °1let° x = 20
+    °3print°(x)
+}
+
+°3print°(x)
+
+°5# Prints
+# 20
+# 10°

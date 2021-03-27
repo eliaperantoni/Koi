@@ -68,5 +68,52 @@
     <pre class="code"><!-- SNIPPET strings_5 --></pre>
 </div>
 
+<div class="section-header">Variables</div>
+
+<div class="section">
+    <p>New variables are declared with the <span class="code-inline">let</span> keyword. If you don't provide an initializer, the variable will be <span class="code-inline">nil</span>.</p>
+    <pre class="code"><!-- SNIPPET variables_0 --></pre>
+    <p>Koi has blocks and names are lexically scoped.</p>
+    <pre class="code"><!-- SNIPPET variables_1 --></pre>
+    <p>Assignment to variables is done using <span class="code-inline">=</span>:</p>
+    <pre class="code"><!-- SNIPPET variables_2 --></pre>
+    <p>It can also be combined with many operators:</p>
+    <pre class="code"><!-- SNIPPET variables_3 --></pre>
+</div>
+
+<div class="section-header">Vectors and dictionaries</div>
+
+<div class="section">
+    <p>Vectors are list of values of (potentially) different types.</p>
+    <pre class="code"><!-- SNIPPET vecdict_0 --></pre>
+    <p>You can access elements using the traditional <span class="code-inline">[]</span> syntax (vectors are 0-indexed) and retrieve the vector's length using <span class="code-inline">.len()</span>:</p>
+    <pre class="code"><!-- SNIPPET vecdict_1 --></pre>
+    <p>Commas are not required to separate elements most of the time. This will also be true for dictionaries and function calls.</p>
+    <p>There are some edge cases were the parser might be too greedy and consume an expression that you intended to be two separate expressions instead. In cases like these, commas can be useful.</p>
+    <pre class="code"><!-- SNIPPET vecdict_2 --></pre>
+    <p>Vectors can be sliced using ranges. Ranges represent an interval between two numbers:</p>
+    <pre class="code"><!-- SNIPPET vecdict_3 --></pre>
+    <p>Also note that an <span class="code-inline">=</span> can appear in ranges after the dots to make it right-inclusive.</p>
+    <p>Dictionaries are sets of key-value pairs (also called hash-maps, maps or objects in other languages).</p>
+    <p>Keys are internally treated as strings but it's allowed to use numbers and they will be rendered to strings automatically.</p>
+    <p>In dictionary literals string keys can appear without quotes.</p>
+    <p>Fields are accessed either using the dot-syntax or <span class="code-inline">[]</span>.</p>
+    <pre class="code"><!-- SNIPPET vecdict_4 --></pre>
+    <p>The number of pairs is retrieved with <span class="code-inline">.len()</span>:</p>
+    <pre class="code"><!-- SNIPPET vecdict_5 --></pre>
+    <p>Both vectors and dictionaries act like references to memory but equality is tested by looking at the actual values. This is exactly what happens in JavaScript, Python and alike. You can create a fresh copy of a vector or a dictionary using <span class="code-inline">.clone()</span>.</p>
+    <pre class="code"><!-- SNIPPET vecdict_6 --></pre>
+    <p>Let's take a quick look at the methods that can make working with vectors and dictionaries a little easier:</p>
+    <pre class="code"><!-- SNIPPET vecdict_7 --></pre>
+</div>
+
+<div class="section-header">JSON</div>
+
+<div class="section">
+    <p>Values in Koi can easily be converted to and from JSON strings:</p>
+    <pre class="code"><!-- SNIPPET json_0 --></pre>
+    <p>Note that it won't work if the value is composed of non-serializable values (functions and ranges).</p>
+</div>
+
 </body>
 </html>

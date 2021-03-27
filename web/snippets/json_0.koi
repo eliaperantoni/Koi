@@ -1,0 +1,11 @@
+°1let° cars = [
+    {make: °2'Audi'°    model: °2'TT'°}
+    {make: °2'McLaren'° model: °2'F1'°}
+    {make: °2'Ferrari'° model: °2'F40'°}
+]
+°1let° str = cars.°3toJson°()
+°3print°(str)
+°5# [{"make":"Audi","model":"TT"},{"make" etc...°
+
+°3print°(str.°3parseJson°() == cars)
+°5# true°
