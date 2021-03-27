@@ -1,0 +1,6 @@
+°1let° square = °1fn°(n) {
+    °1return° n^2
+}
+
+°3print°(°3square°(8))
+°5# 64°

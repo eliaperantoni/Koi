@@ -1,0 +1,15 @@
+°1fn° make_counter() {
+    °1let° i = 0
+    °1return° °1fn°() {
+        i += 1
+        °3print°(i)
+    }
+}
+
+°1let° bump = °3make_counter°()
+°3bump°()
+°5# 1°
+°3bump°()
+°5# 2°
+°3bump°()
+°5# 3°

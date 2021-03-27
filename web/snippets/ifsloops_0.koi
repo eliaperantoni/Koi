@@ -1,0 +1,9 @@
+°1let° name = °2'rust'°
+°1if° name.°3upper°() == °2'RUST'° {
+    °3print°(name)
+}
+
+°1let° vec = [°2'python'°, °2'lua'°, °2'go'°]
+°1while° vec.°3len°() > 0 {
+    °3print°(vec.°3remove°(0))
+}

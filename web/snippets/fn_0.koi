@@ -1,0 +1,14 @@
+°1fn° double(n) {
+    °1return° n * 2
+}
+°3print°(°3double°(8))
+°5# 16°
+
+°1fn° happy_birthday(name, age) {
+    °3print°(°2'Happy °°4{°age°4}°°2th birthday °°4{°name°4}°°2!'°)
+}
+°3happy_birthday°(
+    °2'Micheal'°
+    25
+)
+°5# Happy 25th birthday Micheal!°

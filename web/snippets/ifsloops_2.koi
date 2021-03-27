@@ -1,0 +1,11 @@
+°1while° true {
+    °1break°
+    °3print°(°2'Unreachable code'°)
+}
+
+°1for° i °1in° 0..5 {
+    °1if° i % 2 == 0 {°1continue°}
+    °3print°(i)
+}
+°5# 1
+# 3°

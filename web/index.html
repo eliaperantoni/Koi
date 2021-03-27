@@ -115,5 +115,33 @@
     <p>Note that it won't work if the value is composed of non-serializable values (functions and ranges).</p>
 </div>
 
+<div class="section-header">Ifs and loops</div>
+
+<div class="section">
+    <p>Koi has an if statement and two loops (for and while). They don't require parenthesis to wrap their header but it's mandatory for the body to be a block.</p>
+    <p><span class="code-inline">if</span> and <span class="code-inline">while</span> are pretty straightforward:</p>
+    <pre class="code"><!-- SNIPPET ifsloops_0 --></pre>
+    <p>The <span class="code-inline">for</span> loop can be used to iterate over: a range, a vector or a dictionary. In the first case it expects one and only one iteration variable, the other two require exactly two: the first is the index or the key, the second is the value. If you don't need either one, name the variable <span class="code-inline">_</span>.</p>
+    <pre class="code"><!-- SNIPPET ifsloops_1 --></pre>
+    <p><span class="code-inline">break</span> and <span class="code-inline">continue</span> work as you would expect:</p>
+    <pre class="code"><!-- SNIPPET ifsloops_2 --></pre>
+</div>
+
+<div class="section-header">Functions</div>
+
+<div class="section">
+    <p>Functions are declared using the <span class="code-inline">fn</span> keyword. In function calls, commas are optional (just like in vectors and dictionaries literals):</p>
+    <pre class="code"><!-- SNIPPET fn_0 --></pre>
+    <p>We've already looked at a good number of methods: they are essentially functions provided by the language runtime and accessed from values.</p>
+    <pre class="code"><!-- SNIPPET fn_1 --></pre>
+    <p>Calling a method actually happens in two steps: first the native function is copied and bound to the value the method was accessed from, then it is called like a regular function.</p>
+    <p>This means that methods can be accessed and saved for later. They will remember the object they belong to:</p>
+    <pre class="code"><!-- SNIPPET fn_2 --></pre>
+    <p>Lambdas are expressions that evaluate to a new function. They use the same exact syntax as regular functions except they don't have a name.</p>
+    <pre class="code"><!-- SNIPPET fn_3 --></pre>
+    <p>Closures are functions that capture the environment they're declared in. They can continue to access this environment even after it falls out of scope.</p>
+    <pre class="code"><!-- SNIPPET fn_4 --></pre>
+</div>
+
 </body>
 </html>

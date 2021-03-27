@@ -1,0 +1,5 @@
+°1let° str = °2'Radiator Springs'°
+°1let° str_f = str.upper
+
+°3print°(°3str_f°())
+°5# RADIATOR SPRINGS°

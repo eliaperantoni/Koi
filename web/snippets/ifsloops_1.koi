@@ -1,0 +1,34 @@
+°1for° i °1in° 0..3 {
+    °3print°(i)
+}
+°5# 0
+# 1
+# 2°
+
+°1for° i °1in° 0..=3 {
+    °3print°(i)
+}
+°5# 0
+# 1
+# 2
+# 3°
+
+°1let° a_great_song = [°2'one'°, °2'more'°, °2'time'°]
+°1for° _, str °1in° a_great_song {
+    °3print°(str)
+}
+°5# one
+# more
+# time°
+
+°1let° movies_stars = {
+    cars: 5
+    interstellar: 5
+    wolf_of_wall_street: 5
+}
+°1for° movie, stars °1in° movies_stars {
+    °3print°(movie stars)
+}
+°5# cars 5
+# interstellar 5
+# wolf_of_wall_street 5°

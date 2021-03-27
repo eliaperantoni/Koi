@@ -1,0 +1,3 @@
+°1let° str = °2'I could really use a coffee right now'°
+°3print°(str.°3replace°(°2'coffee'°, °2'fruit juice'°))
+°5# I could really use a fruit juice right now°
