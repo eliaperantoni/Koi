@@ -1,0 +1,29 @@
+°3print°(°2'koi'°.°3upper°())
+°5# KOI°
+
+°3print°(°2'KOI'°.°3lower°())
+°5# koi°
+
+°3print°(°2"What you're referring to as Linux, is in fact, GNU/Linux, or as I've recently taken to calling it, GNU plus Linux."°.°3contains°(°2'Linux'°))
+°5# true°
+
+°3print°(°2'koi \n  \t  '°.°3strip°() == °2'koi'°)
+°5# true°
+
+°3print°(°2'21.2'°.°3parseNum°() + 2 == 23.2)
+°5# true°
+
+°3print°(°2'AAA---BBB---CCC'°.°3split°(°2'---'°))
+°5# ['AAA', 'BBB', 'CCC']°
+
+°3print°(°2'_'°.°3join°([°2'I'°, °2'love'°, °2'Koi'°]))
+°5# I_love_Koi°
+
+°3print°(°2'All dogs are bad bois'°.°3replace°(°2'bad'°, °2'good'°))
+°5# All dogs are good bois°
+
+°3print°(°2'xxx000yyy'°.°3matches°(°2'\w\{3}[0-9]+.*'°))
+°5# true°
+
+°3print°(°2'x0x xKOIx'°.°3find°(°2'x([^\s]+)x'°))
+°5# [['x0x', '0'], ['xKOIx', 'KOI']]°

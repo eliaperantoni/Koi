@@ -1,0 +1,2 @@
+°1let° name = °3input°(°2"What's your name?\n"°).°3strip°()
+°3print°(°2'Nice to meet you °°4{°name°4}°°2!'°)

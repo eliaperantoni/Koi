@@ -17,11 +17,12 @@
 
 <div class="taste">
     <div class="container">
-        <pre class="code"><!-- SNIPPET demo --></pre>
+        <pre class="code"><!-- SNIPPET demo_0 --></pre>
         <div class="desc">
             <p>Köi is a minimalistic language, mainly aimed at shell scripting.</p>
             <p>It tries to provide a familiar and ergonomic syntax for non-shell code, without compromising the ease of launching and composing programs that traditional shell languages offer.</p>
             <p>Köi is inspired by Rust, Python, JavaScript, Lua and Bash.</p>
+            <p>Handcrafted with love and bestemmie using Rust.</p>
             <div class="buttons">
                 <a href="#learn-more" class="button">LEARN MORE</a>
                 <a href="https://github.com/eliaperantoni/Koi/releases" class="button">DOWNLOAD</a>
@@ -31,30 +32,41 @@
     </div>
 </div>
 
-<div class="section-header" id="learn-more">Types and literals</div>
+<div class="section-header" id="learn-more">Primitive types</div>
 
 <div class="section">
-    <p>Koi is a dinamically typed language. It has: nil, numbers, strings, booleans, vectors, dictionaries, functions and ranges. If you're familiar with Python or JavaScript you'll feel right at home.</p>
-
-    <p><span class="code-inline"><!-- SNIPPET values_nil --></span> represents the absence of a value.</p>
-
-    <p>There is no distinction between integers and floating points. They're the same type: number. There are places where integers are required (such as ranges) so in that case, attempting to use a number with non-zero decimal part will throw an error.</p>
-    <pre class="code"><!-- SNIPPET values_num --></pre>
-
-    <p>String literals can be delimited with either ' or ".</p>
-    <pre class="code"><!-- SNIPPET values_str --></pre>
-
-    <p>In vectors and dictionaries literals, commas are optional. They're only required in special cases where the parser is too greedy and detects a whole expression that you intended to be two separate expressions instead.</p>
-    <pre class="code"><!-- SNIPPET values_vec_dict --></pre>
-
-    <p>Ranges represent a range between two numbers and are used in for loops and to slice vectors. An equal sign can be used to indicate that the range is right-inclusive.</p>
-    <pre class="code"><!-- SNIPPET values_range --></pre>
-
-    <p>Functions literals (also called lambdas or anonymous functions) look just like regular functions but don't have a name.</p>
-    <pre class="code"><!-- SNIPPET values_fn --></pre>
+    <p>The <span class="code-inline">nil</span> type (which is also the literal) is used to represent the absence of a value.</p>
+    <p>Numbers in Koi have the <span class="code-inline">num</span> type. There's no distinction between integers and floating points. In places where an integer is expected by the language, a check is performed to assert that the decimal part is 0, otherwise an error is thrown.</p>
+    <pre class="code"><!-- SNIPPET primitive_0 --></pre>
+    <p>Koi offers 6 different operators for numbers: sum, difference, multiplication, division, power and modulo:</p>
+    <pre class="code"><!-- SNIPPET primitive_1 --></pre>
+    <p>Comparison is as usual:</p>
+    <pre class="code"><!-- SNIPPET primitive_2 --></pre>
+    <p>Booleans have the `bool` type. Values are created using the <span class="code-inline">true</span> and <span class="code-inline">false</span> literals.</p>
+    <p>Available operators are: conjunction, disjunction and negation:</p>
+    <pre class="code"><!-- SNIPPET primitive_3 --></pre>
+    <p>All values in Koi can be coerced to a boolean by calling <span class="code-inline">.bool()</span> on them. All values are truthy expect <span class="code-inline">nil</span> and <span class="code-inline">false</span>.</p>
+    <p>Values can be compared for equality using <span class="code-inline">==</span>. Values of different types are never equal:</p>
+    <pre class="code"><!-- SNIPPET primitive_4 --></pre>
 </div>
 
-<div class="section-header">Expressions</div>
+<div class="section-header">Strings</div>
+
+<div class="section">
+    <p>Strings are delimited with either ' or " and can span multiple lines:</p>
+    <pre class="code"><!-- SNIPPET strings_0 --></pre>
+    <p>The length of a string can be retrieved using <span class="code-inline">.len()</span>:</p>
+    <pre class="code"><!-- SNIPPET strings_1 --></pre>
+    <p>Strings can be interpolated by surrounding expressions with <span class="code-inline">{}</span>. To escape the interpolation, prefix the left brace with a <span class="code-inline">\</span>.</p>
+    <pre class="code"><!-- SNIPPET strings_2 --></pre>
+    <p>Apart from <span class="code-inline">\{</span>, other escape sequences are <span class="code-inline">\'</span>, <span class="code-inline">\"</span>, <span class="code-inline">\n</span>, <span class="code-inline">\r</span>, <span class="code-inline">\t</span> and <span class="code-inline">\\</span>. Everything else is left untouched.</p>
+    <p>Two strings can be concatenated with <span class="code-inline">+</span>:</p>
+    <pre class="code"><!-- SNIPPET strings_3 --></pre>
+    <p>Strings have many different methods to their disposal. Here's a few:</p>
+    <pre class="code"><!-- SNIPPET strings_4 --></pre>
+    <p>You can take in input from the user using <span class="code-inline">input('message')</span> just like you would in Python:</p>
+    <pre class="code"><!-- SNIPPET strings_5 --></pre>
+</div>
 
 </body>
 </html>

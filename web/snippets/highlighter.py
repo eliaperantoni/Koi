@@ -1,6 +1,7 @@
 import re
 import glob
 import os
+import html
 
 conv = {
     1: 'kw',
@@ -13,6 +14,8 @@ conv = {
 for path in glob.glob('*.koi'):
     with open(path, 'r') as f:
         koi = f.read()
+
+    koi = html.escape(koi)
 
     while True:
         match = re.search('°(\d)[^°]*°', koi)

@@ -2,6 +2,11 @@ $back: #06080B;
 $white: rgb(246, 235, 235);
 $white-subtle: rgba(246, 235, 235, 0.7);
 
+@font-face {
+    font-family: "Iosevka";
+    src: url(/assets/iosevka.woff2);
+}
+
 html {
     min-height: 100vh;
 
@@ -37,6 +42,8 @@ $code-border: #282828;
 
     font-size: 1.2rem;
     font-family: 'Iosevka';
+
+    white-space: pre-wrap;
 }
 
 .code-inline {

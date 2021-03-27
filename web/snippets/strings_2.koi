@@ -1,0 +1,8 @@
+°3print°(°2'My fav number is °°4{°3.14°4}°°2'°)
+°5# My fav number is 3.14°
+
+°3print°(°2"It's friday then, it's saturday, sunday, °°4{°°2'whaaat'°.°3upper°()°4}°°2!?!"°)
+°5# It's friday then, it's saturday, sunday, WHAAAT!?!°
+
+°3print°(°2'\{"they see me rollin": "they hatin"}'°)
+°5# {"they see me rollin": "they hatin"}°
