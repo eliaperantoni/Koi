@@ -72,10 +72,6 @@ impl Parser {
             return true;
         }
 
-        if matches!(self.lexer.peek(), Some(Token{kind: TokenKind::LeftBracket | TokenKind::LeftBrace, ..})) {
-            return true;
-        }
-
         self.lexer.start_recording();
 
         let line_tokens = self.lexer
