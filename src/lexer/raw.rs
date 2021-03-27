@@ -299,6 +299,8 @@ impl RawLexer {
 
             if ch == '\\' {
                 let ch = match self.char_at(0) {
+                    Some('\'') => '\'',
+                    Some('"') => '"',
                     Some('n') => '\n',
                     Some('t') => '\t',
                     Some('r') => '\r',
