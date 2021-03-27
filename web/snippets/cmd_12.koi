@@ -1,0 +1,9 @@
+°1let° files = [°2'passwd'°, °2'group'°]
+
+°3print°(°2"The files are: °°4{°files°4}°°2"°)
+°5# The files are: ['passwd', 'group']°
+
+argtest /etc/°4{°files°4}°
+°5# [0] -> argtest
+# [1] -> /etc/passwd
+# [2] -> /etc/group°

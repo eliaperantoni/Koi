@@ -1,0 +1,2 @@
+$ echo 'print("Koi")' | koi -s
+# Koi

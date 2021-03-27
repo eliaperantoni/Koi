@@ -1,0 +1,9 @@
+°1fn° build() {
+    °3print°(°2"BUILDING"°)
+    gcc main.c -o main
+}
+
+°1fn° clean() {
+    °3print°(°2"CLEANING"°)
+    rm main
+}

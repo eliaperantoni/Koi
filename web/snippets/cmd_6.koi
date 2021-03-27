@@ -1,0 +1,5 @@
+°1let° me = $(whoami).°3strip°()
+
+°1for° _, id °1in° $(docker ps -aq).°3strip°().°3split°(°2'\n'°) {
+    °3print°(id)
+}

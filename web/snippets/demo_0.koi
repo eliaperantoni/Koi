@@ -7,8 +7,12 @@ echo Greetings °4{°me°4}°!
 
 °5# The cat is on the table°
 
-°1let° conts = $(docker ps -aq).°3strip°().°3split°(°2'\n'°)
+°1let° conts = $(docker ps -aq)
+    .°3strip°().°3split°(°2'\n'°)
+
 °1for° _, cont °1in° conts {
-    °1let° json = $(docker inspect °4{°cont°4}°).°3parseJson°()
+    °1let° json = $(
+        docker inspect °4{°cont°4}°
+    ).°3parseJson°()
     °3print°(json[0].Image)
 }

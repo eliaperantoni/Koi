@@ -1,0 +1,12 @@
+°3print°(°2'Creating container'°)
+
+$(
+    docker
+    run
+    --name db
+    -p 5432:5432
+    --rm
+    postgres
+)
+
+°3print°(°2'Done'°)

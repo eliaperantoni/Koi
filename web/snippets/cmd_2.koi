@@ -1,0 +1,5 @@
+echo = 10
+°5# ERROR Undefined variable 'echo'°
+
+$ echo = 10
+°5# Prints '= 10'°

@@ -1,0 +1,2 @@
+°1let° os = $(uname).°3strip°()
+echo -e You are running:\n°4{°os°4}°

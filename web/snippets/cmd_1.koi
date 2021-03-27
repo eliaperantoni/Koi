@@ -1,0 +1,17 @@
+°5# OK Treated as epxressions°
+
+x = 10
+
+obj.func(
+    °2'Koi'°
+)
+
+°5# BAD Prefix must appear on the same line°
+
+x
+= 10
+
+obj.func
+(
+    °2'Koi'°
+)

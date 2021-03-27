@@ -1,0 +1,1 @@
+°1let° a = 1 °1let° b = 2 °3print°(a, b) °1let° c = 3 °3print°(c)

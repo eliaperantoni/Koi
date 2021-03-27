@@ -1,0 +1,3 @@
+°1exp let° MYVAR = °2'Koi'°
+python -c °2'import os; print(os.environ["MYVAR"])'°
+°5# Koi°

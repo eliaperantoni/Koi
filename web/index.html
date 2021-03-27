@@ -42,7 +42,7 @@
     <pre class="code"><!-- SNIPPET primitive_1 --></pre>
     <p>Comparison is as usual:</p>
     <pre class="code"><!-- SNIPPET primitive_2 --></pre>
-    <p>Booleans have the `bool` type. Values are created using the <span class="code-inline">true</span> and <span class="code-inline">false</span> literals.</p>
+    <p>Booleans have the <span class="code-inline">bool</span> type. Values are created using the <span class="code-inline">true</span> and <span class="code-inline">false</span> literals.</p>
     <p>Available operators are: conjunction, disjunction and negation:</p>
     <pre class="code"><!-- SNIPPET primitive_3 --></pre>
     <p>All values in Koi can be coerced to a boolean by calling <span class="code-inline">.bool()</span> on them. All values are truthy expect <span class="code-inline">nil</span> and <span class="code-inline">false</span>.</p>
@@ -141,6 +141,74 @@
     <pre class="code"><!-- SNIPPET fn_3 --></pre>
     <p>Closures are functions that capture the environment they're declared in. They can continue to access this environment even after it falls out of scope.</p>
     <pre class="code"><!-- SNIPPET fn_4 --></pre>
+</div>
+
+<div class="section-header">Commands</div>
+
+<div class="section">
+    <p>Commands like those you would write in a shell prompt are valid statements in Koi. No need to mark or prefix them in any way.</p>
+    <p>Code meant to be interpreted and code meant to execute child processes on the operating system can be interleaved freely:</p>
+    <pre class="code"><!-- SNIPPET cmd_0 --></pre>
+    <p>Command statements, as we shall call them from now on, inherit the interpreter's standard output and standard error. Therefore their output will appear in real time as they're running.</p>
+    <p>It might be useful to know how the parser distinguishes what is a command and what is interpretable code: whenever it begins to parse a new line, it looks for keywords that start a statement (such as <span class="code-inline">if</span>, <span class="code-inline">for</span>, <span class="code-inline">let</span>). If it can't find one, then it probes for an expression prefix on the same line. An expression prefix is a series of <span class="code-inline">identifier.</span> until one of <span class="code-inline">[</span>, <span class="code-inline">(</span> or <span class="code-inline">=</span> (or one of its variants) is found. If the parser encounters an error or no prefix is found that matches this pattern, the whole line is parsed as a command.</p>
+    <p>Let's look at some examples:</p>
+    <pre class="code"><!-- SNIPPET cmd_1 --></pre>
+    <p>If a command is also valid interpretable code and is being parsed as such, you can force Koi to parse it as a command by prefixing it with <span class="code-inline">$</span>.</p>
+    <pre class="code"><!-- SNIPPET cmd_2 --></pre>
+    <p>Now that we're talking about parsing, it might be a good time to explain that Koi has no semicolons at all, not even optional ones. Statements require no syntax to be separated from one another:</p>
+    <pre class="code"><!-- SNIPPET cmd_3 --></pre>
+    <p>Note that once a line begins with interpretable code, the parser will automatically assume that everything else that follows on the same line is also interpretable code. To force it to parse a command you have to use <span class="code-inline">$</span>.</p>
+    <pre class="code"><!-- SNIPPET cmd_4 --></pre>
+    <p>Sometimes it might be useful to span a command on multiple lines for clarity. To do that, wrap the command in <span class="code-inline">$()</span> and you won't need to escape every single newline like you would in Bash.</p>
+    <pre class="code"><!-- SNIPPET cmd_5 --></pre>
+    <p>The same syntax can be used to create command expressions. As the name suggests, they allow you to insert commands where an expression is expected. Evaluating the expression will launch the command, wait for it to finish and resolve to its output that was being captured.</p>
+    <pre class="code"><!-- SNIPPET cmd_6 --></pre>
+    <p>Commands are parsed like lists of strings with optional quotes. Therefore, command literals inherit all that is available to strings, such as interpolation and escape sequences:</p>
+    <pre class="code"><!-- SNIPPET cmd_7 --></pre>
+    <p>Arguments are split on spaces that appear outside of quotes or double quotes in the source code.</p>
+    <p>We'll demonstrate this using <span class="code-inline">argtest</span>, a little C program that shows us what <span class="code-inline">argv</span> looks like:</p>
+    <pre class="code"><!-- SNIPPET cmd_8 --></pre>
+    <p>The spaces appear in the source code but inside double quotes. Therefore no splitting is done.</p>
+    <p>If we remove them we get many arguments:</p>
+    <pre class="code"><!-- SNIPPET cmd_9 --></pre>
+    <p>Interpolating a string that includes spaces will not split arguments like it would in Bash. No need to wrap everything in quotes:</p>
+    <pre class="code"><!-- SNIPPET cmd_10 --></pre>
+    <p>Multiple strings (quoted or not) can appear adjacent to one another and they will  be part of the same argument:</p>
+    <pre class="code"><!-- SNIPPET cmd_11 --></pre>
+    <p>Remember: splitting is only performed when a space appears unquoted in the source code.</p>
+    <p>String interpolation works a little bit differently in commands when compared to strings. If the expression evaluates to an array, a cross product is performed and multiple arguments are produced:</p>
+    <pre class="code"><!-- SNIPPET cmd_12 --></pre>
+    <p>When Koi starts, all environment variables are declared in the global scope:</p>
+    <pre class="code"><!-- SNIPPET cmd_13 --></pre>
+    <p>To declare a new exported variable use <span class="code-inline">exp</span>. All variables declared with <span class="code-inline">exp</span> that are in scope of a command statement or expression will be part of the child process' environment:</p>
+    <pre class="code"><!-- SNIPPET cmd_14 --></pre>
+    <p>Commands can be composed by piping, conditionally chaining or redirecting them.</p>
+    <p>Pipes forward the output of a command to the input of the next one. The whole pipeline acts as a single command. You can choose to pipe only standard output <span class="code-inline">|</span>, standard error <span class="code-inline">*|</span> or both <span class="code-inline">&|</span>.</p>
+    <pre class="code"><!-- SNIPPET cmd_15 --></pre>
+    <p>Chaining is done using <span class="code-inline">&&</span>, <span class="code-inline">||</span> and <span class="code-inline">;</span> and conditionally executes the second command after the first has terminated. The whole chain is treated as a command and the two subcommands' standard streams are joined together.</p>
+    <p>Parenthesis can be used to override the default precedence and associativity rules.</p>
+    <pre class="code"><!-- SNIPPET cmd_16 --></pre>
+    <p><span class="code-inline">&&</span> only executes the second command if the first terminated with a zero return code. <span class="code-inline">||</span> only executes the second command if the first failed. <span class="code-inline">;</span> always executes the second command no matter what.</p>
+    <pre class="code"><!-- SNIPPET cmd_17 --></pre>
+    <p>Redirection forwards the standard output, standard error or both of a process to a file by overwriting or by appending.</p>
+    <p><span class="code-inline">></span> is for overwriting while <span class="code-inline">>></span> is for appending. Both default to forwarding only standard output but their behavior can be changed by prefixing them with <span class="code-inline">*</span> and <span class="code-inline">&</span> just like with pipes.</p>
+    <pre class="code"><!-- SNIPPET cmd_18 --></pre>
+    <p>Finally, redirection can also be used to forward the contents of a file to the standard input of a process:</p>
+    <pre class="code"><!-- SNIPPET cmd_19 --></pre>
+</div>
+
+<div class="section-header">Command line</div>
+
+<div class="section">
+    <p><span class="code-inline">koi</span> takes in the path to a Koi source file to run. Alternatively the <span class="code-inline">-s</span> flag can be set to read the source from standard input.</p>
+    <pre class="code"><!-- SNIPPET cmdline_0 --></pre>
+    <p>The <span class="code-inline">-f</span> argument allows you to specify the name of a function declared in the global scope. Koi will execute the source file and then call the function with no arguments.</p>
+    <p>This is useful for writing automation scripts that provide a series of tasks that can be invoked from the terminal. Similar to makefiles or gulpfiles.</p>
+    <pre class="code"><!-- SNIPPET cmdline_1 --></pre>
+    <pre class="code"><!-- SNIPPET cmdline_2 --></pre>
+    <p>If no path is provided to <span class="code-inline">koi</span>, a default value of <span class="code-inline">Koifile</span> will be used.</p>
+    <p>This means that you can write your automation tasks in a <span class="code-inline">Koifile</span> and run them very easily like:</p>
+    <pre class="code"><!-- SNIPPET cmdline_3 --></pre>
 </div>
 
 </body>

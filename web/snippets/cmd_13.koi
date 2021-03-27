@@ -1,0 +1,3 @@
+°1let° path = PATH.°3split°(°2':'°)
+
+°3print°(USER)

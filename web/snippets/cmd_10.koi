@@ -1,0 +1,4 @@
+°1let° str = °2"We're up all night to get lucky"°
+argtest °4{°str°4}°
+°5# [0] -> argtest
+# [1] -> We're up all night to get lucky°

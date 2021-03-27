@@ -1,0 +1,4 @@
+echo -n °2'What a nice day'° °1|° sed °2's/nice/beautiful/g'°
+°5# What a beautiful day°
+
+touch /.. °1*|° tee errors.log
