@@ -25,6 +25,8 @@ body {
 
     flex-direction: column;
     justify-content: flex-start;
+
+    font-size: 1.2rem;
 }
 
 $code-border: #282828;
@@ -86,6 +88,10 @@ span.com {
     > .logo {
         width: 200px;
         height: auto;
+
+        @media (orientation: portrait) {
+            width: 600px;
+        }
     }
 
     > .text {
@@ -93,19 +99,39 @@ span.com {
         flex-direction: column;
         margin-left: 36px;
 
+        @media (orientation: portrait) {
+            font-size: 2rem;
+        }
+
         > .koi {
-            font-size: 4rem;
+            font-size: 4em;
         }
 
         > .slogan {
             color: $white-subtle;
-            font-size: 1.2rem;
+            font-size: 1.2em;
         }
+    }
+
+    @media (orientation: portrait) {
+        position: initial;
+        left: auto;
+        right: auto;
+        align-self: center;
+        flex-direction: column;
+        margin-top: 256px;
+        text-align: center;
+        gap: 48px;
     }
 }
 
 .taste {
     height: 100vh;
+
+    @media (orientation: portrait) {
+        height: auto;
+        margin-bottom: 256px;
+    }
 
     display: flex;
     justify-content: center;
@@ -119,7 +145,12 @@ span.com {
 
     display: flex;
     flex-direction: row;
-    flex-wrap: wrap;
+
+    @media (orientation: portrait) {
+        flex-direction: column;
+        width: 95%;
+        padding: 0;
+    }
 
     gap: 48px;
 
@@ -131,26 +162,36 @@ span.com {
     > .desc {
         flex: 2;
 
-        font-size: 1.2rem;
         align-self: center;
-    }
-}
 
-.desc > .buttons {
-    display: flex;
-    flex-direction: row;
-    margin-top: 32px;
-    gap: 22px;
+        > .buttons {
+            display: flex;
+            flex-direction: row;
+            margin-top: 32px;
+            gap: 22px;
+
+            @media (orientation: portrait) {
+                justify-content: center;
+            }
+        }
+
+        @media (orientation: portrait) {
+            text-align: center;
+        }
+    }
 }
 
 a.button {
     background: $white;
     color: $back;
     text-decoration: none;
-    font-size: 1.2rem;
     padding: 16px 24px;
     box-sizing: border-box;
     border-radius: 4px;
+
+    @media (orientation: portrait) {
+        font-size: 3rem;
+    }
 }
 
 $bar-height: 32px;
@@ -161,6 +202,12 @@ div.section-header {
 
     font-size: 2rem;
     padding: $bar-height + 12px 0 12px 256px;
+
+    @media (orientation: portrait) {
+        padding: 12px 0;
+        text-align: center;
+        font-size: 3rem;
+    }
 }
 
 div.section {
@@ -168,7 +215,9 @@ div.section {
     width: 50%;
     min-width: 800px;
 
-    font-size: 1.2rem;
+    @media (orientation: portrait) {
+        width: 95%;
+    }
 
     .code {
         margin: 36px 0;
@@ -186,20 +235,24 @@ div.section {
     align-items: center;
     justify-content: center;
 
-    .buttons {
+    > .buttons {
         display: flex;
         flex-direction: row;
         gap: 22px;
-    }
 
-    .button {
-        color: $white;
-        background: $back;
+        > .button {
+            color: $white;
+            background: $back;
+        }
     }
 
     > span {
         color: $back;
         margin-top: 36px;
+
+        @media (orientation: portrait) {
+            font-size: 2rem;
+        }
 
         > a {
             color: $back;
@@ -228,5 +281,9 @@ div.section {
 
     > span {
         color: rgba($back, 0.7);
+    }
+
+    @media (orientation: portrait) {
+        display: none;
     }
 }
