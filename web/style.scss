@@ -6,15 +6,13 @@ $white-subtle: rgba(246, 235, 235, 0.7);
     font-family: "Iosevka";
     src: url(/assets/iosevka.woff2);
 }
-
+fi
 html {
-    min-height: 100vh;
-
-    font-family: 'Iosevka';
+    font-family: 'Iosevka', monospace;
     color: $white;
 }
 
-html, body, #root {
+html, body {
     display: flex;
     flex: 1;
 }
@@ -29,25 +27,26 @@ body {
     font-size: 1.2rem;
 }
 
+$code-bg: black;
 $code-border: #282828;
 
 .code {
-    background: #000000;
+    background: $code-bg;
     border: $code-border 2px solid;
     border-radius: 16px;
     padding: 32px;
     margin: 0;
 
     font-size: 1.2rem;
-    font-family: 'Iosevka';
+    font-family: 'Iosevka', monospace;
 
     white-space: pre-wrap;
 }
 
 .code-inline {
+    background: $code-bg;
     border: $code-border 2px solid;
     border-radius: 4px;
-    background: #000000;
     padding: 0 8px;
 }
 
@@ -76,107 +75,90 @@ span.com {
     color: #4a4f54;
 }
 
+.hero {
+    height: 100vh;
+
+    width: 80%;
+    min-width: 860px;
+
+    @media screen and (orientation: portrait) {
+        height: initial;
+
+        width: 100%;
+        min-width: 0;
+
+        padding: 36px 12px;
+        box-sizing: border-box;
+    }
+
+    align-self: center;
+    justify-content: center;
+
+    display: flex;
+    flex-direction: column;
+
+    gap: 64px;
+
+    > .taste {
+        align-self: stretch;
+    }
+}
+
 .header {
     display: flex;
     flex-direction: row;
     align-items: center;
 
-    position: absolute;
-    top: 64px;
-    left: 64px;
+    flex-wrap: wrap;
+
+    gap: 36px;
+
+    @media screen and (orientation: portrait) {
+        align-self: center;
+        justify-content: center;
+    }
 
     > .logo {
         width: 200px;
         height: auto;
-
-        @media (orientation: portrait) {
-            width: 600px;
-        }
     }
 
     > .text {
         display: flex;
         flex-direction: column;
-        margin-left: 36px;
-
-        @media (orientation: portrait) {
-            font-size: 2rem;
-        }
 
         > .koi {
-            font-size: 4em;
+            font-size: 4rem;
         }
 
         > .slogan {
+            font-size: 1.2rem;
             color: $white-subtle;
-            font-size: 1.2em;
         }
-    }
-
-    @media (orientation: portrait) {
-        position: initial;
-        left: auto;
-        right: auto;
-        align-self: center;
-        flex-direction: column;
-        margin-top: 256px;
-        text-align: center;
-        gap: 48px;
     }
 }
 
 .taste {
-    height: 100vh;
-
-    @media (orientation: portrait) {
-        height: auto;
-        margin-bottom: 256px;
-    }
-
-    display: flex;
-    justify-content: center;
-    align-items: center;
-}
-
-.taste > .container {
-    margin-top: 128px;
-
-    padding: 0 256px;
-
     display: flex;
     flex-direction: row;
+    align-items: center;
 
-    @media (orientation: portrait) {
-        flex-direction: column;
-        width: 95%;
-        padding: 0;
-    }
+    flex-wrap: wrap;
 
     gap: 48px;
 
     > .code {
         flex: 1;
-        align-self: stretch;
     }
 
     > .desc {
         flex: 2;
-
-        align-self: center;
 
         > .buttons {
             display: flex;
             flex-direction: row;
             margin-top: 32px;
             gap: 22px;
-
-            @media (orientation: portrait) {
-                justify-content: center;
-            }
-        }
-
-        @media (orientation: portrait) {
-            text-align: center;
         }
     }
 }
@@ -188,35 +170,38 @@ a.button {
     padding: 16px 24px;
     box-sizing: border-box;
     border-radius: 4px;
-
-    @media (orientation: portrait) {
-        font-size: 3rem;
-    }
+    text-align: center;
 }
 
 $bar-height: 32px;
 
-div.section-header {
+.section-header {
     background: $white;
     color: $back;
 
     font-size: 2rem;
-    padding: $bar-height + 12px 0 12px 256px;
-
-    @media (orientation: portrait) {
-        padding: 12px 0;
-        text-align: center;
-        font-size: 3rem;
-    }
+    padding: $bar-height + 12px 0 12px 10%;
 }
 
-div.section {
+.section {
     margin: 128px auto;
-    width: 50%;
-    min-width: 800px;
 
-    @media (orientation: portrait) {
-        width: 95%;
+    width: 50%;
+    min-width: 860px;
+
+    @media screen and (orientation: portrait) {
+        width: 100%;
+        min-width: 0;
+
+        padding: 0 12px;
+        box-sizing: border-box;
+
+        margin: 12px auto;
+
+        text-align: center;
+        pre {
+            text-align: initial;
+        }
     }
 
     .code {
@@ -230,41 +215,44 @@ div.section {
 
     align-self: stretch;
     height: 300px;
+
     display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: center;
 
+    gap: 22px;
+
+    box-sizing: border-box;
+
+    text-align: center;
+
     > .buttons {
         display: flex;
         flex-direction: row;
         gap: 22px;
-
-        > .button {
-            color: $white;
-            background: $back;
-        }
     }
 
-    > span {
+    .button {
+        color: $white;
+        background: $back;
+    }
+
+    span, a {
         color: $back;
-        margin-top: 36px;
-
-        @media (orientation: portrait) {
-            font-size: 2rem;
-        }
-
-        > a {
-            color: $back;
-        }
     }
 }
 
 .bar {
+    @media screen and (orientation: portrait) {
+        display: none;
+    }
+
     position: sticky;
     top: 0;
     left: 0;
     right: 0;
+
     height: $bar-height;
     background: $white;
 
@@ -273,17 +261,10 @@ div.section {
     justify-content: center;
     align-items: center;
 
-    gap: 12px;
+    gap: 32px;
 
     > a {
         color: $back;
-    }
-
-    > span {
-        color: rgba($back, 0.7);
-    }
-
-    @media (orientation: portrait) {
-        display: none;
+        white-space: nowrap;
     }
 }
