@@ -11,8 +11,8 @@ echo Greetings °4{°me°4}°!
     .°3strip°().°3split°(°2'\n'°)
 
 °1for° _, cont °1in° conts {
-    °1let° json = $(
+    °1let° contInfo = $(
         docker inspect °4{°cont°4}°
     ).°3parseJson°()
-    °3print°(json[0].Image)
+    °3print°(contInfo[0].Image)
 }
