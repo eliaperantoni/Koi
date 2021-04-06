@@ -35,10 +35,16 @@ function assets() {
         .pipe(gulp.dest('dist/assets/'));
 }
 
-exports.default = function () {
+exports.build = gulp.parallel([
+    gulp.series(generateSnippets, html),
+    css,
+    assets,
+]);
+
+exports.watch = function () {
     liveServer.start({root: 'dist'});
 
     gulp.watch(['index.html', 'snippets/*.koi'], {ignoreInitial: false}, gulp.series(generateSnippets, html));
     gulp.watch('style.scss', {ignoreInitial: false}, css);
     gulp.watch('assets/', {ignoreInitial: false}, assets);
-}
+};
