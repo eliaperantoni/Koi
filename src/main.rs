@@ -3,11 +3,13 @@
 #![feature(option_insert)]
 #![feature(test)]
 
+use std::env;
 use std::fs;
 use std::io;
 use std::io::Read;
 
 use clap::{App, Arg};
+use itertools::Itertools;
 
 use crate::lexer::new as new_lexer;
 
@@ -17,7 +19,19 @@ mod ast;
 mod parser;
 mod interp;
 
+fn split_args() -> (Vec<String>, Vec<String>) {
+    let args = env::args().collect_vec();
+
+    if let Some(i) = args.iter().position(|arg| arg == "--") {
+        (args[..i].to_vec(), args[i + 1..].to_vec())
+    } else {
+        (args, vec![])
+    }
+}
+
 fn main() {
+    let (koi_args, script_args) = split_args();
+
     let matches = App::new("Koi")
         .version("1.0.0")
         .author("Elia Perantoni <perantonielia0@gmail.com>")
@@ -43,7 +57,7 @@ fn main() {
                 .takes_value(true)
                 .help("Function to call.")
         )
-        .get_matches();
+        .get_matches_from(koi_args);
 
     let source = if matches.is_present("stdin") {
         let mut buffer = String::new();
@@ -59,6 +73,7 @@ fn main() {
     let prog = parser.parse();
 
     let mut interpreter = interp::Interpreter::new();
+    interpreter.set_args(script_args);
     interpreter.run(prog);
 
     if let Some(f) = matches.value_of("fn") {
@@ -67,7 +82,7 @@ fn main() {
         interpreter.run(vec![
             Stmt::Expr(Expr::Call {
                 func: Box::new(Expr::Get(f.to_string())),
-                args: vec![]
+                args: vec![],
             })
         ]);
     }

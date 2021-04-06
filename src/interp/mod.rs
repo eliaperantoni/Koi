@@ -515,6 +515,12 @@ impl Interpreter {
             }
         }
     }
+
+    pub fn set_args(&mut self, args: Vec<String>) {
+        self.get_env_mut().def("args".to_string(), Value::Vec(Rc::new(RefCell::new(
+            args.into_iter().map(|s| Value::String(s)).collect()
+        ))));
+    }
 }
 
 fn dict_key(val: Value) -> String {
