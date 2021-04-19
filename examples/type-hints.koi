@@ -12,7 +12,7 @@ print(is_true("hello"))
 print(is_true(true))
 print(is_true(false))
 
-fn nil_return() -> bool {
+fn nil_return() -> nil {
 
 }
 

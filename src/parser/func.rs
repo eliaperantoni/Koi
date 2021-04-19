@@ -44,6 +44,9 @@ impl Parser {
                 Some(Token { kind: TokenKind::Identifier(type_hint), .. }) => {
                     return_type = Some(type_hint.clone());                    
                 },
+                Some(Token { kind: TokenKind::Nil, .. }) => {
+                    return_type = Some("nil".to_owned());
+                },
                 _ => panic!("expected type identifier")
             };
 
