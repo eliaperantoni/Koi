@@ -23,6 +23,22 @@ pub enum Value {
     Func(Func),
 }
 
+impl Value {
+    pub fn bind_receiver(&mut self, this_context: Value) {
+        match self {
+            Value::Func(ref mut f) => {
+                match f {
+                    Func::User { ref mut receiver, .. } => {
+                        *receiver = Some(Box::new(this_context));
+                    },
+                    _ => panic!("cannot bind receiver to non-user fn")
+                };
+            },
+            _ => panic!("cannot bind receiver to non-dicts")
+        }
+    }
+}
+
 impl Display for Value {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
         match self {

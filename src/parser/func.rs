@@ -36,6 +36,7 @@ impl Parser {
             params,
             body: Box::new(body),
             captured_env: None,
+            receiver: None,
         }
     }
 }

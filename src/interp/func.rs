@@ -14,6 +14,7 @@ pub enum Func {
         params: Vec<String>,
         body: Box<Stmt>,
         captured_env: Option<Rc<RefCell<Env>>>,
+        receiver: Option<Box<Value>>,
     },
     Native {
         name: String,
