@@ -11,3 +11,9 @@ fn is_true(op: string | bool) -> bool {
 print(is_true("hello"))
 print(is_true(true))
 print(is_true(false))
+
+fn nil_return() -> bool {
+
+}
+
+nil_return()

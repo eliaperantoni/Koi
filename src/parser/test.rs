@@ -487,6 +487,8 @@ fn parses_fn() {
                     type_hints: vec![],
                 }
             ],
+            has_return_type: false,
+            return_type: None,
             body: Box::new(Stmt::Block(vec![])),
             captured_env: None,
         })
@@ -500,6 +502,8 @@ fn parses_fn_no_params() {
             name: Some("foo".to_owned()),
             params: vec![],
             body: Box::new(Stmt::Block(vec![])),
+            has_return_type: false,
+            return_type: None,
             captured_env: None,
         })
     ]);
@@ -530,6 +534,8 @@ fn parses_lambda() {
                     name: None,
                     params: vec![],
                     body: Box::new(Stmt::Block(vec![])),
+                    has_return_type: false,
+                    return_type: None,
                     captured_env: None,
                 })
             ],

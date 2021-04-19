@@ -481,7 +481,7 @@ impl Interpreter {
         };
 
         match func {
-            Func::User { name, params, body, captured_env, .. } => {
+            Func::User { name, params, body, captured_env, has_return_type, return_type, .. } => {
                 assert_eq!(params.len(), args.len(), "number of arguments does not match number of parameters");
 
                 let func_env = Rc::new(RefCell::new(if let Some(captured_env) = captured_env {
@@ -506,11 +506,21 @@ impl Interpreter {
 
                 mem::swap(&mut self.env, &mut callee_env);
 
-                match res {
+                let result = match res {
                     Err(Escape::Return(val)) => val,
                     Err(_) => panic!("non return escape outside function"),
                     _ => Value::Nil,
+                };
+
+                if has_return_type {
+                    let return_type = return_type.unwrap();
+
+                    if result.to_type_string() != return_type {
+                        panic!("expected `{}` return type for function `{}`, got `{}`", return_type, name.unwrap(), result.to_type_string());
+                    }
                 }
+
+                result
             }
             Func::Native { func, params, receiver, .. } => {
                 if let Some(receiver) = receiver {
