@@ -4,12 +4,15 @@ use std::env as std_env;
 use std::fmt::Debug;
 use std::mem;
 use std::rc::Rc;
+use std::path::Path;
 
 pub use func::Func;
 pub use value::Value;
 
 use crate::ast::{BinaryOp, Expr, Prog, Stmt, UnaryOp};
 use crate::interp::env::{Env, Var};
+use crate::lexer::new as new_lexer;
+use crate::parser;
 
 mod cmd;
 mod env;
@@ -24,6 +27,7 @@ mod test;
 pub struct Interpreter {
     env: Rc<RefCell<Env>>,
     collector: Option<String>,
+    root: String,
 }
 
 #[derive(Debug)]
@@ -38,6 +42,7 @@ impl Interpreter {
         let mut interpreter = Interpreter {
             env: Rc::new(RefCell::new(Env::new())),
             collector: None,
+            root: String::from("")
         };
         interpreter.init_native_funcs();
         interpreter.import_os_env();
@@ -78,6 +83,14 @@ impl Interpreter {
             func: exit,
             receiver: None,
         }));
+    }
+
+    pub fn set_root(&mut self, root: &str) {
+        let file_path = Path::new(root);
+
+        self.root = String::from(
+            file_path.parent().unwrap().to_str().unwrap()
+        );
     }
 
     fn import_os_env(&mut self) {
@@ -123,6 +136,25 @@ impl Interpreter {
 
                 self.push_env();
                 self.get_env_mut().def(name, Var::new(val, is_exp));
+            }
+            Stmt::Import(path) => {
+                let mut file = self.root.clone();
+
+                file.push('/');
+                file.push_str(path.as_str());
+
+                if ! file.ends_with(".koi") {
+                    file.push_str(".koi");
+                }
+
+                let source = std::fs::read_to_string(file).unwrap();
+
+                let lexer = new_lexer(source);
+
+                let mut parser = parser::Parser::new(lexer);
+                let prog = parser.parse();
+
+                self.run(prog);
             }
             Stmt::Expr(expr) => {
                 self.eval(expr);

@@ -189,6 +189,7 @@ impl RawLexer {
         let word: String = iter.take_while_ref(|&&c| can_start_word(c) || c.is_ascii_digit()).collect();
 
         let kw_kind = match word.as_ref() {
+            "import" => Some(TokenKind::Import),
             "for" => Some(TokenKind::For),
             "in" => Some(TokenKind::In),
             "while" => Some(TokenKind::While),
