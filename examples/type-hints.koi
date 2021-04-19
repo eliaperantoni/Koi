@@ -8,6 +8,12 @@ fn is_true(op: string | bool) -> bool {
     return !! op
 }
 
+fn nil_argument(arg: nil) {
+    return arg
+}
+
+nil_argument(nil)
+
 print(is_true("hello"))
 print(is_true(true))
 print(is_true(false))

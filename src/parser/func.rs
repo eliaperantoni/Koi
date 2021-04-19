@@ -96,11 +96,15 @@ impl Parser {
             loop {
                 self.lexer.consume_whitespace(self.is_multiline);
 
-                if let Some(Token { kind: TokenKind::Identifier(type_hint), .. }) = self.lexer.next() {
-                    type_hints.push(type_hint);
-                } else {
-                    panic!("expected typehint");
-                }
+                match self.lexer.next() {
+                    Some(Token { kind: TokenKind::Identifier(type_hint), .. }) => {
+                        type_hints.push(type_hint);
+                    },
+                    Some(Token { kind: TokenKind::Nil, .. }) => {
+                        type_hints.push("nil".to_owned());
+                    },
+                    _ => panic!("expected type identifier"),
+                };
 
                 self.lexer.consume_whitespace(self.is_multiline);
 
