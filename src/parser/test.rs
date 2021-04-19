@@ -470,7 +470,23 @@ fn parses_fn() {
     assert_eq!(parse("fn foo \n( x , y , z ) \n {}"), vec![
         Stmt::Func(Func::User {
             name: Some("foo".to_owned()),
-            params: vec!["x".to_owned(), "y".to_owned(), "z".to_owned()],
+            params: vec![
+                func::FuncParam {
+                    name: "x".to_owned(),
+                    has_type_hint: false,
+                    type_hints: vec![],
+                },
+                func::FuncParam {
+                    name: "y".to_owned(),
+                    has_type_hint: false,
+                    type_hints: vec![],
+                },
+                func::FuncParam {
+                    name: "z".to_owned(),
+                    has_type_hint: false,
+                    type_hints: vec![],
+                }
+            ],
             body: Box::new(Stmt::Block(vec![])),
             captured_env: None,
         })
