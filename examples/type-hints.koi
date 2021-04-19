@@ -4,7 +4,7 @@ fn double(n: number) {
 
 print(double(2))
 
-fn is_true(op: string | bool) {
+fn is_true(op: string | bool) -> bool {
     return !! op
 }
 

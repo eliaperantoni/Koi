@@ -15,6 +15,8 @@ pub enum Func {
         params: Vec<FuncParam>,
         body: Box<Stmt>,
         captured_env: Option<Rc<RefCell<Env>>>,
+        has_return_type: bool,
+        return_type: Option<String>,
     },
     Native {
         name: String,

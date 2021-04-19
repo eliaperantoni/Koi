@@ -63,6 +63,8 @@ pub enum TokenKind {
     AmperAmper,
     PipePipe,
 
+    Arrow,
+
     Comma,
     DotDot,
     Dot,

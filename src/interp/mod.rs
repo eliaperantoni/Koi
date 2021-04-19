@@ -236,11 +236,13 @@ impl Interpreter {
             Stmt::Func(func) => {
                 match func {
                     // Lambdas don't get parsed as Stmt::Func but Expr::Lambda, therefore a name should always be present
-                    Func::User { name, params, body, .. } => {
+                    Func::User { name, params, body, return_type, has_return_type, .. } => {
                         let func = Value::Func(Func::User {
                             name: name.clone(),
                             params,
                             body,
+                            has_return_type,
+                            return_type, 
                             captured_env: Some(Rc::clone(&self.env)),
                         });
                         self.get_env_mut().def(name.unwrap(), func);
@@ -458,11 +460,13 @@ impl Interpreter {
                 self.call(func, args)
             }
             Expr::Lambda(func) => match func {
-                Func::User { name, params, body, .. } => Value::Func(Func::User {
+                Func::User { name, params, body, has_return_type, return_type, .. } => Value::Func(Func::User {
                     name,
                     params,
                     body,
                     captured_env: Some(Rc::clone(&self.env)),
+                    has_return_type,
+                    return_type
                 }),
                 Func::Native { .. } => unreachable!()
             }

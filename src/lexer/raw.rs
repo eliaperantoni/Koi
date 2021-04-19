@@ -118,6 +118,7 @@ impl RawLexer {
             },
             '-' => match self.char_at(1) {
                 Some('=') => (TokenKind::MinusEqual, 2),
+                Some('>') => (TokenKind::Arrow, 2),
                 _ => (TokenKind::Minus, 1),
             },
 

@@ -29,14 +29,41 @@ impl Parser {
         }
 
         self.lexer.consume_whitespace(self.is_multiline);
+
+        let mut has_return_type: bool = false;
+        let mut return_type: Option<String> = None;
+
+        if let Some(Token { kind: TokenKind::Arrow, .. }) = self.lexer.peek() {
+            self.lexer.next(); // Consume the arrow...
+
+            has_return_type = true;
+
+            self.lexer.consume_whitespace(self.is_multiline);
+
+            match self.lexer.peek() {
+                Some(Token { kind: TokenKind::Identifier(type_hint), .. }) => {
+                    return_type = Some(type_hint.clone());                    
+                },
+                _ => panic!("expected type identifier")
+            };
+
+            self.lexer.next();
+
+            self.lexer.consume_whitespace(self.is_multiline);
+        }
+
         let body = self.parse_block();
 
-        Func::User {
+        let func = Func::User {
             name: None,
             params,
             body: Box::new(body),
             captured_env: None,
-        }
+            has_return_type,
+            return_type,
+        };
+
+        func
     }
 
     fn must_identifier_maybe_with_type(&mut self) -> FuncParam {
