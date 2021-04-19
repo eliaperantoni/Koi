@@ -477,7 +477,7 @@ impl Interpreter {
         };
 
         match func {
-            Func::User { params, body, captured_env, .. } => {
+            Func::User { name, params, body, captured_env, .. } => {
                 assert_eq!(params.len(), args.len(), "number of arguments does not match number of parameters");
 
                 let func_env = Rc::new(RefCell::new(if let Some(captured_env) = captured_env {
@@ -488,8 +488,14 @@ impl Interpreter {
 
                 let mut callee_env = mem::replace(&mut self.env, func_env);
 
-                for (param, arg) in params.into_iter().zip(args.into_iter()) {
-                    self.get_env_mut().def(param, arg);
+                for (p, arg) in params.into_iter().zip(args.into_iter()) {
+                    if p.has_type_hint && !p.type_hint.is_empty() {
+                        if p.type_hint.trim() != arg.to_type_string() {
+                            panic!("argument `{}` for function `{}` must be of type `{}`, got type `{}` instead", p.name, name.unwrap(), p.type_hint, arg.to_type_string());
+                        }
+                    }
+                    
+                    self.get_env_mut().def(p.name, arg);
                 }
 
                 let res = self.run_stmt(*body);

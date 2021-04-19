@@ -17,7 +17,7 @@ impl Parser {
         } else {
             loop {
                 self.lexer.consume_whitespace(self.is_multiline);
-                params.push(self.must_identifier());
+                params.push(self.must_identifier_maybe_with_type());
                 self.lexer.consume_whitespace(self.is_multiline);
 
                 match self.lexer.next() {
@@ -38,4 +38,43 @@ impl Parser {
             captured_env: None,
         }
     }
+
+    fn must_identifier_maybe_with_type(&mut self) -> FuncParam {
+        let mut param = FuncParam {
+            name: "".to_owned(),
+            has_type_hint: false,
+            type_hint: "".to_owned()
+        };
+
+        if let Some(Token { kind: TokenKind::Identifier(name), .. }) = self.lexer.next() {
+            param.name = name;
+        } else {
+            panic!("expected identifier");
+        }
+
+        self.lexer.consume_whitespace(self.is_multiline);
+
+        if let Some(Token { kind: TokenKind::Colon, .. }) = self.lexer.peek() {
+            self.lexer.next();
+
+            param.has_type_hint = true;
+        }
+
+        self.lexer.consume_whitespace(self.is_multiline);
+
+        if let Some(Token { kind: TokenKind::Identifier(type_hint), .. }) = self.lexer.next() {
+            param.type_hint = type_hint;
+        } else {
+            panic!("expected typehint");
+        }
+
+        param
+    }
+}
+
+#[derive(Debug, Clone)]
+pub struct FuncParam {
+    pub name: String,
+    pub has_type_hint: bool,
+    pub type_hint: String,
 }

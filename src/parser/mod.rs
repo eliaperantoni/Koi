@@ -5,7 +5,7 @@ use crate::token::{Token, TokenKind};
 mod expr;
 mod stmt;
 mod cmd;
-mod func;
+pub mod func;
 
 #[cfg(test)]
 mod test;
