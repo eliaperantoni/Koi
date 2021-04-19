@@ -28,7 +28,15 @@ fn scans_spaces() {
 
 #[test]
 fn scans_keywords() {
-    assert_eq!(scan("while for return continue"), vec![
+    assert_eq!(scan("import while for return continue"), vec![
+        Token {
+            kind: TokenKind::Import,
+            lexeme: "import".to_owned(),
+        },
+        Token {
+            kind: TokenKind::Space,
+            lexeme: " ".to_owned(),
+        },
         Token {
             kind: TokenKind::While,
             lexeme: "while".to_owned(),
