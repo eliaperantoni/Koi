@@ -1,5 +1,5 @@
 use crate::ast::{Expr, Stmt};
-use crate::interp::Func;
+use crate::interp::{Func, Value};
 use crate::token::{Token, TokenKind};
 
 use super::Parser;
@@ -7,6 +7,8 @@ use super::Parser;
 impl Parser {
     pub fn parse_stmt(&mut self) -> Stmt {
         match self.lexer.peek() {
+            Some(Token { kind: TokenKind::Import, .. }) => self.parse_import(),
+
             Some(Token { kind: TokenKind::LeftBrace, .. }) => self.parse_block(),
 
             Some(Token { kind: TokenKind::Let, .. }) |
@@ -99,6 +101,28 @@ impl Parser {
                 Some(Token {kind: LeftParen | LeftBracket | Equal | PlusEqual | MinusEqual | StarEqual | SlashEqual | CaretEqual | PercEqual , ..})
             );
         }
+    }
+
+    fn parse_import(&mut self) -> Stmt {
+        // consume the `import` token
+        self.lexer.next();
+
+        self.lexer.consume_whitespace(self.is_multiline);
+
+        let literal = self.lexer.next();
+
+        self.lexer.consume_whitespace(self.is_multiline);
+
+        match literal {
+            Some(Token { kind: TokenKind::String { .. }, .. }) => {},
+            _ => panic!("Expected module identifier")
+        };
+
+        if let Some(Token { kind: TokenKind::String { value, .. }, .. }) = literal {
+            return Stmt::Import(value);
+        }
+
+        panic!("Unexpected error");
     }
 
     fn parse_let_stmt(&mut self) -> Stmt {
