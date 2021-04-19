@@ -43,7 +43,7 @@ impl Parser {
         let mut param = FuncParam {
             name: "".to_owned(),
             has_type_hint: false,
-            type_hint: "".to_owned()
+            type_hints: vec!["".to_owned()]
         };
 
         if let Some(Token { kind: TokenKind::Identifier(name), .. }) = self.lexer.next() {
@@ -58,14 +58,18 @@ impl Parser {
             self.lexer.next();
 
             param.has_type_hint = true;
-        }
 
-        self.lexer.consume_whitespace(self.is_multiline);
+            self.lexer.consume_whitespace(self.is_multiline);
 
-        if let Some(Token { kind: TokenKind::Identifier(type_hint), .. }) = self.lexer.next() {
-            param.type_hint = type_hint;
-        } else {
-            panic!("expected typehint");
+            let mut type_hints = vec![];
+
+            if let Some(Token { kind: TokenKind::Identifier(type_hint), .. }) = self.lexer.next() {
+                type_hints.push(type_hint);
+            } else {
+                panic!("expected typehint");
+            }
+
+            param.type_hints = type_hints.clone();
         }
 
         param
@@ -76,5 +80,5 @@ impl Parser {
 pub struct FuncParam {
     pub name: String,
     pub has_type_hint: bool,
-    pub type_hint: String,
+    pub type_hints: Vec<String>,
 }

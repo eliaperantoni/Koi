@@ -489,9 +489,9 @@ impl Interpreter {
                 let mut callee_env = mem::replace(&mut self.env, func_env);
 
                 for (p, arg) in params.into_iter().zip(args.into_iter()) {
-                    if p.has_type_hint && !p.type_hint.is_empty() {
-                        if p.type_hint.trim() != arg.to_type_string() {
-                            panic!("argument `{}` for function `{}` must be of type `{}`, got type `{}` instead", p.name, name.unwrap(), p.type_hint, arg.to_type_string());
+                    if p.has_type_hint && !p.type_hints.is_empty() {
+                        if ! p.type_hints.iter().any(|t| *t == arg.to_type_string()) {
+                            panic!("argument `{}` for function `{}` must be of type `{}`, got type `{}` instead", p.name, name.unwrap(), p.type_hints.join(", "), arg.to_type_string());
                         }
                     }
                     

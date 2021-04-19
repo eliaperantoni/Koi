@@ -1,4 +1,4 @@
-fn double(n: string) {
+fn double(n: number) {
     return n * 2
 }
 
