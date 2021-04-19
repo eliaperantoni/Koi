@@ -183,6 +183,49 @@ fn func_no_return() {
 }
 
 #[test]
+fn func_with_single_type_hint() {
+    assert_eq!(
+        output("
+            fn double(n: number) {
+                return n * 2
+            }
+
+            print(double(2))
+        "),
+        "4\n".to_string()
+    );
+}
+
+#[test]
+fn func_with_union_type_hints() {
+    assert_eq!(
+        output("
+            fn noop(n: number | string) {
+                return n
+            }
+
+            print(noop(2))
+            print(noop(\"2\"))
+        "),
+        "2\n2\n".to_string()
+    );
+}
+
+#[test]
+fn func_with_multiple_params_and_type_hints() {
+    assert_eq!(
+        output("
+            fn add(a: number, b: number) {
+                return a + b
+            }
+
+            print(add(2, 2))
+        "),
+        "4\n".to_string()
+    );
+}
+
+#[test]
 #[should_panic]
 fn uncaught_break() {
     output("break");
