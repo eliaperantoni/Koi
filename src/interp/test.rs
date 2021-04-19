@@ -226,6 +226,20 @@ fn func_with_multiple_params_and_type_hints() {
 }
 
 #[test]
+fn func_with_nil_argument_type_hint() {
+    assert_eq!(
+        output("
+            fn test(a: nil) {
+                
+            }
+
+            test(nil)
+        "),
+        "".to_string()
+    );
+}
+
+#[test]
 fn func_with_return_type() {
     assert_eq!(
         output("
