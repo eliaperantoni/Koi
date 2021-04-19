@@ -491,7 +491,7 @@ impl Interpreter {
                 for (p, arg) in params.into_iter().zip(args.into_iter()) {
                     if p.has_type_hint && !p.type_hints.is_empty() {
                         if ! p.type_hints.iter().any(|t| *t == arg.to_type_string()) {
-                            panic!("argument `{}` for function `{}` must be of type `{}`, got type `{}` instead", p.name, name.unwrap(), p.type_hints.join(", "), arg.to_type_string());
+                            panic!("argument `{}` for function `{}` must be of type `{}`, got type `{}` instead", p.name, name.unwrap(), p.type_hints.join(" | "), arg.to_type_string());
                         }
                     }
                     

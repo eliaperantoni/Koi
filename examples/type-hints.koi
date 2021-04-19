@@ -3,3 +3,11 @@ fn double(n: number) {
 }
 
 print(double(2))
+
+fn is_true(op: string | bool) {
+    return !! op
+}
+
+print(is_true("hello"))
+print(is_true(true))
+print(is_true(false))

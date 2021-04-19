@@ -63,10 +63,23 @@ impl Parser {
 
             let mut type_hints = vec![];
 
-            if let Some(Token { kind: TokenKind::Identifier(type_hint), .. }) = self.lexer.next() {
-                type_hints.push(type_hint);
-            } else {
-                panic!("expected typehint");
+            loop {
+                self.lexer.consume_whitespace(self.is_multiline);
+
+                if let Some(Token { kind: TokenKind::Identifier(type_hint), .. }) = self.lexer.next() {
+                    type_hints.push(type_hint);
+                } else {
+                    panic!("expected typehint");
+                }
+
+                self.lexer.consume_whitespace(self.is_multiline);
+
+                match self.lexer.peek() {
+                    Some(Token { kind: TokenKind::Pipe, .. }) => self.lexer.next(),
+                    Some(Token { kind: TokenKind::RightParen, .. })
+                    | Some(Token { kind: TokenKind::Comma, .. }) => break,
+                    _ => panic!("unexpected token, expect pipe, comma or right paren")
+                };
             }
 
             param.type_hints = type_hints.clone();
