@@ -112,7 +112,7 @@ impl Parser {
                     Some(Token { kind: TokenKind::Pipe, .. }) => self.lexer.next(),
                     Some(Token { kind: TokenKind::RightParen, .. }) |
                     Some(Token { kind: TokenKind::Comma, .. }) => break,
-                    _ => panic!("unexpected token, expect pipe, comma or right paren")
+                    _ => panic!("unexpected token, expected pipe, comma or right paren")
                 };
             }
 
