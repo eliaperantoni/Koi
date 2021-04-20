@@ -78,6 +78,7 @@ pub enum Stmt {
     Expr(Expr),
     Cmd(Cmd),
     Import(String),
+    NamedImport(String, String),
     Let {
         is_exp: bool,
         name: String,
