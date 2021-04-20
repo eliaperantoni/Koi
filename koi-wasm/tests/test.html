@@ -1,0 +1,17 @@
+<main>
+    <textarea id="input"></textarea>
+
+    <textarea id="output"></textarea>
+</main>
+
+<script type="module">
+    import init, { evaluate } from '../pkg/koi_wasm.js'
+
+    const input = () => document.querySelector('#input')
+    const output = () => document.querySelector('#output')
+
+    init()
+        .then(() => {
+            evaluate('hello')
+        })
+</script>
