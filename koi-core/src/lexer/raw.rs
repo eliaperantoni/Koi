@@ -4,12 +4,12 @@ use crate::token::{Token, TokenKind};
 
 pub struct RawLexer {
     source: Vec<char>,
-    cursor: usize,
+    pub cursor: usize,
 
     interp_count: u8,
     braces_count: u8,
 
-    buffer: Vec<Token>,
+    pub buffer: Vec<Token>,
 
     pub is_new_line: bool,
 }

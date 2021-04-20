@@ -1,0 +1,9 @@
+let obj = {
+    name: 'Ryan',
+    getName: fn () {
+        return this.name
+    }
+}
+
+print(obj.name)
+print(obj.getName())

@@ -407,6 +407,26 @@ fn native_clone_dict() {
 }
 
 #[test]
+fn dict_shorthand_fn_notation() {
+    assert_eq!(
+        output("
+            let obj = {
+                one: fn () {
+                    return 4
+                },
+                two() {
+                    return 4
+                }
+            }
+
+            print(obj.one())
+            print(obj.two())
+        "),
+        "4\n4\n"
+    )
+}
+
+#[test]
 fn dict_method_bind_this() {
     assert_eq!(
         output("

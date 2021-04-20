@@ -220,9 +220,24 @@ impl Parser {
             };
 
             self.lexer.consume_whitespace(self.is_multiline);
-            if !matches!(self.lexer.next(), Some(Token {kind: TokenKind::Colon, ..})) {
-                panic!("expected colon");
-            }
+
+            match self.lexer.peek() {
+                Some(Token { kind: TokenKind::Colon, .. }) => {
+                    self.lexer.next();
+                },
+                Some(Token { kind: TokenKind::LeftParen, .. }) => {
+                    let v = self.parse_fn_lambda();
+
+                    self.lexer.consume_whitespace(self.is_multiline);
+
+                    dict.insert(k.clone(), v);
+
+                    self.consume_comma();
+
+                    continue;
+                },
+                _ => panic!("expected colon or shorthand function")
+            };
 
             self.lexer.consume_whitespace(self.is_multiline);
             let v = self.parse_expr(0);
