@@ -1,0 +1,25 @@
+fn double(n: number) {
+    return n * 2
+}
+
+print(double(2))
+
+fn is_true(op: string | bool) -> bool {
+    return !! op
+}
+
+fn nil_argument(arg: nil) {
+    return arg
+}
+
+nil_argument(nil)
+
+print(is_true("hello"))
+print(is_true(true))
+print(is_true(false))
+
+fn nil_return() -> nil {
+
+}
+
+nil_return()

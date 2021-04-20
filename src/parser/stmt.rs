@@ -240,8 +240,8 @@ impl Parser {
 
         self.lexer.consume_whitespace(self.is_multiline);
 
-        let (params, body) = match self.continue_parse_fn() {
-            Func::User { params, body, .. } => (params, body),
+        let (params, body, has_return_type, return_type) = match self.continue_parse_fn() {
+            Func::User { params, body, has_return_type, return_type, .. } => (params, body, has_return_type, return_type),
             _ => unreachable!(),
         };
 
@@ -249,6 +249,8 @@ impl Parser {
             name: Some(name),
             params,
             body,
+            has_return_type: has_return_type,
+            return_type,
             captured_env: None,
             receiver: None,
         };

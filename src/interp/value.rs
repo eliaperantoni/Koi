@@ -24,6 +24,20 @@ pub enum Value {
 }
 
 impl Value {
+
+    pub fn to_type_string(&self) -> String {
+        match self {
+            Value::Nil => "nil".to_owned(),
+            Value::Num(_) => "number".to_owned(),
+            Value::String(_) => "string".to_owned(),
+            Value::Bool(_) => "bool".to_owned(),
+            Value::Vec(_) => "vec".to_owned(),
+            Value::Dict(_) => "dict".to_owned(),
+            Value::Func(_) => "fn".to_owned(),
+            _ => "mixed".to_owned(),
+        }
+    }
+
     pub fn bind_receiver(&mut self, this_context: Value) {
         match self {
             Value::Func(ref mut f) => {

@@ -6,14 +6,17 @@ use std::rc::Rc;
 use crate::ast::Stmt;
 use crate::interp::{Interpreter, Value};
 use crate::interp::env::Env;
+use crate::parser::func::FuncParam;
 
 #[derive(Clone)]
 pub enum Func {
     User {
         name: Option<String>,
-        params: Vec<String>,
+        params: Vec<FuncParam>,
         body: Box<Stmt>,
         captured_env: Option<Rc<RefCell<Env>>>,
+        has_return_type: bool,
+        return_type: Option<String>,
         receiver: Option<Box<Value>>,
     },
     Native {

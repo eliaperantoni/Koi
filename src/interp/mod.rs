@@ -236,11 +236,13 @@ impl Interpreter {
             Stmt::Func(func) => {
                 match func {
                     // Lambdas don't get parsed as Stmt::Func but Expr::Lambda, therefore a name should always be present
-                    Func::User { name, params, body, .. } => {
+                    Func::User { name, params, body, return_type, has_return_type, .. } => {
                         let func = Value::Func(Func::User {
                             name: name.clone(),
                             params,
                             body,
+                            has_return_type,
+                            return_type, 
                             captured_env: Some(Rc::clone(&self.env)),
                             receiver: None,
                         });
@@ -463,11 +465,13 @@ impl Interpreter {
                 self.call(func, args)
             }
             Expr::Lambda(func) => match func {
-                Func::User { name, params, body, .. } => Value::Func(Func::User {
+                Func::User { name, params, body, has_return_type, return_type, .. } => Value::Func(Func::User {
                     name,
                     params,
                     body,
                     captured_env: Some(Rc::clone(&self.env)),
+                    has_return_type,
+                    return_type
                     receiver: None,
                 }),
                 Func::Native { .. } => unreachable!()
@@ -483,7 +487,7 @@ impl Interpreter {
         };
 
         match func {
-            Func::User { params, body, captured_env, receiver, .. } => {
+            Func::User { name, params, body, captured_env, has_return_type, return_type, receiver .. } => {
                 assert_eq!(params.len(), args.len(), "number of arguments does not match number of parameters");
 
                 let func_env = Rc::new(RefCell::new(if let Some(captured_env) = captured_env {
@@ -494,8 +498,14 @@ impl Interpreter {
 
                 let mut callee_env = mem::replace(&mut self.env, func_env);
 
-                for (param, arg) in params.into_iter().zip(args.into_iter()) {
-                    self.get_env_mut().def(param, arg);
+                for (p, arg) in params.into_iter().zip(args.into_iter()) {
+                    if p.has_type_hint && !p.type_hints.is_empty() {
+                        if ! p.type_hints.iter().any(|t| *t == arg.to_type_string()) {
+                            panic!("argument `{}` for function `{}` must be of type `{}`, got type `{}` instead", p.name, name.unwrap(), p.type_hints.join(" | "), arg.to_type_string());
+                        }
+                    }
+                    
+                    self.get_env_mut().def(p.name, arg);
                 }
 
                 if let Some(receiver) = receiver {
@@ -506,11 +516,21 @@ impl Interpreter {
 
                 mem::swap(&mut self.env, &mut callee_env);
 
-                match res {
+                let result = match res {
                     Err(Escape::Return(val)) => val,
                     Err(_) => panic!("non return escape outside function"),
                     _ => Value::Nil,
+                };
+
+                if has_return_type {
+                    let return_type = return_type.unwrap();
+
+                    if result.to_type_string() != return_type {
+                        panic!("expected `{}` return type for function `{}`, got `{}`", return_type, name.unwrap(), result.to_type_string());
+                    }
                 }
+
+                result
             }
             Func::Native { func, params, receiver, .. } => {
                 if let Some(receiver) = receiver {

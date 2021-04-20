@@ -470,7 +470,25 @@ fn parses_fn() {
     assert_eq!(parse("fn foo \n( x , y , z ) \n {}"), vec![
         Stmt::Func(Func::User {
             name: Some("foo".to_owned()),
-            params: vec!["x".to_owned(), "y".to_owned(), "z".to_owned()],
+            params: vec![
+                func::FuncParam {
+                    name: "x".to_owned(),
+                    has_type_hint: false,
+                    type_hints: vec![],
+                },
+                func::FuncParam {
+                    name: "y".to_owned(),
+                    has_type_hint: false,
+                    type_hints: vec![],
+                },
+                func::FuncParam {
+                    name: "z".to_owned(),
+                    has_type_hint: false,
+                    type_hints: vec![],
+                }
+            ],
+            has_return_type: false,
+            return_type: None,
             body: Box::new(Stmt::Block(vec![])),
             captured_env: None,
             receiver: None,
@@ -485,6 +503,8 @@ fn parses_fn_no_params() {
             name: Some("foo".to_owned()),
             params: vec![],
             body: Box::new(Stmt::Block(vec![])),
+            has_return_type: false,
+            return_type: None,
             captured_env: None,
             receiver: None,
         })
@@ -516,6 +536,8 @@ fn parses_lambda() {
                     name: None,
                     params: vec![],
                     body: Box::new(Stmt::Block(vec![])),
+                    has_return_type: false,
+                    return_type: None,
                     captured_env: None,
                     receiver: None,
                 })
