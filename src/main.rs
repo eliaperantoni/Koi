@@ -74,6 +74,7 @@ fn main() {
 
     let mut interpreter = interp::Interpreter::new();
     interpreter.set_args(script_args);
+    interpreter.set_root(matches.value_of("path").unwrap());
     interpreter.run(prog);
 
     if let Some(f) = matches.value_of("fn") {

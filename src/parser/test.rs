@@ -371,6 +371,13 @@ fn parses_break() {
 }
 
 #[test]
+fn parses_import() {
+    assert_eq!(parse("import \"module/file\""), vec![
+        Stmt::Import("module/file".to_owned()),
+    ]);
+}
+
+#[test]
 fn parses_if() {
     assert_eq!(parse("if true {\ncmd_if_true\n}"), vec![
         Stmt::If {

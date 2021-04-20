@@ -1,0 +1,6 @@
+import "module/double"
+import "module/fibonacci.koi"
+
+print(double(2))
+
+print(fib(5))

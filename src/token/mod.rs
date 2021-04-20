@@ -13,6 +13,7 @@ pub enum TokenKind {
         does_interp: bool,
     },
 
+    Import,
     For,
     In,
     While,

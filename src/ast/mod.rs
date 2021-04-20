@@ -77,6 +77,7 @@ pub enum Expr {
 pub enum Stmt {
     Expr(Expr),
     Cmd(Cmd),
+    Import(String),
     Let {
         is_exp: bool,
         name: String,
