@@ -77,9 +77,7 @@ impl Display for Value {
 impl Value {
     pub fn is_truthy(&self) -> bool {
         match self {
-            Value::Nil => false,
-            Value::Bool(false) => false,
-            Value::Num(0.0) => false,
+            Value::Nil | Value::Bool(false) | Value::Num(0.0) => false,
             _ => true,
         }
     }
