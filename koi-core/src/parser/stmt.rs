@@ -1,5 +1,5 @@
 use crate::ast::{Expr, Stmt};
-use crate::interp::{Func, Value};
+use crate::interp::Func;
 use crate::token::{Token, TokenKind};
 
 use super::Parser;

@@ -176,6 +176,14 @@ name = "koi"
 version = "0.1.0"
 dependencies = [
  "clap",
+ "itertools",
+ "koi-core",
+]
+
+[[package]]
+name = "koi-core"
+version = "0.1.0"
+dependencies = [
  "dirs",
  "either",
  "itertools",
