@@ -1,8 +1,3 @@
-#![feature(or_patterns)]
-#![feature(with_options)]
-#![feature(option_insert)]
-#![feature(test)]
-
 use std::env;
 use std::fs;
 use std::io;
@@ -11,13 +6,12 @@ use std::io::Read;
 use clap::{App, Arg};
 use itertools::Itertools;
 
-use crate::lexer::new as new_lexer;
-
-mod token;
-mod lexer;
-mod ast;
-mod parser;
-mod interp;
+use koi_core::token;
+use koi_core::lexer;
+use koi_core::lexer::new as new_lexer;
+use koi_core::ast;
+use koi_core::parser;
+use koi_core::interp;
 
 fn split_args() -> (Vec<String>, Vec<String>) {
     let args = env::args().collect_vec();
