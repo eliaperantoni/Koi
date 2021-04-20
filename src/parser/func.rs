@@ -64,6 +64,7 @@ impl Parser {
             captured_env: None,
             has_return_type,
             return_type,
+            receiver: None,
         };
 
         func

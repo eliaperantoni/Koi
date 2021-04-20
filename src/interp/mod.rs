@@ -244,6 +244,7 @@ impl Interpreter {
                             has_return_type,
                             return_type, 
                             captured_env: Some(Rc::clone(&self.env)),
+                            receiver: None,
                         });
                         self.get_env_mut().def(name.unwrap(), func);
                     }
@@ -308,7 +309,11 @@ impl Interpreter {
                     _ => None
                 };
 
-                if let Some(val) = val {
+                if let Some(mut val) = val {
+                    if let Value::Func(_) = val {
+                        val.bind_receiver(base);
+                    }
+
                     val
                 } else {
                     let method_name = if let Value::String(method_name) = index {
@@ -467,6 +472,7 @@ impl Interpreter {
                     captured_env: Some(Rc::clone(&self.env)),
                     has_return_type,
                     return_type
+                    receiver: None,
                 }),
                 Func::Native { .. } => unreachable!()
             }
@@ -481,7 +487,7 @@ impl Interpreter {
         };
 
         match func {
-            Func::User { name, params, body, captured_env, has_return_type, return_type, .. } => {
+            Func::User { name, params, body, captured_env, has_return_type, return_type, receiver .. } => {
                 assert_eq!(params.len(), args.len(), "number of arguments does not match number of parameters");
 
                 let func_env = Rc::new(RefCell::new(if let Some(captured_env) = captured_env {
@@ -500,6 +506,10 @@ impl Interpreter {
                     }
                     
                     self.get_env_mut().def(p.name, arg);
+                }
+
+                if let Some(receiver) = receiver {
+                    self.get_env_mut().def("this".to_owned(), *receiver);
                 }
 
                 let res = self.run_stmt(*body);

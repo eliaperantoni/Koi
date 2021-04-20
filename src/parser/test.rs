@@ -491,6 +491,7 @@ fn parses_fn() {
             return_type: None,
             body: Box::new(Stmt::Block(vec![])),
             captured_env: None,
+            receiver: None,
         })
     ]);
 }
@@ -505,6 +506,7 @@ fn parses_fn_no_params() {
             has_return_type: false,
             return_type: None,
             captured_env: None,
+            receiver: None,
         })
     ]);
 }
@@ -537,6 +539,7 @@ fn parses_lambda() {
                     has_return_type: false,
                     return_type: None,
                     captured_env: None,
+                    receiver: None,
                 })
             ],
         })

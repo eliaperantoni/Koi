@@ -407,6 +407,37 @@ fn native_clone_dict() {
 }
 
 #[test]
+fn dict_method_bind_this() {
+    assert_eq!(
+        output("
+            let obj = {
+                name: 'Ryan',
+                getName: fn () {
+                    return this.name
+                }
+            }
+
+            print(obj.getName())
+        "),
+        "Ryan\n".to_string()
+    );
+}
+
+#[test]
+fn func_binding_this_nil() {
+    assert_eq!(
+        output("
+            fn test() {
+                return this
+            }
+
+            print(test())
+        "),
+        "nil\n".to_string()
+    );
+}
+
+#[test]
 fn native_vec_2_dict() {
     assert_eq!(output("print([['a', 1]].toDict())"), "{a: 1}\n".to_string());
 }

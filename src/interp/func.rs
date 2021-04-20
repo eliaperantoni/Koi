@@ -17,6 +17,7 @@ pub enum Func {
         captured_env: Option<Rc<RefCell<Env>>>,
         has_return_type: bool,
         return_type: Option<String>,
+        receiver: Option<Box<Value>>,
     },
     Native {
         name: String,

@@ -252,6 +252,7 @@ impl Parser {
             has_return_type: has_return_type,
             return_type,
             captured_env: None,
+            receiver: None,
         };
 
         Stmt::Func(func)
