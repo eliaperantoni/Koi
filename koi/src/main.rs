@@ -6,8 +6,6 @@ use std::io::Read;
 use clap::{App, Arg};
 use itertools::Itertools;
 
-use koi_core::token;
-use koi_core::lexer;
 use koi_core::lexer::new as new_lexer;
 use koi_core::ast;
 use koi_core::parser;

@@ -1,6 +1,4 @@
-#![feature(or_patterns)]
 #![feature(with_options)]
-#![feature(option_insert)]
 #![feature(test)]
 
 pub mod token;
