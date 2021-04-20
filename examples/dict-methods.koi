@@ -1,0 +1,9 @@
+let obj = {
+    name: "Ryan",
+    age: 21,
+    description: fn () {
+        return " ".join([this.name, this.age])
+    }
+}
+
+print(obj.description())

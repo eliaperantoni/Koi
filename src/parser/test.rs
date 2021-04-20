@@ -473,6 +473,7 @@ fn parses_fn() {
             params: vec!["x".to_owned(), "y".to_owned(), "z".to_owned()],
             body: Box::new(Stmt::Block(vec![])),
             captured_env: None,
+            receiver: None,
         })
     ]);
 }
@@ -485,6 +486,7 @@ fn parses_fn_no_params() {
             params: vec![],
             body: Box::new(Stmt::Block(vec![])),
             captured_env: None,
+            receiver: None,
         })
     ]);
 }
@@ -515,6 +517,7 @@ fn parses_lambda() {
                     params: vec![],
                     body: Box::new(Stmt::Block(vec![])),
                     captured_env: None,
+                    receiver: None,
                 })
             ],
         })

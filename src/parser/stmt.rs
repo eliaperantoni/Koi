@@ -250,6 +250,7 @@ impl Parser {
             params,
             body,
             captured_env: None,
+            receiver: None,
         };
 
         Stmt::Func(func)
