@@ -79,6 +79,7 @@ impl Value {
         match self {
             Value::Nil => false,
             Value::Bool(false) => false,
+            Value::Num(0.0) => false,
             _ => true,
         }
     }
