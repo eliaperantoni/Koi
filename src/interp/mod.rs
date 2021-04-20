@@ -471,7 +471,7 @@ impl Interpreter {
                     body,
                     captured_env: Some(Rc::clone(&self.env)),
                     has_return_type,
-                    return_type
+                    return_type,
                     receiver: None,
                 }),
                 Func::Native { .. } => unreachable!()
@@ -487,7 +487,7 @@ impl Interpreter {
         };
 
         match func {
-            Func::User { name, params, body, captured_env, has_return_type, return_type, receiver .. } => {
+            Func::User { name, params, body, captured_env, has_return_type, return_type, receiver, .. } => {
                 assert_eq!(params.len(), args.len(), "number of arguments does not match number of parameters");
 
                 let func_env = Rc::new(RefCell::new(if let Some(captured_env) = captured_env {
