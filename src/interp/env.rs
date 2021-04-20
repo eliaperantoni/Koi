@@ -5,8 +5,9 @@ use std::rc::Rc;
 use crate::interp::cmd::OsEnv;
 use crate::interp::value::Value;
 
+#[derive(Debug)]
 pub struct Var {
-    val: Value,
+    pub val: Value,
     is_exp: bool,
 }
 
@@ -29,7 +30,7 @@ impl From<Value> for Var {
 }
 
 pub struct Env {
-    map: HashMap<String, Var>,
+    pub map: HashMap<String, Var>,
     parent: Option<Rc<RefCell<Env>>>,
 }
 

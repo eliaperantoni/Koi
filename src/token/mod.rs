@@ -14,6 +14,7 @@ pub enum TokenKind {
     },
 
     Import,
+    As,
     For,
     In,
     While,

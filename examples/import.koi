@@ -1,6 +1,9 @@
 import "module/double"
 import "module/fibonacci.koi"
+import "module/named" as math
 
 print(double(2))
 
 print(fib(5))
+
+print(math.add(2, 2))

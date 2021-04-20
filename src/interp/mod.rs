@@ -156,6 +156,42 @@ impl Interpreter {
 
                 self.run(prog);
             }
+            Stmt::NamedImport(path, name) => {
+                let mut file = self.root.clone();
+
+                file.push('/');
+                file.push_str(path.as_str());
+
+                if ! file.ends_with(".koi") {
+                    file.push_str(".koi");
+                }
+
+                let source = std::fs::read_to_string(file).unwrap();
+
+                let lexer = new_lexer(source);
+
+                let mut parser = parser::Parser::new(lexer);
+                let prog = parser.parse();
+
+                let mut interpreter = Interpreter::new();
+                interpreter.set_root(self.root.as_str());
+
+                interpreter.run(prog);
+
+                let mut dict = HashMap::<String, Value>::new();
+
+                for (k, v) in interpreter.get_env().map.iter() {
+                    match v {
+                        env::Var { val: func @ Value::Func(_), .. } => {
+                            dict.insert(k.clone(), func.clone());
+                        },
+                        _ => continue,
+                    };
+                }
+
+                self.push_env();
+                self.get_env_mut().def(name, Value::Dict(Rc::new(RefCell::new(dict))));
+            }
             Stmt::Expr(expr) => {
                 self.eval(expr);
             }
