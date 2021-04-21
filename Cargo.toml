@@ -1,6 +1,5 @@
 [workspace]
 members = [
     "koi",
-    "koi-core",
-    "koi-wasm"
+    "koi-core"
 ]
