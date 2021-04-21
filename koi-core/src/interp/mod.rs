@@ -26,7 +26,7 @@ mod test;
 
 pub struct Interpreter {
     env: Rc<RefCell<Env>>,
-    collector: Option<String>,
+    pub collector: Option<String>,
     root: String,
 }
 

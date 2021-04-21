@@ -5,6 +5,7 @@ use std::io::Read;
 
 use clap::{App, Arg};
 use itertools::Itertools;
+use linefeed::{Interface, ReadResult};
 
 use koi_core::lexer::new as new_lexer;
 use koi_core::ast;
@@ -51,32 +52,76 @@ fn main() {
         )
         .get_matches_from(koi_args);
 
-    let source = if matches.is_present("stdin") {
+    let source: Option<String> = if matches.is_present("stdin") {
         let mut buffer = String::new();
         io::stdin().read_to_string(&mut buffer).unwrap();
-        buffer
+        Some(buffer)
+    } else if matches.is_present("path") {
+        Some(fs::read_to_string(matches.value_of("path").unwrap_or("Koifile")).unwrap())
     } else {
-        fs::read_to_string(matches.value_of("path").unwrap_or("Koifile")).unwrap()
+        None
     };
 
+    match source {
+        Some(source) => {
+            let (mut interpreter, prog) = interpreter(source);
+
+            interpreter.set_args(script_args);
+            interpreter.set_root(matches.value_of("path").unwrap());
+
+            interpreter.run(prog);
+
+            if let Some(f) = matches.value_of("fn") {
+                use ast::{Stmt, Expr};
+        
+                interpreter.run(vec![
+                    Stmt::Expr(Expr::Call {
+                        func: Box::new(Expr::Get(f.to_string())),
+                        args: vec![],
+                    })
+                ]);
+            }
+        },
+        None => {
+            loop {
+                let mut reader = Interface::new("koi").unwrap();
+
+                reader.set_prompt("koi >> ").unwrap();
+
+                let mut interpreter = interp::Interpreter::new();
+                interpreter.do_collect();
+
+                while let ReadResult::Input(input) = reader.read_line().unwrap() {
+                    if input == "exit" {
+                        println!("Exiting...");
+
+                        std::process::exit(0);
+                    }
+
+                    let lexer = new_lexer(input);
+
+                    let mut parser = parser::Parser::new(lexer);
+                    let prog = parser.parse();
+
+                    interpreter.run(prog);
+
+                    if let Some(output_buffer) = interpreter.collector {
+                        print!("{}", output_buffer);
+                        interpreter.collector = None
+                    }
+
+                    interpreter.collector = None
+                }
+            }
+        }
+    };
+}
+
+fn interpreter(source: String) -> (interp::Interpreter, ast::Prog) {
     let lexer = new_lexer(source);
 
     let mut parser = parser::Parser::new(lexer);
     let prog = parser.parse();
 
-    let mut interpreter = interp::Interpreter::new();
-    interpreter.set_args(script_args);
-    interpreter.set_root(matches.value_of("path").unwrap());
-    interpreter.run(prog);
-
-    if let Some(f) = matches.value_of("fn") {
-        use ast::{Stmt, Expr};
-
-        interpreter.run(vec![
-            Stmt::Expr(Expr::Call {
-                func: Box::new(Expr::Get(f.to_string())),
-                args: vec![],
-            })
-        ]);
-    }
+    (interp::Interpreter::new(), prog)
 }
