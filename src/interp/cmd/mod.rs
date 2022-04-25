@@ -153,7 +153,8 @@ impl Interpreter {
         let mut cmd = self.build_cmd(cmd, Stream::Null, Stream::Inherit, Stream::Inherit);
         cmd.set_env(env);
         cmd.spawn();
-        cmd.wait();
+        let rc = cmd.wait();
+        self.set_rc(&rc);
     }
 
     pub fn run_cmd_capture(&mut self, cmd: Cmd, env: OsEnv, capture_err: bool) -> String {
@@ -168,7 +169,8 @@ impl Interpreter {
         let mut cmd = self.build_cmd(cmd, Stream::Null, Stream::PipeWriter(w), err_stream);
         cmd.set_env(env);
         cmd.spawn();
-        cmd.wait();
+        let rc = cmd.wait();
+        self.set_rc(&rc);
 
         let mut out = String::new();
         r.read_to_string(&mut out).unwrap();
@@ -288,6 +290,14 @@ impl Interpreter {
         }
 
         segments.remove(0)
+    }
+
+    fn set_rc(&mut self, rc: &ExitStatus) {
+        self.get_env_mut().def("rc".to_string(), if let Some(rc) = rc.code() {
+            Value::Num(rc as f64)
+        } else {
+            Value::Nil
+        });
     }
 }
 

@@ -1,0 +1,7 @@
+python -c 'exit(22)'
+print(rc)
+let _ = $(python -c 'exit(23)')
+print(rc)
+#---
+22
+23
