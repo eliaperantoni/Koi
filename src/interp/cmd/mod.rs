@@ -225,7 +225,7 @@ impl Interpreter {
             Cmd::Op(lhs, op, rhs) if [CmdOp::OutWrite, CmdOp::ErrWrite, CmdOp::AllWrite, CmdOp::OutAppend, CmdOp::ErrAppend, CmdOp::AllAppend, CmdOp::Read].contains(&op) => {
                 let path = self.cmd_to_path(*rhs);
 
-                let mut file = File::with_options();
+                let mut file = File::options();
 
                 let file = match op {
                     CmdOp::OutWrite | CmdOp::ErrWrite | CmdOp::AllWrite => file.create(true).write(true).truncate(true),

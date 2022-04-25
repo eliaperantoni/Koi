@@ -1,5 +1,5 @@
 use crate::ast::{Expr, Stmt};
-use crate::interp::{Func, Value};
+use crate::interp::Func;
 use crate::token::{Token, TokenKind};
 
 use super::Parser;
@@ -219,7 +219,7 @@ impl Parser {
         if matches!(self.lexer.peek(), Some(Token{kind: TokenKind::Comma, ..})) {
             self.lexer.next();
             self.lexer.consume_whitespace(self.is_multiline);
-            rvar.insert(self.must_identifier());
+            rvar = Some(self.must_identifier());
         }
 
         self.lexer.consume_whitespace(self.is_multiline);
