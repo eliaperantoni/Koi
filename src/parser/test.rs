@@ -333,7 +333,7 @@ fn parses_cmd_with_escaping() {
                 strings: vec!["".to_owned(), "".to_owned()],
                 exprs: vec![Expr::Literal(Value::String("d".to_owned()))],
             },
-            Expr::Literal(Value::String("e".to_owned()))
+            Expr::Literal(Value::String("e".to_owned())),
         ]]))
     ]);
 }
@@ -352,7 +352,7 @@ fn parses_return() {
         Stmt::Return(None),
         Stmt::Cmd(Cmd::Atom(vec![vec![
             Expr::Literal(Value::String("1".to_owned())),
-        ]]))
+        ]])),
     ]);
 }
 
@@ -372,9 +372,15 @@ fn parses_break() {
 
 #[test]
 fn parses_import() {
-    assert_eq!(parse("import \"module/file\""), vec![
-        Stmt::Import("module/file".to_owned()),
+    assert_eq!(parse("import \"foobar\""), vec![
+        Stmt::Import("foobar".to_owned()),
     ]);
+}
+
+#[test]
+#[should_panic]
+fn panics_on_import_interpolation() {
+    parse("import \"foo{var}bar\"");
 }
 
 #[test]

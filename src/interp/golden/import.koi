@@ -1,0 +1,4 @@
+import "math.koi"
+print(double(22))
+#---
+44

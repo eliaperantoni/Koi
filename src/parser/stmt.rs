@@ -104,25 +104,17 @@ impl Parser {
     }
 
     fn parse_import(&mut self) -> Stmt {
-        // consume the `import` token
+        // Consume the `import` token
         self.lexer.next();
 
         self.lexer.consume_whitespace(self.is_multiline);
 
-        let literal = self.lexer.next();
-
-        self.lexer.consume_whitespace(self.is_multiline);
-
-        match literal {
-            Some(Token { kind: TokenKind::String { .. }, .. }) => {},
-            _ => panic!("Expected module identifier")
-        };
-
-        if let Some(Token { kind: TokenKind::String { value, .. }, .. }) = literal {
-            return Stmt::Import(value);
+        match self.lexer.next() {
+            Some(Token { kind: TokenKind::String { does_interp: false, value }, .. }) => {
+                Stmt::Import(value)
+            },
+            _ => panic!("expected a file to import")
         }
-
-        panic!("Unexpected error");
     }
 
     fn parse_let_stmt(&mut self) -> Stmt {

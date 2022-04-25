@@ -4,6 +4,7 @@ use std::env;
 use std::fs;
 use std::io;
 use std::io::Read;
+use std::path::PathBuf;
 
 use clap::{App, Arg};
 use itertools::Itertools;
@@ -71,7 +72,11 @@ fn main() {
 
     let mut interpreter = interp::Interpreter::new();
     interpreter.set_args(script_args);
-    interpreter.set_root(matches.value_of("path").unwrap());
+    if let Some(path) = matches.value_of("path") {
+        let mut wd = PathBuf::from(path);
+        wd.pop();
+        interpreter.set_wd(wd);
+    }
     interpreter.run(prog);
 
     if let Some(f) = matches.value_of("fn") {

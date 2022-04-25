@@ -1,0 +1,5 @@
+fn double(n) {
+    return 2*n
+}
+# This file doesn't test anything by itself, it's used by import.koi to test imports
+#---
