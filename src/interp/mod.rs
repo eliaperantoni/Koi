@@ -27,7 +27,7 @@ mod test;
 pub struct Interpreter {
     env: Rc<RefCell<Env>>,
     collector: Option<String>,
-    wd: PathBuf,
+    import_root: PathBuf,
 }
 
 #[derive(Debug)]
@@ -42,7 +42,7 @@ impl Interpreter {
         let mut interpreter = Interpreter {
             env: Rc::new(RefCell::new(Env::new())),
             collector: None,
-            wd: std::env::current_dir().expect("couldn't get working dir"),
+            import_root: std::env::current_dir().expect("couldn't get working dir"),
         };
         interpreter.init_native_funcs();
         interpreter.import_os_env();
@@ -85,8 +85,8 @@ impl Interpreter {
         }));
     }
 
-    pub fn set_wd(&mut self, wd: PathBuf) {
-        self.wd = wd;
+    pub fn set_import_root(&mut self, import_root: PathBuf) {
+        self.import_root = import_root;
     }
 
     fn import_os_env(&mut self) {
@@ -133,16 +133,23 @@ impl Interpreter {
                 self.push_env();
                 self.get_env_mut().def(name, Var::new(val, is_exp));
             }
-            Stmt::Import(mut path) => {
-                if !path.ends_with(".koi") {
-                    path.push_str(".koi");
+            Stmt::Import(mut base_path) => {
+                if !base_path.ends_with(".koi") {
+                    base_path.push_str(".koi");
                 }
 
-                let source = std::fs::read_to_string(path)
+                let mut path = self.import_root.clone();
+                path.push(&base_path);
+
+                let source = std::fs::read_to_string(&path)
                     .expect("reading imported file's content");
                 let prog = parser::Parser::new(new_lexer(source)).parse();
 
+                path.pop();
+
+                let old_import_root = std::mem::replace(&mut self.import_root, path);
                 self.run(prog);
+                self.import_root = old_import_root;
             }
             Stmt::Expr(expr) => {
                 self.eval(expr);

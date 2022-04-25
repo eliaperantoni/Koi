@@ -73,9 +73,10 @@ fn main() {
     let mut interpreter = interp::Interpreter::new();
     interpreter.set_args(script_args);
     if let Some(path) = matches.value_of("path") {
-        let mut wd = PathBuf::from(path);
-        wd.pop();
-        interpreter.set_wd(wd);
+        let mut import_root = std::fs::canonicalize(PathBuf::from(path))
+            .expect("couldn't set import root");
+        import_root.pop();
+        interpreter.set_import_root(import_root);
     }
     interpreter.run(prog);
 
