@@ -31,7 +31,7 @@ fn main() {
     let (koi_args, script_args) = split_args();
 
     let matches = App::new("Koi")
-        .version("1.0.0")
+        .version("1.7.1")
         .author("Elia Perantoni <perantonielia0@gmail.com>")
         .arg(
             Arg::with_name("path")
