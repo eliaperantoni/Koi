@@ -83,6 +83,13 @@ impl Interpreter {
             func: exit,
             receiver: None,
         }));
+
+        self.get_env_mut().def("glob".to_string(), Value::Func(Func::Native {
+            name: "glob".to_string(),
+            params: Some(1),
+            func: glob,
+            receiver: None,
+        }));
     }
 
     pub fn set_import_root(&mut self, import_root: PathBuf) {

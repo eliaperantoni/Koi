@@ -57,6 +57,26 @@ pub fn exit(_: &mut Interpreter, mut args: Vec<Value>) -> Value {
     process::exit(code);
 }
 
+pub fn glob(_: &mut Interpreter, mut args: Vec<Value>) -> Value {
+    let pat = match args.remove(0) {
+        Value::String(msg) => msg,
+        _ => panic!("expected arg to be string")
+    };
+
+    let glob_res = glob::glob(&pat).expect("error while globbing");
+
+    Value::Vec(Rc::new(RefCell::new(
+        glob_res.filter_map(|entry| {
+            match entry {
+                Ok(path) => Some(Value::String(
+                    path.to_str().expect("path is not a valid string").to_owned()
+                )),
+                Err(_) => None,
+            }
+        }).collect()
+    )))
+}
+
 pub fn string(_int: &mut Interpreter, mut args: Vec<Value>) -> Value {
     Value::String(args.remove(0).to_string())
 }
