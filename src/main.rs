@@ -62,7 +62,8 @@ fn main() {
         io::stdin().read_to_string(&mut buffer).unwrap();
         buffer
     } else {
-        fs::read_to_string(matches.value_of("path").unwrap_or("Koifile")).unwrap()
+        fs::read_to_string(matches.value_of("path").unwrap_or("Koifile"))
+            .expect("couldn't read the source file (if you didn't provide a path to a .koi file, then it defaults to ./Kofile")
     };
 
     let lexer = new_lexer(source);
